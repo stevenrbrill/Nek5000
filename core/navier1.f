@@ -1472,7 +1472,7 @@ C----------------------------------------------------------------------
       include 'TSTEP'
 C
       TIME = TIME-DT
-      CALL NEKUF   (BFX,BFY,BFZ)
+      CALL SRB_NEKUF   (BFX,BFY,BFZ,BRHSX,BRHSY,BRHSZ)
       CALL OPCOLV  (BFX,BFY,BFZ,BM1)
       TIME = TIME+DT
 C
@@ -1504,6 +1504,47 @@ C
             F1(I,J,K,IEL) = FFX
             F2(I,J,K,IEL) = FFY
             F3(I,J,K,IEL) = FFZ
+ 100  CONTINUE
+
+#ifdef TIMER
+      tusfq=tusfq+(dnekclock()-etime1)
+#endif
+
+      return
+      END
+C
+      subroutine srb_nekuf (f1,f2,f3,rhs1,rhs2,rhs3)
+      include 'SIZE'
+      include 'PARALLEL'
+      include 'NEKUSE'
+      include 'CTIMER'
+
+      REAL F1 (LX1,LY1,LZ1,LELV)
+      REAL F2 (LX1,LY1,LZ1,LELV)
+      REAL F3 (LX1,LY1,LZ1,LELV)
+      REAL RHS1 (LX1,LY1,LZ1,LELV)
+      REAL RHS2 (LX1,LY1,LZ1,LELV)
+      REAL RHS3 (LX1,LY1,LZ1,LELV)
+
+#ifdef TIMER
+      etime1=dnekclock_sync()
+#endif
+
+      CALL OPRZERO (F1,F2,F3)
+      DO 100 IEL=1,NELV
+         ielg = lglel(iel)
+         DO 100 K=1,lz1
+         DO 100 J=1,ly1
+         DO 100 I=1,lx1
+            if (optlevel.le.2) CALL NEKASGN (I,J,K,IEL)
+            CALL USERF   (I,J,K,IELG)
+            F1(I,J,K,IEL) = FFX
+            F2(I,J,K,IEL) = FFY
+            F3(I,J,K,IEL) = FFZ
+            CALL USERHACK (I,J,K,IELG)
+            RHS1(I,J,K,IEL) = RHSX
+            RHS2(I,J,K,IEL) = RHSY
+            RHS3(I,J,K,IEL) = RHSZ
  100  CONTINUE
 
 #ifdef TIMER
