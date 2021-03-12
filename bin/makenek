@@ -5,7 +5,7 @@ set -a
 #-------------------------------------------------------------------------------
 
 # source path 
-#NEK_SOURCE_ROOT="$HOME/Nek5000" 
+NEK_SOURCE_ROOT="/home/steven/Documents/Research/Nek5000" 
 
 # Linker
 #LD="mpif77"
