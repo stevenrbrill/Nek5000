@@ -167,6 +167,7 @@ c     VARIABLES DECLARED FOR ENRICHMENT METHOD
       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv) 
       real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
       real myH1_rhs(lx1,ly1,lz1,lelv), myH2_rhs(lx1,ly1,lz1,lelv) 
+      real phi_temp(lx1,ly1,lz1,lelv), T1_rhs(lx1,ly1,lz1,lelv) 
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /scrns/ w1(lx1,ly1,lz1,lelv)
      $              ,tx(lx1,ly1,lz1,lelv)
@@ -591,6 +592,58 @@ C       if (time.lt.50) then
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
       call oprzero(wsx,wsy,wsz)
 
+      ! ----------------------------------------------------------------
+      ! Compute T1
+
+      call rzero  (T1_rhs,n)
+      call rzero  (phi_temp,n)
+      do ix = 1,lx1
+        do iz = 1,lz1
+          do iy = 1,ly1
+            ! Iterate over each element and set coefficient = 1
+            do iel = 1, nelv
+              if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+                phi_temp(ix,iy,iz,iel) = 1.0;
+              endif
+            enddo
+            ! Compute gradient of basis function
+            call gradm1 (tx,ty,tz,phi_temp)
+            ! Compute dot product of gphi and gpsi
+            call vdot3(w1,tx,ty,tz,gpsix_x,gpsix_y,gpsix_z,n)
+            ! Multiply by Re
+            call col2(w1,vdiff(1,1,1,1,1),n)
+            ! Multiply by quadrature weights and Jacobian
+            call col2(w1,bm1,n)
+            ! Iterate over each element and add result to final sum
+            do iel = 1, nelv
+              if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+                do ix2 = 1,lx1
+                  do iz2 = 1,lz1
+                    do iy2 = 1,ly1
+                      T1_rhs(ix,iy,iz,iel) = T1_rhs(ix,iy,iz,iel) 
+     &                 + w1(ix2,iy2,iz2,iel)
+                    enddo
+                  enddo
+                enddo
+              endif
+            enddo
+          enddo
+        enddo
+      enddo
+
+      do iel = 1, nelv
+        if (flag(iel) .eq. 1) then  ! boundary element is above y=0
+
+         else if (flag(iel) .eq. -1) then ! boundary element below y=0
+             do ix = 1,lx1
+              do iz = 1,lz1
+                do iy = 1,ly1
+
+                enddo
+              enddo
+             enddo
+         endif
+      enddo
 
       ! ----------------------------------------------------------------
       ! Continuity forcing term   
