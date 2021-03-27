@@ -25,11 +25,36 @@ c-----------------------------------------------------------------------
 
       integer e
 
+      common /enrich/ wrhsx(lx1,ly1,lz1,lelt)
+     $               ,wrhsy(lx1,ly1,lz1,lelt)
+     $               ,wrhsz(lx1,ly1,lz1,lelt)
+
       e = gllel(ieg)
 
-      rhsx = 0.0
-      rhsy = 0.0
-      rhsz = 0.0
+      rhsx = wrhsx(ix,iy,iz,e) 
+      rhsy = wrhsy(ix,iy,iz,e)
+      rhsz = wrhsz(ix,iy,iz,e)
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      subroutine userfint (ix,iy,iz,ieg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e
+
+      common /enrich/ wintx(lx1,ly1,lz1,lelt)
+     $               ,winty(lx1,ly1,lz1,lelt)
+     $               ,wintz(lx1,ly1,lz1,lelt)
+
+      e = gllel(ieg)
+
+      ffintx = wintx(ix,iy,iz,e) 
+      ffinty = winty(ix,iy,iz,e)
+      ffintz = wintz(ix,iy,iz,e)
 
       return
       end
@@ -197,6 +222,12 @@ c     VARIABLES DECLARED FOR ENRICHMENT METHOD
      $               ,vx_(lx1,ly1,lz1,lelv)
      $               ,term3x(lx1,ly1,lz1,lelv)
      $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
 
       save psix, psiy, psiz
 c---------------------------------------------------------------
@@ -593,8 +624,8 @@ C       if (time.lt.50) then
       call oprzero(wsx,wsy,wsz)
 
       ! ----------------------------------------------------------------
+      call oprzero(wintx,winty,wintz)
       ! Compute T1
-
       call rzero  (T1_rhs,n)
       call rzero  (phi_temp,n)
       do ix = 1,lx1
@@ -621,34 +652,23 @@ C       if (time.lt.50) then
                   do iz2 = 1,lz1
                     do iy2 = 1,ly1
                       T1_rhs(ix,iy,iz,iel) = T1_rhs(ix,iy,iz,iel) 
-     &                 + w1(ix2,iy2,iz2,iel)
+     $                 + w1(ix2,iy2,iz2,iel)
                     enddo
                   enddo
                 enddo
               endif
             enddo
+            print *, ix, iy, iz, T1_rhs(ix,iy,iz,1)
           enddo
         enddo
       enddo
-
-      do iel = 1, nelv
-        if (flag(iel) .eq. 1) then  ! boundary element is above y=0
-
-         else if (flag(iel) .eq. -1) then ! boundary element below y=0
-             do ix = 1,lx1
-              do iz = 1,lz1
-                do iy = 1,ly1
-
-                enddo
-              enddo
-             enddo
-         endif
-      enddo
+      ! Add to rhs term
+      call add2 (wintx,T1_rhs,n)
 
       ! ----------------------------------------------------------------
+      call oprzero(wrhsx,wrhsy,wrhsz)
       ! Continuity forcing term   
       INTYPE = -1
-      PRINT *, "Computing Enrich"
       !CALL SETHLM  (myH1,myH2,INTYPE) ! won't work for first few steps
       ntot1 = lx1*ly1*lz1*nelv
       call copy  (myH1,vdiff (1,1,1,1,1),ntot1)

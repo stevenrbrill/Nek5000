@@ -300,7 +300,7 @@ C     Compute the residual for the velocity
 c
       call opsub2  (resv1,resv2,resv3,ta1,ta2,ta3)
       call opadd2  (resv1,resv2,resv3,bfx,bfy,bfz)
-      ! call opadd2  (resv1,resv2,resv3,brhsx,brhsy,brhsz) ! not sure if this is right
+      ! call opadd2  (resv1,resv2,resv3,brhsx,brhsy,brhsz) ! SRB not sure if this is right
 
       return
       end

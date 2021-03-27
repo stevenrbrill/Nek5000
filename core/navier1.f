@@ -1472,8 +1472,11 @@ C----------------------------------------------------------------------
       include 'TSTEP'
 C
       TIME = TIME-DT
-      CALL SRB_NEKUF   (BFX,BFY,BFZ,BRHSX,BRHSY,BRHSZ)
+      CALL SRB_NEKUF   (BFX,BFY,BFZ,BFINTX,BFINTY,BFINTZ,
+     $  BRHSX,BRHSY,BRHSZ)
       CALL OPCOLV  (BFX,BFY,BFZ,BM1)
+      ! SRB Add in here????
+      ! CALL OPADD2 (BFX,BFY,BFZ,BFINTX,BFINTY,BFINYZ)
       TIME = TIME+DT
 C
       return
@@ -1513,7 +1516,7 @@ C
       return
       END
 C
-      subroutine srb_nekuf (f1,f2,f3,rhs1,rhs2,rhs3)
+      subroutine srb_nekuf (f1,f2,f3,fint1,fint2,fint3,rhs1,rhs2,rhs3)
       include 'SIZE'
       include 'PARALLEL'
       include 'NEKUSE'
@@ -1522,6 +1525,9 @@ C
       REAL F1 (LX1,LY1,LZ1,LELV)
       REAL F2 (LX1,LY1,LZ1,LELV)
       REAL F3 (LX1,LY1,LZ1,LELV)
+      REAL FINT1 (LX1,LY1,LZ1,LELV)
+      REAL FINT2 (LX1,LY1,LZ1,LELV)
+      REAL FINT3 (LX1,LY1,LZ1,LELV)
       REAL RHS1 (LX1,LY1,LZ1,LELV)
       REAL RHS2 (LX1,LY1,LZ1,LELV)
       REAL RHS3 (LX1,LY1,LZ1,LELV)
@@ -1541,6 +1547,10 @@ C
             F1(I,J,K,IEL) = FFX
             F2(I,J,K,IEL) = FFY
             F3(I,J,K,IEL) = FFZ
+            CALL USERFINT   (I,J,K,IELG)
+            FINT1(I,J,K,IEL) = FFINTX
+            FINT2(I,J,K,IEL) = FFINTY
+            FINT3(I,J,K,IEL) = FFINTZ
             CALL USERHACK (I,J,K,IELG)
             RHS1(I,J,K,IEL) = RHSX
             RHS2(I,J,K,IEL) = RHSY
