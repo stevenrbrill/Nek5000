@@ -13,9 +13,9 @@ c mesh dimensions
 #define PI (4.*atan(1.))
 #define XLEN (2.*PI)
 #define ZLEN PI
-#define NUMBER_ELEMENTS_X 8
+#define NUMBER_ELEMENTS_X 4
 #define NUMBER_ELEMENTS_Y 14
-#define NUMBER_ELEMENTS_Z 8
+#define NUMBER_ELEMENTS_Z 4
 
 c-----------------------------------------------------------------------
       subroutine userhack (ix,iy,iz,ieg)
