@@ -669,37 +669,70 @@ C       if (time.lt.50) then
       call oprzero(wrhsx,wrhsy,wrhsz)
       ! Continuity forcing term   
       INTYPE = -1
-      !CALL SETHLM  (myH1,myH2,INTYPE) ! won't work for first few steps
-      ntot1 = lx1*ly1*lz1*nelv
-      call copy  (myH1,vdiff (1,1,1,1,1),ntot1)
-      call copy  (myH2,vtrans(1,1,1,1,1),ntot1)
-      !dtbd = bd(1)/dt
-      !call cmult (myH2,dtbd,ntot1) ! Call this later
+      CALL SETHLM  (myH1,myH2,INTYPE) ! won't work for first few steps
+C       ntot1 = lx1*ly1*lz1*nelv
+C       call copy  (myH1,vdiff (1,1,1,1,1),ntot1)
+C       call copy  (myH2,vtrans(1,1,1,1,1),ntot1)
+C       dtbd = bd(1)/dt
+C       call cmult (myH2,dtbd,ntot1) ! Call this later
 
+C       do iel = 1, nelv
+C         if (flag(iel) .eq. 1) then  ! boundary element is above y=0
+C             do ix = 1,lx1
+C               do iz = 1,lz1
+C C                 do iy = 1,ly1
+C                   iy = ly1
+C                   myH1_rhs(ix,iy,iz,iel) = myH1_rhs(ix,iy,iz,iel) +
+C      $             myH1(ix,iy,iz,iel)*psix(ix,iy,iz,iel)
+C C                 enddo
+C               enddo
+C             enddo
+
+C          else if (flag(iel) .eq. -1) then ! boundary element below y=0
+C              do ix = 1,lx1
+C               do iz = 1,lz1
+C C                 do iy = 1,ly1
+C                   iy = 1
+C                   myH1_rhs(ix,iy,iz,iel) = myH1_rhs(ix,iy,iz,iel) +
+C      $             myH1(ix,iy,iz,iel)*psix(ix,iy,iz,iel)
+C C                 enddo
+C               enddo
+C              enddo
+C          endif
+C       enddo
+
+      ! To add columns together, create a vector with only nonzeros
+      ! in rows with, so we are multiplying those columns of 
+      ! H1*A and H1*B by psi and adding the results
+      ! This accounts for the direct stiffness sum of the offset in the 
+      ! coefficients at the enrichment interface
+      call rzero  (phi_temp,n)
       do iel = 1, nelv
         if (flag(iel) .eq. 1) then  ! boundary element is above y=0
             do ix = 1,lx1
               do iz = 1,lz1
 C                 do iy = 1,ly1
                   iy = ly1
-                  myH1_rhs(ix,iy,iz,iel) = myH1_rhs(ix,iy,iz,iel) +
-     $             myH1(ix,iy,iz,iel)*psix(ix,iy,iz,iel)
+                  phi_temp(ix,iy,iz,iel) = psix(ix,iy,iz,iel)
 C                 enddo
               enddo
             enddo
 
-         else if (flag(iel) .eq. -1) then ! boundary element below y=0
-             do ix = 1,lx1
+         elseif (flag(iel) .eq. -1) then ! boundary element below y=0
+            do ix = 1,lx1
               do iz = 1,lz1
 C                 do iy = 1,ly1
                   iy = 1
-                  myH1_rhs(ix,iy,iz,iel) = myH1_rhs(ix,iy,iz,iel) +
-     $             myH1(ix,iy,iz,iel)*psix(ix,iy,iz,iel)
+                  phi_temp(ix,iy,iz,iel) = psix(ix,iy,iz,iel)
 C                 enddo
               enddo
-             enddo
+            enddo
          endif
       enddo
+      ! Multiply phi_temp by Helmholz matrices to extract columns 
+      ! multiplied by psi
+      call axhelm(wrhsx,phi_temp,myH1,myH2,1,1)
+
 
       endif
 
