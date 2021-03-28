@@ -658,7 +658,7 @@ C       if (time.lt.50) then
                 enddo
               endif
             enddo
-            print *, ix, iy, iz, T1_rhs(ix,iy,iz,1)
+C             print *, ix, iy, iz, T1_rhs(ix,iy,iz,1)
           enddo
         enddo
       enddo

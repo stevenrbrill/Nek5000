@@ -282,7 +282,16 @@ C     Compute the residual for the velocity
       NTOT = lx1*ly1*lz1*NELV
       INTYPE = -1
 
+      ! PRINT *, "Computing U"
       CALL SETHLM  (H1,H2,INTYPE)
+
+      ! do i = 1,lx1
+      !   do j = 1,ly1
+      !     do k = 1,lz1
+      !       print *, i, j, k, H1(i,j,k,1), H2(i,j,k,1)
+      !     enddo
+      !   enddo
+      ! enddo
 
       CALL OPHX    (RESV1,RESV2,RESV3,VX,VY,VZ,H1,H2)
       CALL OPCHSGN (RESV1,RESV2,RESV3)
