@@ -45,9 +45,21 @@ c-----------------------------------------------------------------------
 
       integer e
 
-      common /enrich/ wrhsx(lx1,ly1,lz1,lelt)
-     $               ,wrhsy(lx1,ly1,lz1,lelt)
-     $               ,wrhsz(lx1,ly1,lz1,lelt)
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
 
       e = gllel(ieg)
 
@@ -66,9 +78,21 @@ c-----------------------------------------------------------------------
 
       integer e
 
-      common /enrich/ wintx(lx1,ly1,lz1,lelt)
-     $               ,winty(lx1,ly1,lz1,lelt)
-     $               ,wintz(lx1,ly1,lz1,lelt)
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
 
       e = gllel(ieg)
 
@@ -289,7 +313,9 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 C       if (time.lt.50) then
       if (time.lt.0) then
         call oprzero(psix,psiy,psiz)
-         call oprzero(wsx,wsy,wsz)
+        call oprzero(wsx,wsy,wsz)
+        call oprzero(wintx,winty,wintz)
+        call oprzero(wrhsx,wrhsy,wrhsz)
 
       else
 

@@ -59,7 +59,8 @@ c     Solution data
      $     abx1, aby1, abz1, abx2, aby2, abz2, vdiff_e,
      $     vx, vy, vz, t, vtrans, vdiff, bfx, bfy, bfz, cflf, c_vx,fw,
      $     bmnv, bmass, bdivw,
-     $     vx_e,vy_e,vz_e
+     $     vx_e,vy_e,vz_e,
+     $     bfintx, bfinty, bfinyz, brhsx, brhsy, brhsz
 
 c     Solution data for magnetic field
       real bx     (lbx1,lby1,lbz1,lbelv)
