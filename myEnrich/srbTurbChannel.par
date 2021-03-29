@@ -2,7 +2,7 @@
 # nek parameter file
 #
 [GENERAL] 
-polynomialOrder = 7
+polynomialOrder = 4
 PnPnFormulation = yes
 #minNumProcesses = 4
 
@@ -18,7 +18,7 @@ variableDt = yes
 targetCFL = 0.05
 
 writeControl = runTime
-writeInterval = 1.0
+writeInterval = 0.01
 
 userParam01 = 200    # start time collecting statistics
 userParam02 = 20     # writeInterval 1D statistics 
