@@ -558,9 +558,6 @@ C       if (time.lt.50) then
       call opcmult(wsx,wsy,wsz,-1.0)
       call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
 
-      ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
-      call oprzero(wsx,wsy,wsz)
-
       ! ----------------------------------------------------------------
       call oprzero(wintx,winty,wintz)
       ! Compute T1
@@ -602,9 +599,6 @@ C             print *, ix, iy, iz, T1_rhs(ix,iy,iz,1)
       enddo
       ! Add to rhs term
       call add2 (wintx,T1_rhs,n)
-
-      ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
-      call oprzero(wintx,winty,wintz)
 
       ! ----------------------------------------------------------------
       call oprzero(wrhsx,wrhsy,wrhsz)
@@ -650,7 +644,10 @@ C                 enddo
       call axhelm(wrhsx,phi_temp,myH1,myH2,1,1)
 
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
-      call oprzero(wrhsx,wrhsy,wrhsz)
+C       call oprzero(psix,psiy,psiz)
+C       call oprzero(wsx,wsy,wsz)
+C       call oprzero(wintx,winty,wintz)
+C       call oprzero(wrhsx,wrhsy,wrhsz)
 
       endif
 

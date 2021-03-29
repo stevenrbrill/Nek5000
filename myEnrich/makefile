@@ -1,4 +1,4 @@
-### makefile automatically created by makenek 03/11/2021 22:59:33 ###
+### makefile automatically created by makenek 03/29/2021 10:12:12 ###
 OBJDIR=obj
 BINNAME=nek5000
 LIB=$(OBJDIR)/libnek5000.a
