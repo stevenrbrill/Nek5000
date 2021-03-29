@@ -287,6 +287,8 @@ c---------------------------------------------------------------
 
 c---------------------------------------------------------------
 c     VARIABLES DECLARED FOR ENRICHMENT METHOD
+      integer secondcall
+      save secondcall
       real utau_ref, Re_tau
 C       real psix(lx1,ly1,lz1,lelv)
       real gpsix_x(lx1,ly1,lz1,lelv), gpsix_y(lx1,ly1,lz1,lelv)
@@ -428,6 +430,10 @@ C       if (time.lt.50) then
          endif
       enddo
 
+      if (secondcall .ne. 1) then
+        secondcall = 1
+        call projenrich
+      endif
 
       ! compute forcing terms in 3 directions
       call oprzero(wsx,wsy,wsz)
