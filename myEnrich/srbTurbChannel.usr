@@ -560,6 +560,70 @@ C       if (time.lt.50) then
       call opcmult(wsx,wsy,wsz,-1.0)
       call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
 
+
+      ! ----------------------------------------------------------------
+      ! Term 1: div.(mu*(grad(psi)+grad(psi)^T-2/3*div.(psi)*I))   T^1
+      ! T^psi,1
+      ! Multiply diagonal grads by 2
+      call opcmult(txx,tyy,tzz,2.0)
+      ! Multiply by diffusion (Not variable?)
+      call opcolv (txx,tyy,tzz,vdiff(1,1,1,1,1))
+      call opcolv (txy,tyz,txz,vdiff(1,1,1,1,1))
+
+      !call opdiv  (w1,txx,txy,txz)
+      !call dssum  (w1,lx1,ly1,lz1)
+      !call col2   (w1,binvm1,n)
+      ! Multiply by grad of basis and add
+      call rzero  (w1,n)
+      call gradm1 (tx,ty,tz,txx)
+      call add2   (w1,tx,n)
+      call gradm1 (tx,ty,tz,txy)
+      call add2   (w1,ty,n)
+      call gradm1 (tx,ty,tz,txz)
+      call add2   (w1,tz,n)
+      call copy   (tr1x,w1,n)
+      call add2   (wsx,w1,n)
+
+      !call opdiv  (w1,txy,tyy,tyz)
+      !call dssum  (w1,lx1,ly1,lz1)
+      !call col2   (w1,binvm1,n)
+      ! Compute grads of each term to add them for v
+      call rzero  (w1,n)
+      call gradm1 (tx,ty,tz,txy)
+      call add2   (w1,tx,n)
+      call gradm1 (tx,ty,tz,tyy)
+      call add2   (w1,ty,n)
+      call gradm1 (tx,ty,tz,tyz)
+      call copy   (tr1y,w1,n)
+      call add2   (wsy,w1,n)
+
+      !call opdiv  (w1,txz,tyz,tzz)
+      !call dssum  (w1,lx1,ly1,lz1)
+      !call col2   (w1,binvm1,n)
+      ! Compute grads of each term to add them for w
+      call rzero  (w1,n)
+      call gradm1 (tx,ty,tz,txz)
+      call add2   (w1,tx,n)
+      call gradm1 (tx,ty,tz,tyz)
+      call add2   (w1,ty,n)
+      call gradm1 (tx,ty,tz,tzz)
+      call copy   (tr1z,w1,n)
+      call add2   (wsz,w1,n)
+
+      if (iflomach) then
+         call add4   (w1,txx,tyy,tzz,n)
+         call cmult  (w1,-1.0/3.0,n)
+         !call opgrad (tx,ty,tz,w1,n)
+         !call opdssum(tx,ty,tz)
+         !call opcolv (tx,ty,tz,binvm1)
+         call gradm1 (tx,ty,tz,w1)
+         call opadd2 (wsx,wsy,wsz,tx,ty,tz)
+      endif
+
+      ! divide wsx,wsy,wsz by rho
+      call invers2(w1,vtrans(1,1,1,1,1),n)
+      call opcolv (wsx,wsy,wsz,w1)
+
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
       call oprzero(wsx,wsy,wsz)
 
