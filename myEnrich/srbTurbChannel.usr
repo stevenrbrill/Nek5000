@@ -18,6 +18,66 @@ c mesh dimensions
 #define NUMBER_ELEMENTS_Z 4
 
 c-----------------------------------------------------------------------
+      subroutine projenrich 
+      include 'SIZE'
+      include 'SOLN'
+
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+
+      NTOT1=lx1*ly1*lz1*NELV
+      CALL SUB2(vx,psix,NTOT1)
+      CALL SUB2(vy,psiy,NTOT1)
+      CALL SUB2(vz,psiz,NTOT1)
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      subroutine unprojenrich 
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+
+      NTOT1=lx1*ly1*lz1*NELV
+      CALL ADD2(vx,psix,NTOT1)
+      CALL ADD2(vy,psiy,NTOT1)
+      CALL ADD2(vz,psiz,NTOT1)
+
+      return
+      end
+
+
+c-----------------------------------------------------------------------
       subroutine srbprint (u)
       include 'SIZE'
       include 'TOTAL'

@@ -15,6 +15,28 @@ fi
 rm -f $CASENAME.f
 cp -p $CASENAME.usr $CASENAME.f
 
+if ! cat $CASENAME.f | grep -qi "subroutine.*projenrich" ; then
+cat >> $CASENAME.f << _ACEOF
+
+c automatically added by makenek
+      subroutine projenrich
+
+      return
+      end
+_ACEOF
+fi
+
+if ! cat $CASENAME.f | grep -qi "subroutine.*unprojenrich" ; then
+cat >> $CASENAME.f << _ACEOF
+
+c automatically added by makenek
+      subroutine unprojenrich
+
+      return
+      end
+_ACEOF
+fi
+
 if ! cat $CASENAME.f | grep -qi "subroutine.*srbprint" ; then
 cat >> $CASENAME.f << _ACEOF
 
