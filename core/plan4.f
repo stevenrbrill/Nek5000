@@ -27,6 +27,9 @@ C
      $ ,             RESPR (LX2,LY2,LZ2,LELV)
       common /scrvh/ h1    (lx1,ly1,lz1,lelv)
      $ ,             h2    (lx1,ly1,lz1,lelv)
+      common /enrich/ psix (lx1,ly1,lz1,lelv)
+     $ ,              psiy (lx1,ly1,lz1,lelv)
+     $ ,              psiz (lx1,ly1,lz1,lelv)
  
       REAL           DPR   (LX2,LY2,LZ2,LELV)
       EQUIVALENCE   (DPR,DV1)
@@ -90,7 +93,7 @@ c
          call ophinv       (dv1,dv2,dv3,res1,res2,res3,h1,h2,tolhv,nmxv)
          call opadd2       (vx,vy,vz,dv1,dv2,dv3)
          ! SRB - Add enrichment in here?
-         ! call opadd2 (vx,vy,vz,psix,psiy,psiz)
+         call opadd2 (vx,vy,vz,psix,psiy,psiz)
 
       endif
 
@@ -311,7 +314,7 @@ C     Compute the residual for the velocity
 c
       call opsub2  (resv1,resv2,resv3,ta1,ta2,ta3)
       call opadd2  (resv1,resv2,resv3,bfx,bfy,bfz)
-      ! call opadd2  (resv1,resv2,resv3,brhsx,brhsy,brhsz) ! SRB not sure if this is right
+      call opadd2  (resv1,resv2,resv3,brhsx,brhsy,brhsz) ! SRB not sure if this is right
 
       return
       end
