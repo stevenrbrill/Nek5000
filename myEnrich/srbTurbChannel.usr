@@ -183,13 +183,14 @@ c---------------------------------------------------------------
 
 c---------------------------------------------------------------
 c     VARIABLES DECLARED FOR ENRICHMENT METHOD
-      real utau_ref, Re_tau, psix(lx1,ly1,lz1,lelv)
+      real utau_ref, Re_tau
+C       real psix(lx1,ly1,lz1,lelv)
       real gpsix_x(lx1,ly1,lz1,lelv), gpsix_y(lx1,ly1,lz1,lelv)
       real gpsix_z(lx1,ly1,lz1,lelv), gpsiy_x(lx1,ly1,lz1,lelv)
       real gpsiy_y(lx1,ly1,lz1,lelv), gpsiy_z(lx1,ly1,lz1,lelv)
       real gpsiz_x(lx1,ly1,lz1,lelv), gpsiz_y(lx1,ly1,lz1,lelv)
       real gpsiz_z(lx1,ly1,lz1,lelv)
-      real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv) 
+C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv) 
       real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
       real myH1_rhs(lx1,ly1,lz1,lelv), myH2_rhs(lx1,ly1,lz1,lelv) 
       real phi_temp(lx1,ly1,lz1,lelv), T1_rhs(lx1,ly1,lz1,lelv) 
@@ -228,8 +229,11 @@ c     VARIABLES DECLARED FOR ENRICHMENT METHOD
      $               ,wrhsx(lx1,ly1,lz1,lelv)
      $               ,wrhsy(lx1,ly1,lz1,lelv)
      $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
 
-      save psix, psiy, psiz
+C       save psix, psiy, psiz
 c---------------------------------------------------------------
 
       n     = nx1*ny1*nz1*nelv
