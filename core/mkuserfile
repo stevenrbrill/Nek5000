@@ -15,6 +15,17 @@ fi
 rm -f $CASENAME.f
 cp -p $CASENAME.usr $CASENAME.f
 
+if ! cat $CASENAME.f | grep -qi "subroutine.*srbprint" ; then
+cat >> $CASENAME.f << _ACEOF
+
+c automatically added by makenek
+      subroutine srbprint(u)
+
+      return
+      end
+_ACEOF
+fi
+
 if ! cat $CASENAME.f | grep -qi "subroutine.*userhack" ; then
 cat >> $CASENAME.f << _ACEOF
 

@@ -18,6 +18,26 @@ c mesh dimensions
 #define NUMBER_ELEMENTS_Z 4
 
 c-----------------------------------------------------------------------
+      subroutine srbprint (u)
+      include 'SIZE'
+      include 'TOTAL'
+
+      real u(lx1, ly1, lz1, nelv)
+
+      do iel = 1, nelv
+        do ix = 1,lx1
+          do iy = 1,lz1
+            do iz = 1,ly1
+                  print *, iel, ix, iy, iz, u(ix,iy,iz,iel)
+            enddo
+          enddo
+        enddo
+      enddo
+
+      return
+      end
+
+c-----------------------------------------------------------------------
       subroutine userhack (ix,iy,iz,ieg)
       include 'SIZE'
       include 'TOTAL'
