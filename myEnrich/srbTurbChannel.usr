@@ -605,6 +605,9 @@ C             print *, ix, iy, iz, T1_rhs(ix,iy,iz,1)
       ! Add to rhs term
       call add2 (wintx,T1_rhs,n)
 
+      ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
+      call oprzero(winx,winty,wintz)
+
       ! ----------------------------------------------------------------
       call oprzero(wrhsx,wrhsy,wrhsz)
       ! Continuity forcing term   
@@ -648,6 +651,8 @@ C                 enddo
       ! multiplied by psi
       call axhelm(wrhsx,phi_temp,myH1,myH2,1,1)
 
+      ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
+      call oprzero(wrhsx,wrhsy,wrhsz)
 
       endif
 
