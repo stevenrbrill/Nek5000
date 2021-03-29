@@ -683,7 +683,7 @@ C       call cmult (myH2,dtbd,ntot1) ! Call this later
       ! coefficients at the enrichment interface
       call rzero  (phi_temp,n)
       do iel = 1, nelv
-        if (flag(iel) .eq. 1) then  ! boundary element is above y=0
+        if (flag(iel) .eq. 2) then  ! boundary element is above y=0
             do ix = 1,lx1
               do iz = 1,lz1
 C                 do iy = 1,ly1
@@ -693,7 +693,7 @@ C                 enddo
               enddo
             enddo
 
-         elseif (flag(iel) .eq. -1) then ! boundary element below y=0
+         elseif (flag(iel) .eq. -2) then ! boundary element below y=0
             do ix = 1,lx1
               do iz = 1,lz1
 C                 do iy = 1,ly1
@@ -990,15 +990,20 @@ c-----------------------------------------------------------------------
       enddo
 
       ! Flag boundary elements above and below centerline (y = 0)
+      nelx  = NUMBER_ELEMENTS_X
+      nely  = NUMBER_ELEMENTS_Y
+      nelz  = NUMBER_ELEMENTS_Z
       do iel=1,nelv
          do ifc=1,2*ldim
            if ((cbc(ifc,iel,1).eq.'W  ').AND.(ym1(1,1,1,iel).gt.0)) then
               flag(iel) = 1
               counterp = counterp+1
+              flag(iel-nelx) = 2 ! SRB-Hack to get the neighboring elements
            else if ((cbc(ifc,iel,1).eq.'W  ').AND.
      $             (ym1(1,1,1,iel).lt.0)) then
               flag(iel) = -1
               countern = countern+1
+              flag(iel+nelx) = -2 ! SRB-Hack to get the neighboring elements
            endif
          enddo
       enddo
