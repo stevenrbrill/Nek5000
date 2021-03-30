@@ -15,13 +15,13 @@ dt = 0
 timeStepper = bdf2
 #extrapolation = OIFS
 variableDt = yes
-targetCFL = 0.05
+targetCFL = 1.0
 
 writeControl = runTime
-writeInterval = 0.01
+writeInterval = 1.0
 
-userParam01 = 200    # start time collecting statistics
-userParam02 = 20     # writeInterval 1D statistics 
+userParam01 = 0.1    # start time collecting statistics
+userParam02 = 1.0     # writeInterval 1D statistics 
 
 filtering = explicit
 filterWeight = 0.05
