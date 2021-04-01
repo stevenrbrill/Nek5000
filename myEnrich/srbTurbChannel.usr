@@ -787,7 +787,8 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          Re_tau = u_tau / dnu
          tplus  = time * u_tau**2 / dnu
 
-         write(6,*) 'Dumping statistics ...', Re_tau, t_tau, dragx_avg
+         write(6,*) 'Dumping statistics ...', Re_tau, t_tau, dragx_avg,
+     $    u_tau
  
          open(unit=56,file='vel_fluc_prof.dat')
          write(56,'(A,1pe14.7)') '#time = ', time
