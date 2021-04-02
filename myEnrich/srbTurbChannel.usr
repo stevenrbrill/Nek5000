@@ -450,7 +450,8 @@ C       if (time.lt.50) then
       call copy (ty,gpsix_y,n)
       call copy (tz,gpsix_z,n)
 
-      call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
+      if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
+      if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
       call copy   (tr2x,w1,n)
       call cmult  (tr2x,-1.0,n)
       ! Add to total forcing
@@ -458,7 +459,8 @@ C       if (time.lt.50) then
 
       ! T^psi,2 or dot(psi,gpsi_x)
       ! Should be zero in the simple case
-      call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
+      if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
+      if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
       call copy   (tr4x,w1,n)
       call cmult  (tr4x,-1.0,n)
       ! Add to total forcing
@@ -476,7 +478,8 @@ C       if (time.lt.50) then
       call copy (ty,gpsiy_y,n)
       call copy (tz,gpsiy_z,n)
 
-      call vdot3  (w1,vx,vy,vz,tx,ty,tz,n)
+      if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
+      if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
       call copy   (tr2y,w1,n)
       call cmult  (tr2y,-1.0,n)
       ! Add to total forcing
@@ -484,7 +487,8 @@ C       if (time.lt.50) then
 
       ! T^psi,2 or dot(psi,gpsi_y)
       ! Should be zero in the simple case
-      call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n)
+      if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
+      if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
       call copy   (tr4y,w1,n)
       call cmult  (tr4y,-1.0,n)
       ! Add to total forcing
@@ -503,7 +507,8 @@ C       if (time.lt.50) then
       call copy (ty,gpsiz_y,n)
       call copy (tz,gpsiz_z,n)
 
-      call vdot3  (w1,vx,vy,vz,tx,ty,tz,n)
+      if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
+      if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
       call copy   (tr2z,w1,n)
       call cmult  (tr2z,-1.0,n)
       ! Add to total forcing
@@ -511,7 +516,8 @@ C       if (time.lt.50) then
 
       ! T^psi,2 or dot(psi,gpsi_z)
       ! Should be zero in the simple case
-      call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n)
+      if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
+      if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
       call copy   (tr4z,w1,n)
       call cmult  (tr4z,-1.0,n)
       ! Add to total forcing
@@ -531,7 +537,8 @@ C       if (time.lt.50) then
       ! S^psi * u
       ! Compute grad of u
       call gradm1 (tx,ty,tz,vx)
-      call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n)
+      if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+      if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
       call copy   (tr3x,w1,n)
       call cmult  (tr3x,-1.0,n)
       ! Add to total forcing
@@ -542,7 +549,8 @@ C       if (time.lt.50) then
       ! S^psi * v
       ! Compute grad of v
       call gradm1 (tx,ty,tz,vy)
-      call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n)
+      if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+      if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
       call copy   (tr3y,w1,n)
       call cmult  (tr3y,-1.0,n)
       ! Add to total forcing
@@ -553,7 +561,8 @@ C       if (time.lt.50) then
       ! S^psi * w
       ! Compute grad of w
       call gradm1 (tx,ty,tz,vz)
-      call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n)
+      if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+      if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
       call copy   (tr3z,w1,n)
       call cmult  (tr3z,-1.0,n)
       ! Add to total forcing
@@ -581,7 +590,12 @@ C       if (time.lt.50) then
             ! Compute gradient of basis function
             call gradm1 (tx,ty,tz,phi_temp)
             ! Compute dot product of gphi and gpsi
-            call vdot3(w1,tx,ty,tz,gpsix_x,gpsix_y,gpsix_z,n)
+            if (ldim == 2) then
+              call vdot2(w1,tx,ty,gpsix_x,gpsix_y,n)
+            endif
+            if (ldim == 3) then
+              call vdot3(w1,tx,ty,tz,gpsix_x,gpsix_y,gpsix_z,n)
+            endif
             ! Multiply by Re
             call col2(w1,vdiff(1,1,1,1,1),n)
             ! Multiply by quadrature weights and Jacobian
@@ -706,7 +720,9 @@ c
      $                   iwk,rwk,INTP_NMAX,iffpts,intp_h)
         iffpts = .false.
         call gtpp_gs_setup(igs_x,nelx     ,nely,nelz,1) ! x-avg
-        call gtpp_gs_setup(igs_z,nelx*nely,1   ,nelz,3) ! z-avg
+        if (ldim == 3) then
+          call gtpp_gs_setup(igs_z,nelx*nely,1   ,nelz,3) ! z-avg
+        endif
 
         call rzero(ravg,size(ravg))
         dragx_avg = 0
@@ -883,9 +899,15 @@ c-----------------------------------------------------------------------
       beta  = kz * 2*PI/ZLEN 
 
       ! add perturbation to trigger turbulence 
-      ux  = ux  + eps*beta  * sin(alpha*x)*cos(beta*z) 
-      uy  =       eps       * sin(alpha*x)*sin(beta*z)
-      uz  =      -eps*alpha * cos(alpha*x)*sin(beta*z)
+      if (ldim == 3) then
+        ux  = ux  + eps*beta  * sin(alpha*x)*cos(beta*z) 
+        uy  =       eps       * sin(alpha*x)*sin(beta*z)
+        uz  =      -eps*alpha * cos(alpha*x)*sin(beta*z)
+      elseif (ldim == 2) then 
+        ux  = ux  + eps  * sin(alpha*x)
+        uy  =       eps  * sin(alpha*x)
+        uz  = 0.
+      endif
 
       ! thin boundary layer at the lower wall
       gamma = 5e-6 ! initial thickness
@@ -900,7 +922,7 @@ c-----------------------------------------------------------------------
 
 c      param(84) = 1e-6    ! setting initial time step
 
-      n = nelv * 2**ldim
+      n = nelv * 8 !2**ldim
       xmin = glmin(xc,n)
       xmax = glmax(xc,n)
       ymin = glmin(yc,n)
