@@ -1,7 +1,9 @@
 # compiled objects and libraries
 *.log
+*.log1*
 *.mod
 *.o
+*0.f*
 
 # tool executables built by running maketools
 bin/cgns2nek
