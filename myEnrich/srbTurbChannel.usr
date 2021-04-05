@@ -86,8 +86,8 @@ c-----------------------------------------------------------------------
 
       do iel = 1, nelv
         do ix = 1,lx1
-          do iy = 1,lz1
-            do iz = 1,ly1
+          do iy = 1,ly1
+            do iz = 1,lz1
                   print *, iel, ix, iy, iz, u(ix,iy,iz,iel)
             enddo
           enddo
