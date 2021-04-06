@@ -22,3 +22,6 @@ bin/prex
 bin/re2torea
 bin/reatore2
 myEnrich/makefile
+myEnrich/*.out
+myEnrich/*.slurm
+myEnrich/*.dat
