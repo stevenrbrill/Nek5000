@@ -11,7 +11,7 @@ c data extraction along wall normal direction
 c mesh dimensions
 #define BETAM 2.4     /* wall normal stretching parameter */
 #define PI (4.*atan(1.))
-#define XLEN (2.*PI)
+#define XLEN 1.5
 #define ZLEN 0.0
 #define NUMBER_ELEMENTS_X 4
 #define NUMBER_ELEMENTS_Y 8
@@ -891,7 +891,7 @@ c-----------------------------------------------------------------------
      $      (1 - exp(-yp/11) - yp/11*exp(-yp/3))
       ux  = ux * Re_tau*param(2)
 
-      eps = 1e-2
+      eps = 0 !1e-2
       kx  = 23
       kz  = 13
 
