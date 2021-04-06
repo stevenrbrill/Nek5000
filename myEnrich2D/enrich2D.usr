@@ -430,6 +430,21 @@ C       if (time.lt.50) then
          endif
       enddo
 
+      print *, "print vx"
+      call srbprint(vx)
+      print *, "print vy"
+      call srbprint(vy)
+
+      print *, "print xm1"
+      call srbprint(xm1)
+      print *, "print ym1"
+      call srbprint(ym1)
+
+      print *, "print Psi"
+      call srbprint(psix)
+      print *, "print gpsi"
+      call srbprint(gpsix_y)
+
       if (secondcall .ne. 1) then
         secondcall = 1
         call projenrich
@@ -456,6 +471,8 @@ C       if (time.lt.50) then
       call cmult  (tr2x,-1.0,n)
       ! Add to total forcing
       call add2   (wsx,w1,n)
+      print *, "print Mpsix"
+      call srbprint(w1)
 
       ! T^psi,2 or dot(psi,gpsi_x)
       ! Should be zero in the simple case
@@ -465,6 +482,8 @@ C       if (time.lt.50) then
       call cmult  (tr4x,-1.0,n)
       ! Add to total forcing
       call add2   (wsx,w1,n)
+      print *, "print T2x"
+      call srbprint(w1)
 
       ! store gpsi_x
       call copy   (txx,tx,n)
@@ -484,6 +503,8 @@ C       if (time.lt.50) then
       call cmult  (tr2y,-1.0,n)
       ! Add to total forcing
       call add2   (wsy,w1,n)
+      print *, "print Mpsiy"
+      call srbprint(w1)
 
       ! T^psi,2 or dot(psi,gpsi_y)
       ! Should be zero in the simple case
@@ -493,6 +514,8 @@ C       if (time.lt.50) then
       call cmult  (tr4y,-1.0,n)
       ! Add to total forcing
       call add2   (wsy,w1,n)
+      print *, "print T2y"
+      call srbprint(w1)
 
       ! store gpsi_y
       call add2   (txy,tx,n)
@@ -513,6 +536,7 @@ C       if (time.lt.50) then
       call cmult  (tr2z,-1.0,n)
       ! Add to total forcing
       call add2   (wsz,w1,n)
+
 
       ! T^psi,2 or dot(psi,gpsi_z)
       ! Should be zero in the simple case
@@ -543,6 +567,8 @@ C       if (time.lt.50) then
       call cmult  (tr3x,-1.0,n)
       ! Add to total forcing
       call add2   (wsx,w1,n)
+      print *, "print Spsix"
+      call srbprint(w1)
 
       ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       ! S for y
@@ -555,6 +581,8 @@ C       if (time.lt.50) then
       call cmult  (tr3y,-1.0,n)
       ! Add to total forcing
       call add2   (wsy,w1,n)
+      print *, "print Spsiy"
+      call srbprint(w1)
 
       ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
       ! S for z
@@ -573,6 +601,11 @@ C       if (time.lt.50) then
       call opcmult(wsx,wsy,wsz,-1.0)
       call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
 
+      print *, "print wsx"
+      call srbprint(wsx)
+      print *, "print wsy"
+      call srbprint(wsy)
+
       ! ----------------------------------------------------------------
       call oprzero(wintx,winty,wintz)
       ! Compute T1
@@ -588,6 +621,8 @@ C       if (time.lt.50) then
                 phi_temp(ix,iy,iz,iel) = 1.0;
               endif
             enddo
+C             print *, "print phi", ix, iy, iz
+C             call srbprint(phi_temp)
             ! Compute gradient of basis function
             call gradm1 (tx,ty,tz,phi_temp)
             ! Compute dot product of gphi and gpsi
@@ -622,16 +657,19 @@ C             print *, ix, iy, iz, T1_rhs(ix,iy,iz,1)
       call cmult (T1_rhs,-1.,n)
       call add2 (wintx,T1_rhs,n)
 
+      print *, "print wintx"
+      call srbprint(wintx)
+
       ! ----------------------------------------------------------------
       call oprzero(wrhsx,wrhsy,wrhsz)
       ! Continuity forcing term   
       INTYPE = -1
-      CALL SETHLM  (myH1,myH2,INTYPE) ! won't work for first few steps
-C       ntot1 = lx1*ly1*lz1*nelv
-C       call copy  (myH1,vdiff (1,1,1,1,1),ntot1)
-C       call copy  (myH2,vtrans(1,1,1,1,1),ntot1)
-C       dtbd = bd(1)/dt
-C       call cmult (myH2,dtbd,ntot1) ! Call this later
+C      CALL SETHLM  (myH1,myH2,INTYPE) ! won't work for first few steps
+      ntot1 = lx1*ly1*lz1*nelv
+      call copy  (myH1,vdiff (1,1,1,1,1),ntot1)
+      call copy  (myH2,vtrans(1,1,1,1,1),ntot1)
+      dtbd = 1.0 !bd(1)/dt
+      call cmult (myH2,dtbd,ntot1) ! Call this later
 
       ! To add columns together, create a vector with only nonzeros
       ! in rows with, so we are multiplying those columns of 
@@ -669,6 +707,17 @@ C                 enddo
       ! Multiply phi_temp by Helmholz matrices to extract columns 
       ! multiplied by psi
       call axhelm(wrhsx,phi_temp,myH1,myH2,1,1)
+
+      print *, "print phi_temp"
+      call srbprint(phi_temp)
+      print *, "print myH1"
+      call srbprint(myH1)
+      print *, "print myH2"
+      call srbprint(myH2)
+
+
+      print *, "print wrhsx"
+      call srbprint(wrhsx)
 
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
 C       call oprzero(psix,psiy,psiz)
@@ -911,10 +960,11 @@ c-----------------------------------------------------------------------
         uy  =       eps       * sin(alpha*x)*sin(beta*z)
         uz  =      -eps*alpha * cos(alpha*x)*sin(beta*z)
       elseif (ldim == 2) then 
-        ux  = ux  + eps  * sin(alpha*x)
+        ux  = ux*(-16./9.*x*x+8./3.*x)  + eps  * sin(alpha*x)
         uy  =       eps  * sin(alpha*x)
         uz  = 0.
       endif
+      print *, "x", ix, iy, iz, ieg, x, ux
 
       ! thin boundary layer at the lower wall
       gamma = 5e-6 ! initial thickness
