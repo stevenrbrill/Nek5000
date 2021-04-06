@@ -582,6 +582,7 @@ C       if (time.lt.50) then
         do iz = 1,lz1
           do iy = 1,ly1
             ! Iterate over each element and set coefficient = 1
+            call rzero  (phi_temp,n)
             do iel = 1, nelv
               if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
                 phi_temp(ix,iy,iz,iel) = 1.0;
@@ -618,6 +619,7 @@ C             print *, ix, iy, iz, T1_rhs(ix,iy,iz,1)
         enddo
       enddo
       ! Add to rhs term
+      call cmult (T1_rhs,-1.,n)
       call add2 (wintx,T1_rhs,n)
 
       ! ----------------------------------------------------------------
@@ -636,6 +638,7 @@ C       call cmult (myH2,dtbd,ntot1) ! Call this later
       ! H1*A and H1*B by psi and adding the results
       ! This accounts for the direct stiffness sum of the offset in the 
       ! coefficients at the enrichment interface
+      nelx  = NUMBER_ELEMENTS_X
       call rzero  (phi_temp,n)
       do iel = 1, nelv
         if (flag(iel) .eq. 2) then  ! boundary element is above y=0
@@ -643,7 +646,9 @@ C       call cmult (myH2,dtbd,ntot1) ! Call this later
               do iz = 1,lz1
 C                 do iy = 1,ly1
                   iy = ly1
-                  phi_temp(ix,iy,iz,iel) = psix(ix,iy,iz,iel)
+                  iy_psi = 1
+                  iel_psi = iel+nelx
+                  phi_temp(ix,iy,iz,iel) = -psix(ix,iy_psi,iz,iel_psi)
 C                 enddo
               enddo
             enddo
@@ -653,7 +658,9 @@ C                 enddo
               do iz = 1,lz1
 C                 do iy = 1,ly1
                   iy = 1
-                  phi_temp(ix,iy,iz,iel) = psix(ix,iy,iz,iel)
+                  iy_psi = ly1
+                  iel_psi = iel-nelx
+                  phi_temp(ix,iy,iz,iel) = -psix(ix,iy_psi,iz,iel_psi)
 C                 enddo
               enddo
             enddo
