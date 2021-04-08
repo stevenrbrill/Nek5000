@@ -253,6 +253,7 @@ c-----------------------------------------------------------------------
       if (ifmhd ) call cfl_check
       call setsolv
       call comment
+      call srbrhs
 
 #ifdef CMTNEK
       if (nio.eq.0.and.istep.le.1) write(6,*) 'CMT branch active'

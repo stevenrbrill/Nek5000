@@ -299,9 +299,13 @@ C       real psix(lx1,ly1,lz1,lelv)
 C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv) 
       real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
       real myH1_rhs(lx1,ly1,lz1,lelv), myH2_rhs(lx1,ly1,lz1,lelv) 
-      real phi_temp(lx1,ly1,lz1,lelv), T1_rhs(lx1,ly1,lz1,lelv) 
+      real phi_temp(lx1,ly1,lz1,lelv), T1_rhs_x(lx1,ly1,lz1,lelv) 
+      real T1_rhs_y(lx1,ly1,lz1,lelv), T1_rhs_z(lx1,ly1,lz1,lelv) 
+      save T1_rhs_x
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /scrns/ w1(lx1,ly1,lz1,lelv)
+     $              ,w2(lx1,ly1,lz1,lelv)
+     $              ,w3(lx1,ly1,lz1,lelv)
      $              ,tx(lx1,ly1,lz1,lelv)
      $              ,ty(lx1,ly1,lz1,lelv)
      $              ,tz(lx1,ly1,lz1,lelv)
@@ -576,13 +580,14 @@ C       if (time.lt.50) then
       ! ----------------------------------------------------------------
       call oprzero(wintx,winty,wintz)
       ! Compute T1
-      call rzero  (T1_rhs,n)
+      call rzero  (T1_rhs_x,n)
+      call rzero  (T1_rhs_y,n)
+      call rzero  (T1_rhs_z,n)
       call rzero  (phi_temp,n)
       do ix = 1,lx1
         do iz = 1,lz1
           do iy = 1,ly1
             ! Iterate over each element and set coefficient = 1
-            call rzero  (phi_temp,n)
             do iel = 1, nelv
               if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
                 phi_temp(ix,iy,iz,iel) = 1.0;
@@ -590,25 +595,43 @@ C       if (time.lt.50) then
             enddo
             ! Compute gradient of basis function
             call gradm1 (tx,ty,tz,phi_temp)
+            ! Reset to zero
+            do iel = 1, nelv
+              if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+                phi_temp(ix,iy,iz,iel) = 0.0;
+              endif
+            enddo
             ! Compute dot product of gphi and gpsi
             if (ldim == 2) then
               call vdot2(w1,tx,ty,gpsix_x,gpsix_y,n)
+              call vdot2(w2,tx,ty,gpsiy_x,gpsiy_y,n)
+              call vdot2(w3,tx,ty,gpsiz_x,gpsiz_y,n)
             endif
             if (ldim == 3) then
               call vdot3(w1,tx,ty,tz,gpsix_x,gpsix_y,gpsix_z,n)
+              call vdot3(w2,tx,ty,tz,gpsiy_x,gpsiy_y,gpsiy_z,n)
+              call vdot3(w3,tx,ty,tz,gpsiz_x,gpsiz_y,gpsiz_z,n)
             endif
             ! Multiply by Re
             call col2(w1,vdiff(1,1,1,1,1),n)
+            call col2(w2,vdiff(1,1,1,1,1),n)
+            call col2(w3,vdiff(1,1,1,1,1),n)
             ! Multiply by quadrature weights and Jacobian
             call col2(w1,bm1,n)
+            call col2(w2,bm1,n)
+            call col2(w3,bm1,n)
             ! Iterate over each element and add result to final sum
             do iel = 1, nelv
               if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
                 do ix2 = 1,lx1
                   do iz2 = 1,lz1
                     do iy2 = 1,ly1
-                      T1_rhs(ix,iy,iz,iel) = T1_rhs(ix,iy,iz,iel) 
+                      T1_rhs_x(ix,iy,iz,iel) = T1_rhs_x(ix,iy,iz,iel) 
      $                 + w1(ix2,iy2,iz2,iel)
+                      T1_rhs_y(ix,iy,iz,iel) = T1_rhs_y(ix,iy,iz,iel) 
+     $                 + w2(ix2,iy2,iz2,iel)
+                      T1_rhs_z(ix,iy,iz,iel) = T1_rhs_z(ix,iy,iz,iel) 
+     $                 + w3(ix2,iy2,iz2,iel)
                     enddo
                   enddo
                 enddo
@@ -619,62 +642,17 @@ C             print *, ix, iy, iz, T1_rhs(ix,iy,iz,1)
         enddo
       enddo
       ! Add to rhs term
-      call cmult (T1_rhs,-1.,n)
-      call add2 (wintx,T1_rhs,n)
-
-      ! ----------------------------------------------------------------
-      call oprzero(wrhsx,wrhsy,wrhsz)
-      ! Continuity forcing term   
-      INTYPE = -1
-      CALL SETHLM  (myH1,myH2,INTYPE) ! won't work for first few steps
-C       ntot1 = lx1*ly1*lz1*nelv
-C       call copy  (myH1,vdiff (1,1,1,1,1),ntot1)
-C       call copy  (myH2,vtrans(1,1,1,1,1),ntot1)
-C       dtbd = bd(1)/dt
-C       call cmult (myH2,dtbd,ntot1) ! Call this later
-
-      ! To add columns together, create a vector with only nonzeros
-      ! in rows with, so we are multiplying those columns of 
-      ! H1*A and H1*B by psi and adding the results
-      ! This accounts for the direct stiffness sum of the offset in the 
-      ! coefficients at the enrichment interface
-      nelx  = NUMBER_ELEMENTS_X
-      call rzero  (phi_temp,n)
-      do iel = 1, nelv
-        if (flag(iel) .eq. 2) then  ! boundary element is above y=0
-            do ix = 1,lx1
-              do iz = 1,lz1
-C                 do iy = 1,ly1
-                  iy = ly1
-                  iy_psi = 1
-                  iel_psi = iel+nelx
-                  phi_temp(ix,iy,iz,iel) = -psix(ix,iy_psi,iz,iel_psi)
-C                 enddo
-              enddo
-            enddo
-
-         elseif (flag(iel) .eq. -2) then ! boundary element below y=0
-            do ix = 1,lx1
-              do iz = 1,lz1
-C                 do iy = 1,ly1
-                  iy = 1
-                  iy_psi = ly1
-                  iel_psi = iel-nelx
-                  phi_temp(ix,iy,iz,iel) = -psix(ix,iy_psi,iz,iel_psi)
-C                 enddo
-              enddo
-            enddo
-         endif
-      enddo
-      ! Multiply phi_temp by Helmholz matrices to extract columns 
-      ! multiplied by psi
-      call axhelm(wrhsx,phi_temp,myH1,myH2,1,1)
+      call cmult (T1_rhs_x,-1.,n)
+      call cmult (T1_rhs_y,-1.,n)
+      call cmult (T1_rhs_z,-1.,n)
+      call add2 (wintx,T1_rhs_x,n)
+      call add2 (wintx,T1_rhs_y,n)
+      call add2 (wintx,T1_rhs_z,n)
 
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
 C       call oprzero(psix,psiy,psiz)
 C       call oprzero(wsx,wsy,wsz)
 C       call oprzero(wintx,winty,wintz)
-C       call oprzero(wrhsx,wrhsy,wrhsz)
 
       endif
 
@@ -848,6 +826,111 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          close(57)
 
  998  endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine srbrhs
+      include 'SIZE'
+      include 'TOTAL'
+
+      integer flag(lelv)
+      common /beflag/ flag
+
+c---------------------------------------------------------------
+c     VARIABLES DECLARED FOR ENRICHMENT METHOD
+      real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
+      real myH1_rhs(lx1,ly1,lz1,lelv), myH2_rhs(lx1,ly1,lz1,lelv) 
+      real phi_temp(lx1,ly1,lz1,lelv), T1_rhs(lx1,ly1,lz1,lelv) 
+      common /scrns/ w1(lx1,ly1,lz1,lelv)
+     $              ,w2(lx1,ly1,lz1,lelv)
+     $              ,w3(lx1,ly1,lz1,lelv)
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+
+C       save psix, psiy, psiz
+c---------------------------------------------------------------
+
+      n     = nx1*ny1*nz1*nelv
+      nelx  = NUMBER_ELEMENTS_X
+      nely  = NUMBER_ELEMENTS_Y
+      nelz  = NUMBER_ELEMENTS_Z
+
+c     WALL ENRICHMENT...START
+      call oprzero(wrhsx,wrhsy,wrhsz)
+      ! Continuity forcing term   
+      INTYPE = -1
+      call rzero  (myH1,n)
+      call rzero  (myH2,n)
+      CALL SETHLM  (myH1,myH2,INTYPE) ! won't work for first few steps
+C       ntot1 = lx1*ly1*lz1*nelv
+C       call copy  (myH1,vdiff (1,1,1,1,1),ntot1)
+C       call copy  (myH2,vtrans(1,1,1,1,1),ntot1)
+C       dtbd = bd(1)/dt
+C       call cmult (myH2,dtbd,ntot1) ! Call this later
+
+      ! To add columns together, create a vector with only nonzeros
+      ! in rows with, so we are multiplying those columns of 
+      ! H1*A and H1*B by psi and adding the results
+      ! This accounts for the direct stiffness sum of the offset in the 
+      ! coefficients at the enrichment interface
+      nelx  = NUMBER_ELEMENTS_X
+      call rzero  (w1,n)
+      call rzero  (w2,n)
+      call rzero  (w3,n)
+      do iel = 1, nelv
+        if (flag(iel) .eq. 2) then  ! boundary element is above y=0
+            do ix = 1,lx1
+              do iz = 1,lz1
+C                 do iy = 1,ly1
+                  iy = ly1
+                  iy_psi = 1
+                  iel_psi = iel+nelx
+                  w1(ix,iy,iz,iel) = -psix(ix,iy_psi,iz,iel_psi)
+                  w2(ix,iy,iz,iel) = -psiy(ix,iy_psi,iz,iel_psi)
+                  w3(ix,iy,iz,iel) = -psiz(ix,iy_psi,iz,iel_psi)
+C                 enddo
+              enddo
+            enddo
+
+         elseif (flag(iel) .eq. -2) then ! boundary element below y=0
+            do ix = 1,lx1
+              do iz = 1,lz1
+C                 do iy = 1,ly1
+                  iy = 1
+                  iy_psi = ly1
+                  iel_psi = iel-nelx
+                  w1(ix,iy,iz,iel) = -psix(ix,iy_psi,iz,iel_psi)
+                  w2(ix,iy,iz,iel) = -psiy(ix,iy_psi,iz,iel_psi)
+                  w3(ix,iy,iz,iel) = -psiz(ix,iy_psi,iz,iel_psi)
+C                 enddo
+              enddo
+            enddo
+         endif
+      enddo
+      ! Multiply phi_temp by Helmholz matrices to extract columns 
+      ! multiplied by psi
+      call axhelm(wrhsx,w1,myH1,myH2,1,1)
+      call axhelm(wrhsy,w2,myH1,myH2,1,1)
+      call axhelm(wrhsz,w3,myH1,myH2,1,1)
+
+      ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
+C       call oprzero(wrhsx,wrhsy,wrhsz)
+
+c     WALL ENRICHMENT...END
 
       return
       end
