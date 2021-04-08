@@ -582,7 +582,6 @@ C       if (time.lt.50) then
         do iz = 1,lz1
           do iy = 1,ly1
             ! Iterate over each element and set coefficient = 1
-            call rzero  (phi_temp,n)
             do iel = 1, nelv
               if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
                 phi_temp(ix,iy,iz,iel) = 1.0;
@@ -590,6 +589,12 @@ C       if (time.lt.50) then
             enddo
             ! Compute gradient of basis function
             call gradm1 (tx,ty,tz,phi_temp)
+            ! Reset to zero
+            do iel = 1, nelv
+              if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+                phi_temp(ix,iy,iz,iel) = 0.0;
+              endif
+            enddo
             ! Compute dot product of gphi and gpsi
             if (ldim == 2) then
               call vdot2(w1,tx,ty,gpsix_x,gpsix_y,n)
