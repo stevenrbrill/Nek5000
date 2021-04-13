@@ -1112,12 +1112,10 @@ c-----------------------------------------------------------------------
          do ifc=1,2*ldim
            if ((cbc(ifc,iel,1).eq.'W  ').AND.(ym1(1,1,1,iel).gt.0)) then
               flag(iel) = 1
-              counterp = counterp+1
               top_y = ym1(1,1,1,iel)
            else if ((cbc(ifc,iel,1).eq.'W  ').AND.
      $             (ym1(1,1,1,iel).lt.0)) then
               flag(iel) = -1
-              countern = countern+1
               bot_y = ym1(1,ly1,1,iel)
            endif
          enddo
@@ -1129,9 +1127,19 @@ c-----------------------------------------------------------------------
       do iel=1,nelv
         if (ym1(1,ly1,1,iel) .eq. top_y) then
           flag(iel) = 2
-          counterp2 = counterp2 + 1
         else if (ym1(1,1,1,iel) .eq. bot_y) then
           flag(iel) = -2
+        endif
+      enddo
+
+      do iel=1,nelv
+        if (flag(iel) .eq. 1) then
+          counterp = counterp+1
+        else if (flag(iel) .eq. -1) then
+          countern = countern+1
+        else if (flag(iel) .eq. 2) then
+          counterp2 = counterp2 + 1
+        else if (flag(iel) .eq. -2) then
           countern2 = countern2 +1
         endif
       enddo
@@ -1147,6 +1155,8 @@ c-----------------------------------------------------------------------
           write(6,*) '# Boundary Elements Below Centerline:', countern
           write(6,*) '# 2Boundary Elements Above Centerline:', counterp2
           write(6,*) '# 2Boundary Elements Below Centerline:', countern2
+          write(6,*) 'yen top:', top_y
+          write(6,*) 'yen bot:', bot_y
       endif
 
       return
