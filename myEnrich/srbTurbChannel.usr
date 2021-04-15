@@ -385,6 +385,7 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 C       if (time.lt.50) then
       if (time.lt.0) then
         call oprzero(psix,psiy,psiz)
+        call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
         call oprzero(wsx,wsy,wsz)
         call oprzero(wintx,winty,wintz)
         call oprzero(wrhsx,wrhsy,wrhsz)
@@ -1074,7 +1075,7 @@ c      param(84) = 1e-6    ! setting initial time step
       do i=1,n
          xc(i,1) = xscale*xc(i,1)
          yc(i,1) = 2*yscale*yc(i,1)-1  ! No stretching 
-      !   yc(i,1) = tanh(BETAM*(2*yc(i,1)-1))/tanh(BETAM) ! Stretching
+         !yc(i,1) = tanh(BETAM*(2*yscale*yc(i,1)-1))/tanh(BETAM) ! Stretching
         if (ldim == 3) then
          zc(i,1) = zscale*zc(i,1)
         endif
