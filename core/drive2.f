@@ -1403,9 +1403,13 @@ c     then recompute base flow solution corresponding to unit forcing:
 
       if (ifcomp) call compute_vol_soln(vxc,vyc,vzc,prc)
 
+      call unprojenrich() ! SRB
+      
       if (icvflow.eq.1) current_flow=glsc2(vx,bm1,ntot1)/domain_length  ! for X
       if (icvflow.eq.2) current_flow=glsc2(vy,bm1,ntot1)/domain_length  ! for Y
       if (icvflow.eq.3) current_flow=glsc2(vz,bm1,ntot1)/domain_length  ! for Z
+
+      call projenrich() !SRB
 
       if (iavflow.eq.1) then
          xsec = volvm1 / domain_length
