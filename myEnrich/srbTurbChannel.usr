@@ -947,8 +947,8 @@ C       call cmult (myH2,dtbd,ntot1) ! Call this later
       ! coefficients at the enrichment interface
       nelx  = NUMBER_ELEMENTS_X
       call rzero  (w1,n)
-      call rzero  (w2,n)
-      call rzero  (w3,n)
+C       call rzero  (w2,n)
+C       call rzero  (w3,n)
       do iel = 1, nelv
         if (flag(iel) .eq. 2) then  ! boundary element is above y=0
             do ix = 1,lx1
@@ -957,8 +957,8 @@ C                 do iy = 1,ly1
                   iy = ly1
                   iy_psi = 1
                   w1(ix,iy,iz,iel) = -psix_rhs(ix,iy_psi,iz,iel)
-                  w2(ix,iy,iz,iel) = -psiy_rhs(ix,iy_psi,iz,iel)
-                  w3(ix,iy,iz,iel) = -psiz_rhs(ix,iy_psi,iz,iel)
+C                   w2(ix,iy,iz,iel) = -psiy_rhs(ix,iy_psi,iz,iel)
+C                   w3(ix,iy,iz,iel) = -psiz_rhs(ix,iy_psi,iz,iel)
 C                 enddo
               enddo
             enddo
@@ -970,8 +970,8 @@ C                 do iy = 1,ly1
                   iy = 1
                   iy_psi = ly1
                   w1(ix,iy,iz,iel) = -psix_rhs(ix,iy_psi,iz,iel)
-                  w2(ix,iy,iz,iel) = -psiy_rhs(ix,iy_psi,iz,iel)
-                  w3(ix,iy,iz,iel) = -psiz_rhs(ix,iy_psi,iz,iel)
+C                   w2(ix,iy,iz,iel) = -psiy_rhs(ix,iy_psi,iz,iel)
+C                   w3(ix,iy,iz,iel) = -psiz_rhs(ix,iy_psi,iz,iel)
 C                 enddo
               enddo
             enddo
@@ -980,8 +980,8 @@ C                 enddo
       ! Multiply phi_temp by Helmholz matrices to extract columns 
       ! multiplied by psi
       call axhelm(wrhsx,w1,myH1,myH2,1,1)
-      call axhelm(wrhsy,w2,myH1,myH2,1,1)
-      call axhelm(wrhsz,w3,myH1,myH2,1,1)
+C       call axhelm(wrhsy,w2,myH1,myH2,1,1)
+C       call axhelm(wrhsz,w3,myH1,myH2,1,1)
 
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
 C       call oprzero(wrhsx,wrhsy,wrhsz)
