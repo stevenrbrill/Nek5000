@@ -98,6 +98,26 @@ c-----------------------------------------------------------------------
       end
 
 c-----------------------------------------------------------------------
+      subroutine srbprint_d (u)
+      include 'SIZE'
+      include 'TOTAL'
+
+      real u(lxd, lyd, lzd, nelv)
+
+      do iel = 1, nelv
+        do ix = 1,lxd
+          do iy = 1,lyd
+            do iz = 1,lzd
+                  print *, iel, ix, iy, iz, u(ix,iy,iz,iel)
+            enddo
+          enddo
+        enddo
+      enddo
+
+      return
+      end
+
+c-----------------------------------------------------------------------
       subroutine userhack (ix,iy,iz,ieg)
       include 'SIZE'
       include 'TOTAL'
@@ -300,7 +320,8 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
       real myH1_rhs(lx1,ly1,lz1,lelv), myH2_rhs(lx1,ly1,lz1,lelv) 
       real phi_temp(lx1,ly1,lz1,lelv), T1_rhs_x(lx1,ly1,lz1,lelv) 
-      real T1_rhs_y(lx1,ly1,lz1,lelv), T1_rhs_z(lx1,ly1,lz1,lelv) 
+      real T1_rhs_y(lx1,ly1,lz1,lelv), T1_rhs_z(lx1,ly1,lz1,lelv)
+      real ymd(lxd,lyd,lzd,lelv), ymd2(lx1,ly1,lz1,lelv) 
       save T1_rhs_x
       save T1_rhs
       integer comp_T1, comp_en_F, comp_psi

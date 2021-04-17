@@ -334,13 +334,24 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real T1_rhs_y(lx1,ly1,lz1,lelv), T1_rhs_z(lx1,ly1,lz1,lelv)
 
       real ymd(lxd,lyd,lzd,lelv)
-      real psix_d(lxd,lyd,lzd,lelv), psiy_d(lxd,lyd,lzd,lelv)
-      real psiz_d(lxd,lyd,lzd,lelv)
       real gpsix_x_d(lxd,lyd,lzd,lelv), gpsix_y_d(lxd,lyd,lzd,lelv)
       real gpsix_z_d(lxd,lyd,lzd,lelv), gpsiy_x_d(lxd,lyd,lzd,lelv)
       real gpsiy_y_d(lxd,lyd,lzd,lelv), gpsiy_z_d(lxd,lyd,lzd,lelv)
       real gpsiz_x_d(lxd,lyd,lzd,lelv), gpsiz_y_d(lxd,lyd,lzd,lelv)
       real gpsiz_z_d(lxd,lyd,lzd,lelv)
+      real vx_d(lxd,lyd,lzd,lelv), vy_d(lxd,lyd,lzd,lelv)
+      real vz_d(lxd,lyd,lzd,lelv)
+      real tx_d(lxd,lyd,lzd,lelv), ty_d(lxd,lyd,lzd,lelv)
+      real tz_d(lxd,lyd,lzd,lelv)
+      real w1_d(lxd,lyd,lzd,lelv)
+      real tr2x_d(lxd,lyd,lzd,lelv), tr2y_d(lxd,lyd,lzd,lelv)
+      real tr2z_d(lxd,lyd,lzd,lelv)
+      real tr4x_d(lxd,lyd,lzd,lelv), tr4y_d(lxd,lyd,lzd,lelv)
+      real tr4z_d(lxd,lyd,lzd,lelv)
+      real txx_d(lxd,lyd,lzd,lelv), tyy_d(lxd,lyd,lzd,lelv)
+      real tzz_d(lxd,lyd,lzd,lelv), txy_d(lxd,lyd,lzd,lelv)
+      real tyz_d(lxd,lyd,lzd,lelv), txz_d(lxd,lyd,lzd,lelv)
+      real vtrans_d(lxd,lyd,lzd,lelv)
 
       save T1_rhs_x
       save T1_rhs
@@ -389,6 +400,16 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,psix_rhs(lx1,ly1,lz1,lelv)
      $               ,psiy_rhs(lx1,ly1,lz1,lelv)
      $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+     $               ,wsx_d(lxd,lyd,lzd,lelv)
+     $               ,wsy_d(lxd,lyd,lzd,lelv)
+     $               ,wsz_d(lxd,lyd,lzd,lelv)
+     $               ,wintx_d(lxd,lyd,lzd,lelv)
+     $               ,winty_d(lxd,lyd,lzd,lelv)
+     $               ,wintz_d(lxd,lyd,lzd,lelv)
+     $               ,psix_d(lxd,lyd,lzd,lelv)
+     $               ,psiy_d(lxd,lyd,lzd,lelv)
+     $               ,psiz_d(lxd,lyd,lzd,lelv)
+
 
 C       save psix, psiy, psiz
 c---------------------------------------------------------------
@@ -398,7 +419,7 @@ c---------------------------------------------------------------
       nely  = NUMBER_ELEMENTS_Y
       nelz  = NUMBER_ELEMENTS_Z
 
-      nxyzc = lxd*lyd*lzd
+      n_d = lxd*lyd*lzd
 
       if (istep.eq.0) then
          bIDs(1) = 1
@@ -538,11 +559,6 @@ C       if (time.lt.50) then
              endif
           enddo
 
-          print *, "Print YMD"
-          call srbprint_d(ymd)
-          print *, "Print psix_d"
-          call srbprint_d(psix_d)
-
           call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
           do iel = 1, nelv
             if (flag(iel) .eq. 2) then  ! boundary element is above y=0
@@ -586,10 +602,161 @@ C                     enddo
           call projenrich
         endif
 
+C         if (comp_en_F.ne. 1) then
+C           comp_en_F = 1
+C           ! compute forcing terms in 3 directions
+C           call oprzero(wsx,wsy,wsz)
+
+C           ! ----------------------------------------------------------------
+C           ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
+C           ! + Term 4: -rho*dot(psi,gradient(psi))     Should be zero
+
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! M and T2 for x
+C           ! M^psi,2 * u or dot(gpsi, u)
+C           ! Should be zero in the simple case
+C           call copy (tx,gpsix_x,n)
+C           call copy (ty,gpsix_y,n)
+C           call copy (tz,gpsix_z,n)
+
+C           if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
+C           if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
+C           call copy   (tr2x,w1,n)
+C           call cmult  (tr2x,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsx,w1,n)
+
+C           ! T^psi,2 or dot(psi,gpsi_x)
+C           ! Should be zero in the simple case
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
+C           call copy   (tr4x,w1,n)
+C           call cmult  (tr4x,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsx,w1,n)
+
+C           ! store gpsi_x
+C           call copy   (txx,tx,n)
+C           call copy   (txy,ty,n)
+C           call copy   (txz,tz,n)
+
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! M and T2 for y
+C           ! M^psi,2 * v or dot(gpsi, v)
+C           call copy (tx,gpsiy_x,n)
+C           call copy (ty,gpsiy_y,n)
+C           call copy (tz,gpsiy_z,n)
+
+C           if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
+C           if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
+C           call copy   (tr2y,w1,n)
+C           call cmult  (tr2y,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsy,w1,n)
+
+C           ! T^psi,2 or dot(psi,gpsi_y)
+C           ! Should be zero in the simple case
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
+C           call copy   (tr4y,w1,n)
+C           call cmult  (tr4y,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsy,w1,n)
+
+C           ! store gpsi_y
+C           call add2   (txy,tx,n)
+C           call copy   (tyy,ty,n)
+C           call copy   (tyz,tz,n)
+
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! M and T2 for z
+C           ! M^psi,3 * w or dot(gpsi, w)
+C           ! Should be zero in the simple case
+C           call copy (tx,gpsiz_x,n)
+C           call copy (ty,gpsiz_y,n)
+C           call copy (tz,gpsiz_z,n)
+
+C           if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
+C           if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
+C           call copy   (tr2z,w1,n)
+C           call cmult  (tr2z,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsz,w1,n)
+
+C           ! T^psi,2 or dot(psi,gpsi_z)
+C           ! Should be zero in the simple case
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
+C           call copy   (tr4z,w1,n)
+C           call cmult  (tr4z,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsz,w1,n)
+
+C           ! store gpsi_z
+C           call add2   (txz,tx,n)
+C           call add2   (tyz,ty,n)
+C           call copy   (tzz,tz,n)
+
+
+C           ! ----------------------------------------------------------------
+C           ! Term 3: -rho*dot(psi,gradient(u0))   S^psi
+
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! S for x
+C           ! S^psi * u
+C           ! Compute grad of u
+C           call gradm1 (tx,ty,tz,vx)
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
+C           call copy   (tr3x,w1,n)
+C           call cmult  (tr3x,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsx,w1,n)
+
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! S for y
+C           ! S^psi * v
+C           ! Compute grad of v
+C           call gradm1 (tx,ty,tz,vy)
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
+C           call copy   (tr3y,w1,n)
+C           call cmult  (tr3y,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsy,w1,n)
+
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! S for z
+C           ! S^psi * w
+C           ! Compute grad of w
+C           call gradm1 (tx,ty,tz,vz)
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
+C           call copy   (tr3z,w1,n)
+C           call cmult  (tr3z,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsz,w1,n)
+
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! multiply wsx,wsy,wsz by -rho
+C           call opcmult(wsx,wsy,wsz,-1.0)
+C           call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
+
+C         endif
+
         if (comp_en_F.ne. 1) then
           comp_en_F = 1
           ! compute forcing terms in 3 directions
-          call oprzero(wsx,wsy,wsz)
+          call oprzero_d(wsx_d,wsy_d,wsz_d)
+
+          ! Convert y to overintegration points
+          do iel = 1,nelv
+            call intp_rstd(vx_d(1,1,1,iel),vx(1,1,1,iel),lx1,lxd,if3d,0)
+            call intp_rstd(vy_d(1,1,1,iel),vy(1,1,1,iel),lx1,lxd,if3d,0)
+            call intp_rstd(vz_d(1,1,1,iel),vz(1,1,1,iel),lx1,lxd,if3d,0)
+            call intp_rstd(vtrans_d(1,1,1,iel),vtrans(1,1,1,iel,1),
+     $         lx1,lxd,if3d,0)
+          enddo
 
           ! ----------------------------------------------------------------
           ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
@@ -599,87 +766,99 @@ C                     enddo
           ! M and T2 for x
           ! M^psi,2 * u or dot(gpsi, u)
           ! Should be zero in the simple case
-          call copy (tx,gpsix_x,n)
-          call copy (ty,gpsix_y,n)
-          call copy (tz,gpsix_z,n)
+          call copy (tx_d,gpsix_x_d,n_d)
+          call copy (ty_d,gpsix_y_d,n_d)
+          call copy (tz_d,gpsix_z_d,n_d)
 
-          if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
-          if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
-          call copy   (tr2x,w1,n)
-          call cmult  (tr2x,-1.0,n)
+          if (ldim == 2) call vdot2  
+     $       (w1_d,vx_d,vy_d,tx_d,ty_d,n_d) !Term 2
+          if (ldim == 3) call vdot3  
+     $       (w1_d,vx_d,vy_d,vz_d,tx_d,ty_d,tz_d,n_d) !Term 2
+          call copy   (tr2x_d,w1_d,n_d)
+          call cmult  (tr2x_d,-1.0,n_d)
           ! Add to total forcing
-          call add2   (wsx,w1,n)
+          call add2   (wsx_d,w1_d,n_d)
 
           ! T^psi,2 or dot(psi,gpsi_x)
           ! Should be zero in the simple case
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
-          call copy   (tr4x,w1,n)
-          call cmult  (tr4x,-1.0,n)
+          if (ldim == 2) call vdot2  
+     $       (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) !Term 4
+          if (ldim == 3) call vdot3  
+     $       (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) !Term 4
+          call copy   (tr4x_d,w1_d,n_d)
+          call cmult  (tr4x_d,-1.0,n_d)
           ! Add to total forcing
-          call add2   (wsx,w1,n)
+          call add2   (wsx_d,w1_d,n_d)
 
           ! store gpsi_x
-          call copy   (txx,tx,n)
-          call copy   (txy,ty,n)
-          call copy   (txz,tz,n)
+          call copy   (txx_d,tx_d,n_d)
+          call copy   (txy_d,ty_d,n_d)
+          call copy   (txz_d,tz_d,n_d)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! M and T2 for y
           ! M^psi,2 * v or dot(gpsi, v)
-          call copy (tx,gpsiy_x,n)
-          call copy (ty,gpsiy_y,n)
-          call copy (tz,gpsiy_z,n)
+          call copy (tx_d,gpsiy_x_d,n_d)
+          call copy (ty_d,gpsiy_y_d,n_d)
+          call copy (tz_d,gpsiy_z_d,n_d)
 
-          if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
-          if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
-          call copy   (tr2y,w1,n)
-          call cmult  (tr2y,-1.0,n)
+          if (ldim == 2) call vdot2  
+     $       (w1_d,vx_d,vy_d,tx_d,ty_d,n_d) !Term 2
+          if (ldim == 3) call vdot3  
+     $       (w1_d,vx_d,vy_d,vz_d,tx_d,ty_d,tz_d,n_d) !Term 2
+          call copy   (tr2y_d,w1_d,n_d)
+          call cmult  (tr2y_d,-1.0,n_d)
           ! Add to total forcing
-          call add2   (wsy,w1,n)
+          call add2   (wsy_d,w1_d,n_d)
 
           ! T^psi,2 or dot(psi,gpsi_y)
           ! Should be zero in the simple case
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
-          call copy   (tr4y,w1,n)
-          call cmult  (tr4y,-1.0,n)
+          if (ldim == 2) call vdot2  
+     $       (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) !Term 4
+          if (ldim == 3) call vdot3  
+     $       (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) !Term 4
+          call copy   (tr4y_d,w1_d,n_d)
+          call cmult  (tr4y_d,-1.0,n_d)
           ! Add to total forcing
-          call add2   (wsy,w1,n)
+          call add2   (wsy_d,w1_d,n_d)
 
           ! store gpsi_y
-          call add2   (txy,tx,n)
-          call copy   (tyy,ty,n)
-          call copy   (tyz,tz,n)
+          call add2   (txy_d,tx_d,n_d)
+          call copy   (tyy_d,ty_d,n_d)
+          call copy   (tyz_d,tz_d,n_d)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! M and T2 for z
           ! M^psi,3 * w or dot(gpsi, w)
           ! Should be zero in the simple case
-          call copy (tx,gpsiz_x,n)
-          call copy (ty,gpsiz_y,n)
-          call copy (tz,gpsiz_z,n)
+          call copy (tx_d,gpsiz_x_d,n_d)
+          call copy (ty_d,gpsiz_y_d,n_d)
+          call copy (tz_d,gpsiz_z_d,n_d)
 
-          if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
-          if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
-          call copy   (tr2z,w1,n)
-          call cmult  (tr2z,-1.0,n)
+          if (ldim == 2) call vdot2  
+     $       (w1_d,vx_d,vy_d,tx_d,ty_d,n_d) !Term 2
+          if (ldim == 3) call vdot3  
+     $       (w1_d,vx_d,vy_d,vz_d,tx_d,ty_d,tz_d,n_d) !Term 2
+          call copy   (tr2z_d,w1_d,n_d)
+          call cmult  (tr2z_d,-1.0,n_d)
           ! Add to total forcing
-          call add2   (wsz,w1,n)
+          call add2   (wsz_d,w1_d,n_d)
 
           ! T^psi,2 or dot(psi,gpsi_z)
           ! Should be zero in the simple case
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
-          call copy   (tr4z,w1,n)
-          call cmult  (tr4z,-1.0,n)
+          if (ldim == 2) call vdot2  
+     $       (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) !Term 4
+          if (ldim == 3) call vdot3  
+     $       (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) !Term 4
+          call copy   (tr4z_d,w1_dn_d)
+          call cmult  (tr4z_d,-1.0,n_d)
           ! Add to total forcing
-          call add2   (wsz,w1,n)
+          call add2   (wsz_d,w1_d,n_d)
 
           ! store gpsi_z
-          call add2   (txz,tx,n)
-          call add2   (tyz,ty,n)
-          call copy   (tzz,tz,n)
+          call add2   (txz_d,tx_d,n_d)
+          call add2   (tyz_d,ty_d,n_d)
+          call copy   (tzz_d,tz_d,n_d)
 
 
           ! ----------------------------------------------------------------
@@ -689,42 +868,51 @@ C                     enddo
           ! S for x
           ! S^psi * u
           ! Compute grad of u
-          call gradm1 (tx,ty,tz,vx)
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
-          call copy   (tr3x,w1,n)
-          call cmult  (tr3x,-1.0,n)
+C           do iel = 1,nelv
+C             call grad_rst(ur,us,ut,vx(1,1,1,iel),lxd,if3d,0)
+C           enddo
+          call gradm1 (tx_d,ty_d,tz_d,vx_d)
+          if (ldim == 2) 
+     $       call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
+          if (ldim == 3) 
+     $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
+          call copy   (tr3x_d,w1_d,n_d)
+          call cmult  (tr3x_d,-1.0,n_d)
           ! Add to total forcing
-          call add2   (wsx,w1,n)
+          call add2   (wsx_d,w1_d,n_d)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for y
           ! S^psi * v
           ! Compute grad of v
-          call gradm1 (tx,ty,tz,vy)
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
-          call copy   (tr3y,w1,n)
-          call cmult  (tr3y,-1.0,n)
+          call gradm1 (tx_d,ty_d,tz_d,vy_d)
+          if (ldim == 2) 
+     $       call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
+          if (ldim == 3) 
+     $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
+          call copy   (tr3y_d,w1_d,n_d)
+          call cmult  (tr3y_d,-1.0,n_d)
           ! Add to total forcing
-          call add2   (wsy,w1,n)
+          call add2   (wsy_d,w1_d,n_d)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for z
           ! S^psi * w
           ! Compute grad of w
-          call gradm1 (tx,ty,tz,vz)
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
-          call copy   (tr3z,w1,n)
-          call cmult  (tr3z,-1.0,n)
+          call gradm1 (tx_d,ty_d,tz_d,vz_d)
+          if (ldim == 2) 
+     $       call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
+          if (ldim == 3) 
+     $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
+          call copy   (tr3z_d,w1_d,n_d)
+          call cmult  (tr3z_d,-1.0,n_d)
           ! Add to total forcing
-          call add2   (wsz,w1,n)
+          call add2   (wsz_d,w1_d,n_d)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! multiply wsx,wsy,wsz by -rho
-          call opcmult(wsx,wsy,wsz,-1.0)
-          call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
+          call opcmult(wsx_d,wsy_d,wsz_d,-1.0)
+          call opcolv (wsx_d,wsy_d,wsz_d,vtrans_d(1,1,1,1))
 
         endif
 
