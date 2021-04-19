@@ -955,10 +955,9 @@ C      call rzero  (w3,n)
               do iz = 1,lz1
 C                 do iy = 1,ly1
                   iy = ly1
-                  iy_psi = 1
-                  w1(ix,iy,iz,iel) = -psix_rhs(ix,iy_psi,iz,iel)
-C                   w2(ix,iy,iz,iel) = -psiy_rhs(ix,iy_psi,iz,iel)
-C                   w3(ix,iy,iz,iel) = -psiz_rhs(ix,iy_psi,iz,iel)
+                  w1(ix,iy,iz,iel) = -psix_rhs(ix,iy,iz,iel)
+C                   w2(ix,iy,iz,iel) = -psiy_rhs(ix,iy,iz,iel)
+C                   w3(ix,iy,iz,iel) = -psiz_rhs(ix,iy,iz,iel)
 C                 enddo
               enddo
             enddo
