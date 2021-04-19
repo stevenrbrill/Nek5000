@@ -302,6 +302,9 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real phi_temp(lx1,ly1,lz1,lelv), T1_rhs_x(lx1,ly1,lz1,lelv) 
       real T1_rhs_y(lx1,ly1,lz1,lelv), T1_rhs_z(lx1,ly1,lz1,lelv) 
       save T1_rhs_x
+      save T1_rhs
+      integer comp_T1, comp_en_F, comp_psi
+      save comp_T1, comp_en_F, comp_psi
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /scrns/ w1(lx1,ly1,lz1,lelv)
      $              ,w2(lx1,ly1,lz1,lelv)
@@ -342,6 +345,9 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
 C       save psix, psiy, psiz
 c---------------------------------------------------------------
@@ -379,11 +385,15 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 C       if (time.lt.50) then
       if (time.lt.0) then
         call oprzero(psix,psiy,psiz)
+        call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
         call oprzero(wsx,wsy,wsz)
         call oprzero(wintx,winty,wintz)
         call oprzero(wrhsx,wrhsy,wrhsz)
 
       else
+
+        if (comp_psi .ne. 1) then
+          comp_psi = 1
 
       ! compute enrichment function psi
       call oprzero(psix,psiy,psiz)
@@ -434,11 +444,51 @@ C       if (time.lt.50) then
          endif
       enddo
 
+          call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
+          do iel = 1, nelv
+            if (flag(iel) .eq. 2) then  ! boundary element is above y=0
+                do ix = 1,lx1
+                  do iz = 1,lz1
+C                     do iy = 1,ly1
+                      iy = ly1
+                      yw = (1-ym1(ix,iy,iz,iel))*Re_tau
+                      if (yw .gt. ypb) then
+                         psix_rhs(ix,iy,iz,iel) = utau_ref*
+     $                    (1.0/0.41*log(yw)+5.2)
+                      elseif (yw .le. ypb) then
+                         psix_rhs(ix,iy,iz,iel) = utau_ref*yw
+                      endif
+C                     enddo
+                  enddo
+                enddo
+
+             else if (flag(iel) .eq. -2) then ! boundary element below y=0
+                 do ix = 1,lx1
+                  do iz = 1,lz1
+C                     do iy = 1,ly1
+                      iy = 1
+                      yw = (1+ym1(ix,iy,iz,iel))*Re_tau
+                      if (yw .gt. ypb) then
+                         psix_rhs(ix,iy,iz,iel) = utau_ref*
+     $                   (1.0/0.41*log(yw)+5.2)
+                      elseif (yw .le. ypb) then
+                         psix_rhs(ix,iy,iz,iel) = utau_ref*yw
+                      endif
+C                     enddo
+                  enddo
+                 enddo
+             endif
+          enddo
+
+        endif
+
       if (secondcall .ne. 1) then
         secondcall = 1
         call projenrich
       endif
 
+        if (comp_en_F.ne. 1) then
+          comp_en_F = 1
       ! compute forcing terms in 3 directions
       call oprzero(wsx,wsy,wsz)
 
@@ -577,9 +627,13 @@ C       if (time.lt.50) then
       call opcmult(wsx,wsy,wsz,-1.0)
       call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
 
+        endif
+
       ! ----------------------------------------------------------------
       call oprzero(wintx,winty,wintz)
       ! Compute T1
+        if (comp_T1 .ne. 1) then
+          comp_T1 = 1
       call rzero  (T1_rhs_x,n)
       call rzero  (T1_rhs_y,n)
       call rzero  (T1_rhs_z,n)
@@ -637,7 +691,6 @@ C       if (time.lt.50) then
                 enddo
               endif
             enddo
-C             print *, ix, iy, iz, T1_rhs(ix,iy,iz,1)
           enddo
         enddo
       enddo
@@ -645,6 +698,7 @@ C             print *, ix, iy, iz, T1_rhs(ix,iy,iz,1)
       call cmult (T1_rhs_x,-1.,n)
       call cmult (T1_rhs_y,-1.,n)
       call cmult (T1_rhs_z,-1.,n)
+        endif
       call add2 (wintx,T1_rhs_x,n)
       call add2 (wintx,T1_rhs_y,n)
       call add2 (wintx,T1_rhs_z,n)
@@ -861,6 +915,9 @@ c     VARIABLES DECLARED FOR ENRICHMENT METHOD
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
 C       save psix, psiy, psiz
 c---------------------------------------------------------------
@@ -890,8 +947,8 @@ C       call cmult (myH2,dtbd,ntot1) ! Call this later
       ! coefficients at the enrichment interface
       nelx  = NUMBER_ELEMENTS_X
       call rzero  (w1,n)
-      call rzero  (w2,n)
-      call rzero  (w3,n)
+C      call rzero  (w2,n)
+C      call rzero  (w3,n)
       do iel = 1, nelv
         if (flag(iel) .eq. 2) then  ! boundary element is above y=0
             do ix = 1,lx1
@@ -899,10 +956,9 @@ C       call cmult (myH2,dtbd,ntot1) ! Call this later
 C                 do iy = 1,ly1
                   iy = ly1
                   iy_psi = 1
-                  iel_psi = iel+nelx
-                  w1(ix,iy,iz,iel) = -psix(ix,iy_psi,iz,iel_psi)
-                  w2(ix,iy,iz,iel) = -psiy(ix,iy_psi,iz,iel_psi)
-                  w3(ix,iy,iz,iel) = -psiz(ix,iy_psi,iz,iel_psi)
+                  w1(ix,iy,iz,iel) = -psix_rhs(ix,iy_psi,iz,iel)
+C                   w2(ix,iy,iz,iel) = -psiy_rhs(ix,iy_psi,iz,iel)
+C                   w3(ix,iy,iz,iel) = -psiz_rhs(ix,iy_psi,iz,iel)
 C                 enddo
               enddo
             enddo
@@ -913,10 +969,9 @@ C                 enddo
 C                 do iy = 1,ly1
                   iy = 1
                   iy_psi = ly1
-                  iel_psi = iel-nelx
-                  w1(ix,iy,iz,iel) = -psix(ix,iy_psi,iz,iel_psi)
-                  w2(ix,iy,iz,iel) = -psiy(ix,iy_psi,iz,iel_psi)
-                  w3(ix,iy,iz,iel) = -psiz(ix,iy_psi,iz,iel_psi)
+                  w1(ix,iy,iz,iel) = -psix_rhs(ix,iy_psi,iz,iel)
+C                   w2(ix,iy,iz,iel) = -psiy_rhs(ix,iy_psi,iz,iel)
+C                   w3(ix,iy,iz,iel) = -psiz_rhs(ix,iy_psi,iz,iel)
 C                 enddo
               enddo
             enddo
@@ -925,8 +980,8 @@ C                 enddo
       ! Multiply phi_temp by Helmholz matrices to extract columns 
       ! multiplied by psi
       call axhelm(wrhsx,w1,myH1,myH2,1,1)
-      call axhelm(wrhsy,w2,myH1,myH2,1,1)
-      call axhelm(wrhsz,w3,myH1,myH2,1,1)
+C       call axhelm(wrhsy,w2,myH1,myH2,1,1)
+C       call axhelm(wrhsz,w3,myH1,myH2,1,1)
 
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
 C       call oprzero(wrhsx,wrhsy,wrhsz)
@@ -1041,11 +1096,14 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
       
-      integer flag(lelv), counterp, countern
+      integer flag(lelv), counterp, countern, counterp2, countern2
+      real top_y, bot_y
       common /beflag/ flag
       
       counterp = 0
       countern = 0
+      counterp2 = 0
+      countern2 = 0
 
       do iel=1,nelt
       do ifc=1,2*ndim
@@ -1063,23 +1121,51 @@ c-----------------------------------------------------------------------
          do ifc=1,2*ldim
            if ((cbc(ifc,iel,1).eq.'W  ').AND.(ym1(1,1,1,iel).gt.0)) then
               flag(iel) = 1
-              counterp = counterp+1
-              flag(iel-nelx) = 2 ! SRB-Hack to get the neighboring elements
+              top_y = ym1(1,1,1,iel)
            else if ((cbc(ifc,iel,1).eq.'W  ').AND.
      $             (ym1(1,1,1,iel).lt.0)) then
               flag(iel) = -1
-              countern = countern+1
-              flag(iel+nelx) = -2 ! SRB-Hack to get the neighboring elements
+              bot_y = ym1(1,ly1,1,iel)
            endif
          enddo
+      enddo
+
+      top_y = glmax(top_y,1)
+      bot_y = glmin(bot_y,1)
+
+      do iel=1,nelv
+        if (ym1(1,ly1,1,iel) .eq. top_y) then
+          flag(iel) = 2
+        else if (ym1(1,1,1,iel) .eq. bot_y) then
+          flag(iel) = -2
+        endif
+      enddo
+
+      do iel=1,nelv
+        if (flag(iel) .eq. 1) then
+          counterp = counterp+1
+        else if (flag(iel) .eq. -1) then
+          countern = countern+1
+        else if (flag(iel) .eq. 2) then
+          counterp2 = counterp2 + 1
+        else if (flag(iel) .eq. -2) then
+          countern2 = countern2 +1
+        endif
       enddo
 
       counterp = iglsum(counterp,1)
       countern = iglsum(countern,1)
 
+      counterp2 = iglsum(counterp2,1)
+      countern2 = iglsum(countern2,1)
+
       if (nid.eq.0) then 
           write(6,*) '# Boundary Elements Above Centerline:', counterp
           write(6,*) '# Boundary Elements Below Centerline:', countern
+          write(6,*) '# 2Boundary Elements Above Centerline:', counterp2
+          write(6,*) '# 2Boundary Elements Below Centerline:', countern2
+          write(6,*) 'yen top:', top_y
+          write(6,*) 'yen bot:', bot_y
       endif
 
       return
