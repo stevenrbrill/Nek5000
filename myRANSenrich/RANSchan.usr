@@ -288,7 +288,7 @@ c-----------------------------------------------------------------------
 
       call cmult(xm1,scalex,n)
       call cmult(ym1,scaley,n)
-      call cadd(ym1,-1.,n)
+C       call cadd(ym1,-1.,n)
 
 c     calculate wall distance for regularized k-omega
 C       call rone(wd,n)

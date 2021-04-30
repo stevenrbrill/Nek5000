@@ -3,7 +3,7 @@ stopAt = endTime
 endTime = 100
 dt = 1.0e-3
 writeControl = runTime
-writeInterval = 1.0e-3
+writeInterval = 10
 timeStepper = BDF2
 
 [PROBLEMTYPE]
