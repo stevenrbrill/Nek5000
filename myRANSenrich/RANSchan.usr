@@ -1,5 +1,22 @@
 #include "experimental/rans_komg.f"
 
+#define tSTATSTART uparam(1) /* start time for averaging */
+#define tSTATFREQ  uparam(2) /* output frequency for statistics */
+
+c data extraction along wall normal direction
+#define INTP_NMAX 2000 /* number of sample points */
+#define XCINT 1.0     /* x coordinate of 1D line*/
+#define ZCINT 1.0     /* z coordinate of 1D line */
+
+c mesh dimensions
+#define BETAM 2.4     /* wall normal stretching parameter */
+#define PI (4.*atan(1.))
+#define XLEN (2.*PI)
+#define ZLEN PI
+#define NUMBER_ELEMENTS_X 3
+#define NUMBER_ELEMENTS_Y 8
+#define NUMBER_ELEMENTS_Z 1
+
 c-----------------------------------------------------------------------
 c  nek5000 user-file template
 c
@@ -96,6 +113,72 @@ c-----------------------------------------------------------------------
       end
 
 c-----------------------------------------------------------------------
+      subroutine userhack (ix,iy,iz,ieg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e
+
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+
+      e = gllel(ieg)
+
+      rhsx = wrhsx(ix,iy,iz,e) 
+      rhsy = wrhsy(ix,iy,iz,e)
+      rhsz = wrhsz(ix,iy,iz,e)
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      subroutine userfint (ix,iy,iz,ieg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e
+
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+
+      e = gllel(ieg)
+
+      ffintx = wintx(ix,iy,iz,e) 
+      ffinty = winty(ix,iy,iz,e)
+      ffintz = wintz(ix,iy,iz,e)
+
+      return
+      end      
+
+c-----------------------------------------------------------------------
       subroutine uservp(ix,iy,iz,eg) ! set variable properties
       implicit none
       include 'SIZE'
@@ -126,7 +209,6 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine userf(ix,iy,iz,eg) ! set acceleration term
-      implicit none
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
@@ -134,13 +216,17 @@ c
 c     Note: this is an acceleration term, NOT a force!
 c     Thus, ffx will subsequently be multiplied by rho(x,t).
 c
-      integer ix,iy,iz,e,eg
 
-c     e = gllel(eg)
+c     Effective enrichment source terms for momentum equation
+      common /enrich/ wsx(lx1,ly1,lz1,lelt)
+     $               ,wsy(lx1,ly1,lz1,lelt)
+     $               ,wsz(lx1,ly1,lz1,lelt)
 
-      ffx = 0.0
-      ffy = 0.0
-      ffz = 0.0
+      e = gllel(ieg)
+
+      ffx = wsx(ix,iy,iz,e) 
+      ffy = wsy(ix,iy,iz,e)
+      ffz = wsz(ix,iy,iz,e)
 
       return
       end
@@ -307,7 +393,6 @@ C       call sub2(wd,ym1,n)
       end
 c-----------------------------------------------------------------------
       subroutine usrdat3()
-      implicit none
       include 'SIZE'
       include 'TOTAL'
 
@@ -317,6 +402,10 @@ c-----------------------------------------------------------------------
       integer ifld_k,ifld_omg,m_id,w_id
       real coeffs(21) !array for passing your own coeffs
       logical ifcoeffs
+
+      integer flag(lelv), counterp, countern, counterp2, countern2
+      real top_y, bot_y
+      common /beflag/ flag
       
       ifld_k = 3 !address of tke equation in t array
       ifld_omg = 4 !address of omega equation in t array
@@ -334,6 +423,75 @@ c     w_id = 1 ! cheap_dist (path to wall, may work better for periodic boundari
 c     w_id = 2 ! distf (coordinate difference, provides smoother function)
 
       call rans_komg_init(ifld_k,ifld_omg,ifcoeffs,coeffs,w_id,wd,m_id)
+
+      counterp = 0
+      countern = 0
+      counterp2 = 0
+      countern2 = 0
+
+      do iel=1,nelt
+      do ifc=1,2*ndim
+         if (cbc(ifc,iel,1) .eq. 'W  ') boundaryID(ifc,iel) = 1 
+         cbc(ifc,iel,2) = cbc(ifc,iel,1) 
+         if (cbc(ifc,iel,1) .eq. 'W  ') cbc(ifc,iel,2) = 't  '
+      enddo
+      enddo
+
+      ! Flag boundary elements above and below centerline (y = 0)
+      nelx  = NUMBER_ELEMENTS_X
+      nely  = NUMBER_ELEMENTS_Y
+      nelz  = NUMBER_ELEMENTS_Z
+      do iel=1,nelv
+         do ifc=1,2*ldim
+           if ((cbc(ifc,iel,1).eq.'W  ').AND.(ym1(1,1,1,iel).gt.0)) then
+              flag(iel) = 1
+              top_y = ym1(1,1,1,iel)
+           else if ((cbc(ifc,iel,1).eq.'W  ').AND.
+     $             (ym1(1,1,1,iel).lt.0)) then
+              flag(iel) = -1
+              bot_y = ym1(1,ly1,1,iel)
+           endif
+         enddo
+      enddo
+
+      top_y = glmax(top_y,1)
+      bot_y = glmin(bot_y,1)
+
+      do iel=1,nelv
+        if (ym1(1,ly1,1,iel) .eq. top_y) then
+          flag(iel) = 2
+        else if (ym1(1,1,1,iel) .eq. bot_y) then
+          flag(iel) = -2
+        endif
+      enddo
+
+      do iel=1,nelv
+        if (flag(iel) .eq. 1) then
+          counterp = counterp+1
+        else if (flag(iel) .eq. -1) then
+          countern = countern+1
+        else if (flag(iel) .eq. 2) then
+          counterp2 = counterp2 + 1
+        else if (flag(iel) .eq. -2) then
+          countern2 = countern2 +1
+        endif
+      enddo
+
+      counterp = iglsum(counterp,1)
+      countern = iglsum(countern,1)
+
+      counterp2 = iglsum(counterp2,1)
+      countern2 = iglsum(countern2,1)
+
+      if (nid.eq.0) then 
+          write(6,*) '# Boundary Elements Above Centerline:', counterp
+          write(6,*) '# Boundary Elements Below Centerline:', countern
+          write(6,*) '# 2Boundary Elements Above Centerline:', counterp2
+          write(6,*) '# 2Boundary Elements Below Centerline:', countern2
+          write(6,*) 'yen top:', top_y
+          write(6,*) 'yen bot:', bot_y
+      endif
+
 
       return
       end
