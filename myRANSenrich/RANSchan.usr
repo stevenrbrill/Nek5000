@@ -16,86 +16,6 @@ c     - usrdat2 : modify mesh coordinates
 c     - usrdat3 : general purpose routine for initialization
 c     
 c-----------------------------------------------------------------------
-      subroutine projenrich ()
-      include 'SIZE'
-      include 'SOLN'
-
-      common /enrich/ wsx(lx1,ly1,lz1,lelv)
-     $               ,wsy(lx1,ly1,lz1,lelv)
-     $               ,wsz(lx1,ly1,lz1,lelv)
-     $               ,vx_(lx1,ly1,lz1,lelv)
-     $               ,term3x(lx1,ly1,lz1,lelv)
-     $               ,convx(lx1,ly1,lz1,lelv)
-     $               ,wintx(lx1,ly1,lz1,lelv)
-     $               ,winty(lx1,ly1,lz1,lelv)
-     $               ,wintz(lx1,ly1,lz1,lelv)
-     $               ,wrhsx(lx1,ly1,lz1,lelv)
-     $               ,wrhsy(lx1,ly1,lz1,lelv)
-     $               ,wrhsz(lx1,ly1,lz1,lelv)
-     $               ,psix(lx1,ly1,lz1,lelv)
-     $               ,psiy(lx1,ly1,lz1,lelv)
-     $               ,psiz(lx1,ly1,lz1,lelv)
-
-      NTOT1=lx1*ly1*lz1*NELV
-      CALL SUB2(vx,psix,NTOT1)
-      CALL SUB2(vy,psiy,NTOT1)
-      CALL SUB2(vz,psiz,NTOT1)
-
-      return
-      end
-
-c-----------------------------------------------------------------------
-      subroutine unprojenrich ()
-      include 'SIZE'
-      include 'TOTAL'
-      include 'NEKUSE'
-
-      common /enrich/ wsx(lx1,ly1,lz1,lelv)
-     $               ,wsy(lx1,ly1,lz1,lelv)
-     $               ,wsz(lx1,ly1,lz1,lelv)
-     $               ,vx_(lx1,ly1,lz1,lelv)
-     $               ,term3x(lx1,ly1,lz1,lelv)
-     $               ,convx(lx1,ly1,lz1,lelv)
-     $               ,wintx(lx1,ly1,lz1,lelv)
-     $               ,winty(lx1,ly1,lz1,lelv)
-     $               ,wintz(lx1,ly1,lz1,lelv)
-     $               ,wrhsx(lx1,ly1,lz1,lelv)
-     $               ,wrhsy(lx1,ly1,lz1,lelv)
-     $               ,wrhsz(lx1,ly1,lz1,lelv)
-     $               ,psix(lx1,ly1,lz1,lelv)
-     $               ,psiy(lx1,ly1,lz1,lelv)
-     $               ,psiz(lx1,ly1,lz1,lelv)
-
-      NTOT1=lx1*ly1*lz1*NELV
-      CALL ADD2(vx,psix,NTOT1)
-      CALL ADD2(vy,psiy,NTOT1)
-      CALL ADD2(vz,psiz,NTOT1)
-
-      return
-      end
-
-
-c-----------------------------------------------------------------------
-      subroutine srbprint (u)
-      include 'SIZE'
-      include 'TOTAL'
-
-      real u(lx1, ly1, lz1, nelv)
-
-      do iel = 1, nelv
-        do ix = 1,lx1
-          do iy = 1,ly1
-            do iz = 1,lz1
-                  print *, iel, ix, iy, iz, u(ix,iy,iz,iel)
-            enddo
-          enddo
-        enddo
-      enddo
-
-      return
-      end
-
-c-----------------------------------------------------------------------
       subroutine uservp(ix,iy,iz,eg) ! set variable properties
       implicit none
       include 'SIZE'
@@ -272,7 +192,7 @@ c-----------------------------------------------------------------------
       real wd
       common /walldist/ wd(lx1,ly1,lz1,lelv)
 
-      integer i,n,ix,iy,iz,iel
+      integer i,n
       real xmin,xmax,ymin,ymax,scaley,scalex
       real glmin,glmax
 
@@ -284,24 +204,14 @@ c-----------------------------------------------------------------------
       ymax=glmax(ym1,n)
 
       scalex=3.0/8.0/(xmax-xmin) !make the elements square on average
-      scaley=2.0/(ymax-ymin)
+      scaley=1.0/(ymax-ymin)
 
       call cmult(xm1,scalex,n)
       call cmult(ym1,scaley,n)
-      call cadd(ym1,-1.,n)
 
 c     calculate wall distance for regularized k-omega
-C       call rone(wd,n)
-C       call sub2(wd,ym1,n)
-      do iel = 1, nelv
-        do ix = 1,lx1
-          do iy = 1,ly1
-            do iz = 1,lz1
-              wd(ix,iy,iz,iel) = 1.0 - abs(ym1(ix,iy,iz,iel))
-            enddo
-          enddo
-        enddo
-      enddo
+      call rone(wd,n)
+      call sub2(wd,ym1,n)
 
       return
       end
