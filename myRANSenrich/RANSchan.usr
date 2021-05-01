@@ -232,7 +232,6 @@ c     Effective enrichment source terms for momentum equation
       end
 c-----------------------------------------------------------------------
       subroutine userq(ix,iy,iz,eg) ! set source term
-      implicit none
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
@@ -240,15 +239,38 @@ c-----------------------------------------------------------------------
       integer ix,iy,iz,e,eg
       real rans_komg_kSrc,rans_komg_omgSrc
 
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+     $               ,wsk(lx1,ly1,lz1,lelv)
+     $               ,wsomg(lx1,ly1,lz1,lelv)
+
       e = gllel(eg)
 
+      call unprojenrich
       if(ifield.eq.3) then
-        qvol = rans_komg_kSrc(ix,iy,iz,e)
+        qvol = rans_komg_kSrc(ix,iy,iz,e) + wsk(ix,iy,iz,e)
       elseif(ifield.eq.4) then
-        qvol = rans_komg_omgSrc(ix,iy,iz,e)
+        qvol = rans_komg_omgSrc(ix,iy,iz,e) + wsomg(ix,iy,iz,e)
       else
         qvol = 0.0
       endif
+      call projenrich
 
       return
       end
@@ -315,7 +337,7 @@ c-----------------------------------------------------------------------
 
       real ypmin,ypmax,ypave,utmin,utmax,utave
 
-            real x0(3)
+      real x0(3)
       data x0 /0.0, 0.0, 0.0/ 
       save x0
 
@@ -448,6 +470,8 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,psix_rhs(lx1,ly1,lz1,lelv)
      $               ,psiy_rhs(lx1,ly1,lz1,lelv)
      $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+     $               ,wsk(lx1,ly1,lz1,lelv)
+     $               ,wsomg(lx1,ly1,lz1,lelv)
 
 C       save psix, psiy, psiz
 c---------------------------------------------------------------
@@ -497,12 +521,14 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       ! Start enrichment at time 50
 C       if (time.lt.50) then
-      if (time.lt.10) then
+      if (time.lt.0) then
         call oprzero(psix,psiy,psiz)
         call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
         call oprzero(wsx,wsy,wsz)
         call oprzero(wintx,winty,wintz)
         call oprzero(wrhsx,wrhsy,wrhsz)
+        call rzero(wsk,n)
+        call rzero(wsomg,n)
 
       else
 
@@ -740,6 +766,36 @@ C                     enddo
           ! multiply wsx,wsy,wsz by -rho
           call opcmult(wsx,wsy,wsz,-1.0)
           call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
+
+          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          call rzero(wsk,n)
+          call rzero(wsomg,n)
+
+          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          ! S for x
+          ! S^psi * u
+          ! Compute grad of u
+          call gradm1 (tx,ty,tz,t(1,1,1,1,ifld_k    -1))
+          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
+          call copy   (tr3x,w1,n)
+          call cmult  (tr3x,-1.0,n)
+          ! Add to total forcing
+          call add2   (wsk,w1,n)
+
+          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          ! S for y
+          ! S^psi * v
+          ! Compute grad of v
+          call gradm1 (tx,ty,tz,t(1,1,1,1,ifld_omega-1))
+          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
+          call copy   (tr3y,w1,n)
+          call cmult  (tr3y,-1.0,n)
+          ! Add to total forcing
+          call add2   (wsomg,w1,n)
 
         endif
 
