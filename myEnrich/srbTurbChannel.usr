@@ -488,7 +488,7 @@ C                     enddo
         endif
 
         if (comp_en_F.ne. 1) then
-          comp_en_F = 1
+          ! comp_en_F = 1 ! This loop shouldn't be here. you always need it
           ! compute forcing terms in 3 directions
           call oprzero(wsx,wsy,wsz)
 
