@@ -301,7 +301,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real myH1_rhs(lx1,ly1,lz1,lelv), myH2_rhs(lx1,ly1,lz1,lelv) 
       real phi_temp(lx1,ly1,lz1,lelv), T1_rhs_x(lx1,ly1,lz1,lelv) 
       real T1_rhs_y(lx1,ly1,lz1,lelv), T1_rhs_z(lx1,ly1,lz1,lelv) 
-      save T1_rhs_x
+      save T1_rhs_x, T1_rhs_y, T1_rhs_z
       save T1_rhs
       integer comp_T1, comp_en_F, comp_psi
       save comp_T1, comp_en_F, comp_psi
