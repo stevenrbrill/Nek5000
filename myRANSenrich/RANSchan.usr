@@ -423,7 +423,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real myH1_rhs(lx1,ly1,lz1,lelv), myH2_rhs(lx1,ly1,lz1,lelv) 
       real phi_temp(lx1,ly1,lz1,lelv), T1_rhs_x(lx1,ly1,lz1,lelv) 
       real T1_rhs_y(lx1,ly1,lz1,lelv), T1_rhs_z(lx1,ly1,lz1,lelv) 
-      save T1_rhs_x
+      save T1_rhs_x, T1_rhs_y
       save T1_rhs
       integer comp_T1, comp_en_F, comp_psi
       save comp_T1, comp_en_F, comp_psi
@@ -472,6 +472,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,psiz_rhs(lx1,ly1,lz1,lelv)
      $               ,wsk(lx1,ly1,lz1,lelv)
      $               ,wsomg(lx1,ly1,lz1,lelv)
+      common /rans_komg_i/ ifld_k, ifld_omega
 
 C       save psix, psiy, psiz
 c---------------------------------------------------------------
@@ -803,7 +804,7 @@ C                     enddo
         call oprzero(wintx,winty,wintz)
         ! Compute T1
         if (comp_T1 .ne. 1) then
-          comp_T1 = 1
+C           comp_T1 = 1
           call rzero  (T1_rhs_x,n)
           call rzero  (T1_rhs_y,n)
           call rzero  (T1_rhs_z,n)
@@ -881,14 +882,27 @@ C       call oprzero(wintx,winty,wintz)
       endif
 
 c     WALL ENRICHMENT...END
-
-
+      print *, "print vx"
+      call srbprint(vx)
+      print *, "print vy"
+      call srbprint(vy)
+      print *, "print pr"
+      call srbprint(pr)
+      print *, "print k"
+      call srbprint(t(1,1,1,1,ifld_k-1))
+      print *, "print omega"
+      call srbprint(t(1,1,1,1,ifld_omega-1))
+      print *, "print"
 
       if (istep.eq.0) call outpost(vx,vy,vz,pr,t,'   ')
       if (istep.eq.0 .or. ifoutfld) then
          ! reconstruct velocity field
          call add3 (vx_,vx,psix,n) !calculate actual velocity
          call outpost(psix,psiy,psiz,vx_,t,'enr')
+         call outpost(vx,vy,vz,
+     $       t(1,1,1,1,ifld_k-1),t,'k')
+         call outpost(vx,vy,vz,
+     $       t(1,1,1,1,ifld_omega-1),t,'omg')
 C          call outpost(tr1x,tr1y,tr1z,vx_,t,'Tr1')
 C          call outpost(tr2x,tr2y,tr2z,vx_,t,'Tr2')
 C          call outpost(tr3x,tr3y,tr3z,vx_,t,'Tr3')
