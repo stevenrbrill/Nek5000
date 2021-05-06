@@ -27,7 +27,7 @@ equation = incompNS
 
 [VELOCITY]
 density = 1.0
-viscosity = -1e5
+viscosity = -1e4
 residualTol = 1e-6
 
 [PRESSURE]

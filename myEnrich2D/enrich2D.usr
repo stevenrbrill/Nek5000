@@ -378,7 +378,6 @@ c---------------------------------------------------------------
 c     WALL ENRICHMENT...START
 
       !if(nid.eq.0) write(6,*) "Perform wall enrichment"
-      
 c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       ! Start enrichment at time 50
@@ -488,6 +487,7 @@ C                     enddo
         endif
 
         if (comp_en_F.ne. 1) then
+          ! comp_en_F = 1 ! This loop shouldn't be here. you always need it
           ! compute forcing terms in 3 directions
           call oprzero(wsx,wsy,wsz)
 
@@ -700,8 +700,8 @@ C                     enddo
         endif
         call add2 (wintx,T1_rhs_x,n)
         call add2 (wintx,T1_rhs_y,n)
-        call add2 (wintx,T1_rhs_z,n)
-
+C         call add2 (wintx,T1_rhs_z,n)
+  
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
 C       call oprzero(psix,psiy,psiz)
 C       call oprzero(wsx,wsy,wsz)
@@ -725,10 +725,6 @@ C          ifto = .true.
 C          call outpost(wsx,wsy,wsz,term3x,convx,'src')
 C          ifto = .false.
       endif
-
-C       print *, "print vx"
-C       call srbprint(vx)
-      
 
 
       if (time.lt.tSTATSTART) return
