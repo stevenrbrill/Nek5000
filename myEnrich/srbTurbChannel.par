@@ -23,10 +23,10 @@ writeInterval = 1.0
 userParam01 = 0.1    # start time collecting statistics
 userParam02 = 1.0     # writeInterval 1D statistics 
 
-filtering = explicit
-filterWeight = 0.05
-filterCutoffRatio = 0.65 
-
+#filtering = explicit
+#filterWeight = 0.05
+#filterCutoffRatio = 0.65 
+#
 [PROBLEMTYPE]
 #variableProperties = yes
 equation = incompNS
