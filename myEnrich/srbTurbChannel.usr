@@ -210,6 +210,60 @@ c-----------------------------------------------------------------------
 
       return
       end
+
+c-----------------------------------------------------------------------
+      real function calc_psi  (x,y,z,flag)
+      implicit none
+      real x, y, z ! Wall distance
+      integer flag
+      real Re_tau, utau_ref, ypb, yw
+      Re_tau = 550
+      ypb = 11.062299784340414
+      utau_ref = 5.43496e-02
+
+
+      if (flag .gt. 0) then
+        yw = (1-y)*Re_tau
+      elseif (flag .lt. 0) then
+        yw = (1+y)*Re_tau 
+      endif
+      if (yw .gt. ypb) then
+         calc_psi = utau_ref*(1.0/0.41*log(yw)+5.2)
+      elseif (yw .le. ypb) then
+         calc_psi = utau_ref*yw
+      endif
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      real function calc_gpsix_y  (x,y,z,flag)
+      implicit none
+      real x, y, z 
+      integer flag
+      real Re_tau, utau_ref, ypb, yw
+      integer sign
+      Re_tau = 550
+      ypb = 11.062299784340414
+      utau_ref = 5.43496e-02
+
+
+      if (flag .gt. 0) then
+        yw = (1-y)*Re_tau
+        sign = -1
+      elseif (flag .lt. 0) then
+        yw = (1+y)*Re_tau 
+        sign = 1
+      endif
+      if (yw .gt. ypb) then
+        calc_gpsix_y = sign*Re_tau*utau_ref*(1.0/(0.41*yw))
+      elseif (yw .le. ypb) then
+        calc_gpsix_y = sign*Re_tau*utau_ref
+      endif
+
+      return
+      end
+
 c-----------------------------------------------------------------------
       subroutine userchk ()
       include 'SIZE'
@@ -406,41 +460,18 @@ C       if (time.lt.50) then
           ypb = 11.062299784340414
           
           do iel = 1, nelv
-            if (flag(iel) .eq. 1) then  ! boundary element is above y=0
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
                 do ix = 1,lx1
                   do iz = 1,lz1
                     do iy = 1,ly1
-                      yw = (1-ym1(ix,iy,iz,iel))*Re_tau
-                      if (yw .gt. ypb) then
-                         psix(ix,iy,iz,iel) = utau_ref*
-     $                    (1.0/0.41*log(yw)+5.2)
-                         gpsix_y(ix,iy,iz,iel) = -1.0*Re_tau*utau_ref*
-     $                    (1.0/(0.41*yw))
-                      elseif (yw .le. ypb) then
-                         psix(ix,iy,iz,iel) = utau_ref*yw
-                         gpsix_y(ix,iy,iz,iel) = -1.0*Re_tau*utau_ref
-                      endif
+                      psix(ix,iy,iz,iel) = calc_psi(xm1(ix,iy,iz,iel),
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel))
+                      gpsix_y(ix,iy,iz,iel) = 
+     $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel))
                     enddo
                   enddo
                 enddo
-
-             else if (flag(iel) .eq. -1) then ! boundary element below y=0
-                 do ix = 1,lx1
-                  do iz = 1,lz1
-                    do iy = 1,ly1
-                      yw = (1+ym1(ix,iy,iz,iel))*Re_tau
-                      if (yw .gt. ypb) then
-                         psix(ix,iy,iz,iel) = utau_ref*
-     $                   (1.0/0.41*log(yw)+5.2)
-                         gpsix_y(ix,iy,iz,iel) = Re_tau*utau_ref*
-     $                    (1.0/(0.41*yw))
-                      elseif (yw .le. ypb) then
-                         psix(ix,iy,iz,iel) = utau_ref*yw
-                         gpsix_y(ix,iy,iz,iel) = Re_tau*utau_ref
-                      endif
-                    enddo
-                  enddo
-                 enddo
              endif
           enddo
 
@@ -451,13 +482,9 @@ C       if (time.lt.50) then
                   do iz = 1,lz1
 C                     do iy = 1,ly1
                       iy = ly1
-                      yw = (1-ym1(ix,iy,iz,iel))*Re_tau
-                      if (yw .gt. ypb) then
-                         psix_rhs(ix,iy,iz,iel) = utau_ref*
-     $                    (1.0/0.41*log(yw)+5.2)
-                      elseif (yw .le. ypb) then
-                         psix_rhs(ix,iy,iz,iel) = utau_ref*yw
-                      endif
+                      psix_rhs(ix,iy,iz,iel) = 
+     $                   calc_psi(xm1(ix,iy,iz,iel),
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel))
 C                     enddo
                   enddo
                 enddo
@@ -467,19 +494,14 @@ C                     enddo
                   do iz = 1,lz1
 C                     do iy = 1,ly1
                       iy = 1
-                      yw = (1+ym1(ix,iy,iz,iel))*Re_tau
-                      if (yw .gt. ypb) then
-                         psix_rhs(ix,iy,iz,iel) = utau_ref*
-     $                   (1.0/0.41*log(yw)+5.2)
-                      elseif (yw .le. ypb) then
-                         psix_rhs(ix,iy,iz,iel) = utau_ref*yw
-                      endif
+                      psix_rhs(ix,iy,iz,iel) = 
+     $                   calc_psi(xm1(ix,iy,iz,iel),
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel))
 C                     enddo
                   enddo
                  enddo
              endif
           enddo
-
         endif
 
         if (secondcall .ne. 1) then
