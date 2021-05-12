@@ -297,7 +297,7 @@ c-----------------------------------------------------------------------
       save xint, yint, zint
       save igs_x, igs_z
 
-      parameter(nstat=10)
+      parameter(nstat=11)
       real ravg(lx1*ly1*lz1*lelt,nstat)
       real stat(lx1*ly1*lz1*lelt,nstat)
       real stat_y(INTP_NMAX*nstat)
@@ -359,6 +359,8 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save T1_rhs
       integer comp_T1, comp_en_F, comp_psi
       save comp_T1, comp_en_F, comp_psi
+      real psix_int(INTP_NMAX)
+      save psix_int
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /scrns/ w1(lx1,ly1,lz1,lelv)
      $              ,w2(lx1,ly1,lz1,lelv)
@@ -775,6 +777,16 @@ c
              yint(i) = tanh(BETAM*(2*yi-1))/tanh(BETAM)
           enddo
           call cfill(zint,ZCINT,size(zint))
+
+          do i = 1,INTP_NMAX 
+            if (yint(i) < ym1(1,ly1,1,1)) then
+              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1)
+            elseif (yint(i) > ym1(1,1,1,nelv)) then
+              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),1)
+            else
+              psix_int(i) = 0
+            endif
+          enddo
         endif
         iffpts = .true. ! dummy call to find points
         call interp_nfld(stat_y,ravg,1,xint,yint,zint,nint,
@@ -821,6 +833,7 @@ c
         dragx_avg = alpha*dragx_avg + beta*dragx(iobj_wall)
 c        write(6,*) 'dragx(iobj_wall) = ', dragx(iobj_wall)
         call projenrich
+        call avg1(ravg(1,11),vx   ,alpha,beta,n,'upol',ifverbose)
       endif
       
 c      write(6,*) 'dragx_avg = ', dragx_avg
@@ -869,14 +882,16 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
      $    u_tau
  
          open(unit=56,file='vel_fluc_prof.dat')
-         write(56,'(A,1pe14.7)') '%time = ', time
+         write(56,'(A,1pe14.7)(A,1pe14.7)') '%time = ', time, 
+     $     '%Re_tau = ', Re_tau 
          write(56,'(A)') 
      $    '%  y    y+    uu    vv    ww    uv    tt    ut    -vt'
 
          open(unit=57,file='mean_prof.dat')
-         write(57,'(A,1pe14.7)') '%time = ', time
+         write(57,'(A,1pe14.7)(A,1pe14.7)') '%time = ', time,
+     $     '%Re_tau = ', Re_tau
          write(57,'(A)') 
-     $    '%  y    y+    Umean    Psimean'
+     $    '%  y    y+    Umean    Psimean  Upolymean    Psi'
 
          do i = 1,nint
             yy = 1+yint(i)
@@ -895,7 +910,9 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
      &           yy,
      &           yy*Re_tau, 
      &           stat_y(0*nint+i)/u_tau,
-     &           stat_y(10*nint+i)/t_tau
+     &           stat_y(9*nint+i)/u_tau,
+     &           stat_y(10*nint+i)/u_tau,
+     &           psix_int(i)/u_tau
 
   3         format(1p15e17.9)
          enddo
