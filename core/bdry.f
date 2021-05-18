@@ -706,6 +706,104 @@ C
       RETURN
       END
 c-----------------------------------------------------------------------
+      SUBROUTINE SRBBCDIRVC(V1,V2,V3,mask1,mask2,mask3)
+C
+C     Apply Dirichlet boundary conditions to surface of vector (V1,V2,V3).
+C     Use IFIELD as a guide to which boundary conditions are to be applied.
+C
+      INCLUDE 'SIZE'
+      INCLUDE 'TSTEP'
+      INCLUDE 'INPUT'
+      INCLUDE 'GEOM'
+      INCLUDE 'SOLN'
+      INCLUDE 'TOPOL'
+      INCLUDE 'CTIMER'
+      COMMON /SCRUZ/ TMP1(LX1,LY1,LZ1,LELV)
+     $             , TMP2(LX1,LY1,LZ1,LELV)
+     $             , TMP3(LX1,LY1,LZ1,LELV)
+      COMMON /SCRMG/ TMQ1(LX1,LY1,LZ1,LELV)
+     $             , TMQ2(LX1,LY1,LZ1,LELV)
+     $             , TMQ3(LX1,LY1,LZ1,LELV)
+C
+      REAL V1(lx1,ly1,lz1,LELV),V2(lx1,ly1,lz1,LELV)
+     $    ,V3(lx1,ly1,lz1,LELV)
+      real mask1(lx1,ly1,lz1,lelv),mask2(lx1,ly1,lz1,lelv)
+     $    ,mask3(lx1,ly1,lz1,lelv)
+c
+      common  /nekcb/ cb
+      character cb*3
+      character*1 cb1(3)
+      equivalence (cb1,cb)
+c
+      logical ifonbc
+c
+      ifonbc = .false.
+c
+      if (icalld.eq.0) then
+         tusbc=0.0
+         nusbc=0
+         icalld=icalld+1
+      endif
+      nusbc=nusbc+1
+      etime1=dnekclock()
+C
+C
+      NFACES=2*ldim
+      NXYZ  =lx1*ly1*lz1
+      NEL   =NELFLD(IFIELD)
+      NTOT  =NXYZ*NEL
+C
+      CALL RZERO(TMP1,NTOT)
+      CALL RZERO(TMP2,NTOT)
+      IF (IF3D) CALL RZERO(TMP3,NTOT)
+C
+C     Velocity boundary conditions
+C
+c     write(6,*) 'BCDIRV: ifield',ifield
+         DO 2010 IE=1,NEL
+         DO 2010 IFACE=1,NFACES
+            IF (CBC(IFACE,IE,IFIELD).EQ.'sh ') THEN
+               CALL FACEV (TMP1,IE,IFACE,0.0,lx1,ly1,lz1)
+               CALL FACEV (TMP2,IE,IFACE,0.0,lx1,ly1,lz1)
+               IF (IF3D) CALL FACEV (TMP3,IE,IFACE,0.0,lx1,ly1,lz1)
+            ENDIF
+ 2010    CONTINUE
+C
+C        Take care of Neumann-Dirichlet shared edges...
+C
+         if (isweep.eq.1) then
+            call opdsop(tmp1,tmp2,tmp3,'MXA')
+         else
+            call opdsop(tmp1,tmp2,tmp3,'MNA')
+         endif
+ 2100 CONTINUE
+C
+C     Copy temporary array to velocity arrays.
+C
+      IF ( .NOT.IFSTRS ) THEN
+         CALL COL2(V1,mask1,NTOT)
+         CALL COL2(V2,mask2,NTOT)
+         IF (IF3D) CALL COL2(V3,mask3,NTOT)
+         if (ifonbc) then
+            call antimsk1(tmp1,mask1,ntot)
+            call antimsk1(tmp2,mask2,ntot)
+            if (if3d) call antimsk1(tmp3,mask3,ntot)
+         endif
+      ELSE
+         CALL RMASK (V1,V2,V3,NELV)
+      ENDIF
+
+      CALL ADD2(V1,TMP1,NTOT)
+      CALL ADD2(V2,TMP2,NTOT)
+      IF (IF3D) CALL ADD2(V3,TMP3,NTOT)
+
+      if (ifneknekc) call fix_surface_flux
+
+      tusbc=tusbc+(dnekclock()-etime1)
+
+      RETURN
+      END
+c-----------------------------------------------------------------------
       SUBROUTINE BCDIRSC(S)
 C
 C     Apply Dirichlet boundary conditions to surface of scalar, S.
