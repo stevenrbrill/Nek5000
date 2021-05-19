@@ -1146,9 +1146,15 @@ c-----------------------------------------------------------------------
 
       do iel=1,nelt
       do ifc=1,2*ndim
-         if (cbc(ifc,iel,1) .eq. 'sh ') boundaryID(ifc,iel) = 1 
+         if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $       (cbc(ifc,iel,1) .eq. 'w  ')) then 
+           boundaryID(ifc,iel) = 1
+         endif 
          cbc(ifc,iel,2) = cbc(ifc,iel,1) 
-         if (cbc(ifc,iel,1) .eq. 'sh ') cbc(ifc,iel,2) = 't  '
+         if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $       (cbc(ifc,iel,1) .eq. 'w  ')) then 
+           cbc(ifc,iel,2) = 't  '
+         endif
       enddo
       enddo
 
@@ -1158,11 +1164,14 @@ c-----------------------------------------------------------------------
       nelz  = NUMBER_ELEMENTS_Z
       do iel=1,nelv
          do ifc=1,2*ldim
-           if ((cbc(ifc,iel,1).eq.'sh ').AND.(ym1(1,1,1,iel).gt.0)) then
+           if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $          (cbc(ifc,iel,1) .eq. 'w  ')).AND.(ym1(1,1,1,iel).gt.0)) 
+     $          then
               flag(iel) = 1
               top_y = ym1(1,1,1,iel)
-           else if ((cbc(ifc,iel,1).eq.'sh ').AND.
-     $             (ym1(1,1,1,iel).lt.0)) then
+           else if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $               (cbc(ifc,iel,1) .eq. 'w  ')).AND.
+     $               (ym1(1,1,1,iel).lt.0)) then
               flag(iel) = -1
               bot_y = ym1(1,ly1,1,iel)
            endif
