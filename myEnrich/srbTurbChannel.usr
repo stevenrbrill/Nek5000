@@ -1147,12 +1147,12 @@ c-----------------------------------------------------------------------
       do iel=1,nelt
       do ifc=1,2*ndim
          if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
-     $       (cbc(ifc,iel,1) .eq. 'w  ')) then 
+     $       (cbc(ifc,iel,1) .eq. 'W  ')) then 
            boundaryID(ifc,iel) = 1
          endif 
          cbc(ifc,iel,2) = cbc(ifc,iel,1) 
          if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
-     $       (cbc(ifc,iel,1) .eq. 'w  ')) then 
+     $       (cbc(ifc,iel,1) .eq. 'W  ')) then 
            cbc(ifc,iel,2) = 't  '
          endif
       enddo
@@ -1165,12 +1165,12 @@ c-----------------------------------------------------------------------
       do iel=1,nelv
          do ifc=1,2*ldim
            if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
-     $          (cbc(ifc,iel,1) .eq. 'w  ')).AND.(ym1(1,1,1,iel).gt.0)) 
+     $          (cbc(ifc,iel,1) .eq. 'W  ')).AND.(ym1(1,1,1,iel).gt.0)) 
      $          then
               flag(iel) = 1
               top_y = ym1(1,1,1,iel)
            else if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
-     $               (cbc(ifc,iel,1) .eq. 'w  ')).AND.
+     $               (cbc(ifc,iel,1) .eq. 'W  ')).AND.
      $               (ym1(1,1,1,iel).lt.0)) then
               flag(iel) = -1
               bot_y = ym1(1,ly1,1,iel)
