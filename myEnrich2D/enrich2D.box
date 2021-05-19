@@ -1,9 +1,9 @@
-kbase.rea
+base.rea
 -2                    spatial dimension
 1                     number of fields (U T TKE Omg)
 #====================================================================
 Box
--3  -8                                nelx,nely,nelz for Box
+-4  -8                                nelx,nely,nelz for Box
 0 1 1.                             x0,x1,gain
 0 1 1.
 P  ,P  ,W  ,W  

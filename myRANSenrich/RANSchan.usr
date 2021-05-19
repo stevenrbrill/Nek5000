@@ -11,8 +11,8 @@ c data extraction along wall normal direction
 c mesh dimensions
 #define BETAM 2.4     /* wall normal stretching parameter */
 #define PI (4.*atan(1.))
-#define XLEN 1.5
-#define ZLEN 0
+#define XLEN (2.*PI)
+#define ZLEN PI
 #define NUMBER_ELEMENTS_X 3
 #define NUMBER_ELEMENTS_Y 8
 #define NUMBER_ELEMENTS_Z 1
@@ -837,8 +837,6 @@ C           comp_T1 = 1
                   call vdot3(w2,tx,ty,tz,gpsiy_x,gpsiy_y,gpsiy_z,n)
                   call vdot3(w3,tx,ty,tz,gpsiz_x,gpsiz_y,gpsiz_z,n)
                 endif
-C                 print *, "print w1_early", ix,iy,iz
-C                 call srbprint(w1)
                 ! Multiply by Re
                 call col2(w1,vdiff(1,1,1,1,1),n)
                 call col2(w2,vdiff(1,1,1,1,1),n)
@@ -847,12 +845,6 @@ C                 call srbprint(w1)
                 call col2(w1,bm1,n)
                 call col2(w2,bm1,n)
                 call col2(w3,bm1,n)
-C                 print *, "print tx", ix,iy,iz
-C                 call srbprint(tx)
-C                 print *, "print ty", ix,iy,iz
-C                 call srbprint(ty)
-C                 print *, "print w1", ix,iy,iz
-C                 call srbprint(w1)
                 ! Iterate over each element and add result to final sum
                 do iel = 1, nelv
                   if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
@@ -882,13 +874,6 @@ C                 call srbprint(w1)
         call add2 (wintx,T1_rhs_y,n)
         call add2 (wintx,T1_rhs_z,n)
 
-C         print *, "print wintx"
-C         call srbprint(wintx)
-C         print *, "print vdiff"
-C         call srbprint(vdiff(1,1,1,1,1))
-C         print *, "print"
-
-C         call srbprint(T1_rhs_x)
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
 C       call oprzero(psix,psiy,psiz)
 C       call oprzero(wsx,wsy,wsz)
@@ -896,63 +881,18 @@ C       call oprzero(wintx,winty,wintz)
 
       endif
 
-
+c     WALL ENRICHMENT...END
       print *, "print vx"
       call srbprint(vx)
       print *, "print vy"
       call srbprint(vy)
-      print *, "print psix"
-      call srbprint(psix)
-      print *, "print psiy"
-      call srbprint(psiy)
-      print *, "print psiz"
-      call srbprint(psiz)
-      print *, "print gpsix_x"
-      call srbprint(gpsix_x)
-      print *, "print gpsix_y"
-      call srbprint(gpsix_y)
-      print *, "print gpsix_z"
-      call srbprint(gpsix_z)
-      print *, "print bm1"
-      call srbprint(bm1)
-      print *, "print wsx"
-      call srbprint(wsx)
-      print *, "print wsy"
-      call srbprint(wsy)
-      print *, "print wintx"
-      call srbprint(wintx)
-      print *, "print winty"
-      call srbprint(winty)
+      print *, "print pr"
+      call srbprint(pr)
       print *, "print k"
       call srbprint(t(1,1,1,1,ifld_k-1))
-      print *, "print omg"
+      print *, "print omega"
       call srbprint(t(1,1,1,1,ifld_omega-1))
-      print *, "print wsk"
-      call srbprint(wsk)
-      print *, "print wsomg"
-      call srbprint(wsy)
-      print *, "print vdiff"
-      call srbprint(vdiff(1,1,1,1,1))
       print *, "print"
-
-c     WALL ENRICHMENT...END
-C       print *, "print psix"
-C       call srbprint(psix)
-C       print *, "print gpsix_x"
-C       call srbprint(gpsix_x)
-C       print *, "print gpsix_y"
-C       call srbprint(gpsix_y)
-C       print *, "print vx"
-C       call srbprint(vx)
-C       print *, "print vy"
-C       call srbprint(vy)
-C       print *, "print pr"
-C       call srbprint(pr)
-C       print *, "print k"
-C       call srbprint(t(1,1,1,1,ifld_k-1))
-C       print *, "print omega"
-C       call srbprint(t(1,1,1,1,ifld_omega-1))
-C       print *, "print"
 
       if (istep.eq.0) call outpost(vx,vy,vz,pr,t,'   ')
       if (istep.eq.0 .or. ifoutfld) then
@@ -971,7 +911,6 @@ C          ifto = .true.
 C          call outpost(wsx,wsy,wsz,term3x,convx,'src')
 C          ifto = .false.
       endif
-
 
 
       if (time.lt.tSTATSTART) return
