@@ -534,7 +534,7 @@ C       if (time.lt.50) then
       else
 
         if (comp_psi .ne. 1) then
-          comp_psi = 1
+          comp_psi = 0
 
           ! compute enrichment function psi
           call oprzero(psix,psiy,psiz)
