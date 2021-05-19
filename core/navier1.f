@@ -1475,7 +1475,11 @@ C
       CALL SRB_NEKUF   (BFX,BFY,BFZ,BFINTX,BFINTY,BFINTZ,
      $  BRHSX,BRHSY,BRHSZ)
       CALL OPCOLV  (BFX,BFY,BFZ,BM1)
-      ! SRB Add in here????
+      ! print *, "print bfx"
+      ! call srbprint(bfx)
+      ! print *, "print bfy"
+      ! call srbprint(bfy)
+      ! SRB Add in herez???
       CALL OPADD2 (BFX,BFY,BFZ,BFINTX,BFINTY,BFINTZ)
       TIME = TIME+DT
 C

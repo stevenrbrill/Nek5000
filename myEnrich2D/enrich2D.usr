@@ -14,7 +14,7 @@ c mesh dimensions
 #define XLEN 1.5
 #define ZLEN 0
 #define NUMBER_ELEMENTS_X 3
-#define NUMBER_ELEMENTS_Y 6
+#define NUMBER_ELEMENTS_Y 8
 #define NUMBER_ELEMENTS_Z 1
 
 c-----------------------------------------------------------------------
@@ -509,6 +509,8 @@ C                     enddo
           call cmult  (tr2x,-1.0,n)
           ! Add to total forcing
           call add2   (wsx,w1,n)
+          print *, "print Mx"
+          call srbprint(w1)
 
           ! T^psi,2 or dot(psi,gpsi_x)
           ! Should be zero in the simple case
@@ -518,6 +520,9 @@ C                     enddo
           call cmult  (tr4x,-1.0,n)
           ! Add to total forcing
           call add2   (wsx,w1,n)
+
+          print *, "print T2x"
+          call srbprint(w1)
 
           ! store gpsi_x
           call copy   (txx,tx,n)
@@ -537,6 +542,8 @@ C                     enddo
           call cmult  (tr2y,-1.0,n)
           ! Add to total forcing
           call add2   (wsy,w1,n)
+          print *, "print My"
+          call srbprint(w1)
 
           ! T^psi,2 or dot(psi,gpsi_y)
           ! Should be zero in the simple case
@@ -546,6 +553,8 @@ C                     enddo
           call cmult  (tr4y,-1.0,n)
           ! Add to total forcing
           call add2   (wsy,w1,n)
+          print *, "print T2y"
+          call srbprint(w1)
 
           ! store gpsi_y
           call add2   (txy,tx,n)
@@ -596,6 +605,8 @@ C                     enddo
           call cmult  (tr3x,-1.0,n)
           ! Add to total forcing
           call add2   (wsx,w1,n)
+          print *, "print Sx"
+          call srbprint(w1)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for y
@@ -608,6 +619,8 @@ C                     enddo
           call cmult  (tr3y,-1.0,n)
           ! Add to total forcing
           call add2   (wsy,w1,n)
+          print *, "print Sy"
+          call srbprint(w1)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for z
@@ -708,6 +721,36 @@ C       call oprzero(wsx,wsy,wsz)
 C       call oprzero(wintx,winty,wintz)
 
       endif
+
+      print *, "print vx"
+      call srbprint(vx)
+      print *, "print vy"
+      call srbprint(vy)
+      print *, "print psix"
+      call srbprint(psix)
+      print *, "print psiy"
+      call srbprint(psiy)
+      print *, "print psiz"
+      call srbprint(psiz)
+      print *, "print gpsix_x"
+      call srbprint(gpsix_x)
+      print *, "print gpsix_y"
+      call srbprint(gpsix_y)
+      print *, "print gpsix_z"
+      call srbprint(gpsix_z)
+      print *, "print bm1"
+      call srbprint(bm1)
+      print *, "print wsx"
+      call srbprint(wsx)
+      print *, "print wsy"
+      call srbprint(wsy)
+      print *, "print wintx"
+      call srbprint(wintx)
+      print *, "print winty"
+      call srbprint(winty)
+      print *, "print"
+
+
 
 c     WALL ENRICHMENT...END
 
@@ -1036,7 +1079,7 @@ c-----------------------------------------------------------------------
      $      (1 - exp(-yp/11) - yp/11*exp(-yp/3))
       ux  = ux * Re_tau*param(2)
 
-      eps = 0
+      eps = 0.1
       kx  = 23
       kz  = 13
 

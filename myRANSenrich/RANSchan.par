@@ -4,7 +4,7 @@ endTime = 100
 dt = 1.0e-3
 writeControl = runTime
 writeInterval = 10
-timeStepper = BDF2
+timeStepper = BDF3
 
 userParam01 = 10.0    # start time collecting statistics
 userParam02 = 10.0     # writeInterval 1D statistics 
