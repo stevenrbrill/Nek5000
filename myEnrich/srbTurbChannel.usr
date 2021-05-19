@@ -1041,14 +1041,14 @@ c      common /wallshear/ taunew
       if (y.lt.0) temp = 1.0
       if (y.gt.0) temp = 0.0
 
-c      e = gllel(ieg)
+      e = gllel(ieg)
 
 c     Imposing shear stress B.C.s
-c      if(cbc(iside,e,1).eq.'sh ') then
-c        TRX=taunew(ix,iy,iz,e)
-c        TRY=0.0
-c        TRZ=0.0
-c      endif
+      if(cbc(iside,e,1).eq.'sh ') then
+        TRX=-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
+        TRY=0.0
+        TRZ=0.0
+      endif
       
       return
       end
@@ -1146,9 +1146,9 @@ c-----------------------------------------------------------------------
 
       do iel=1,nelt
       do ifc=1,2*ndim
-         if (cbc(ifc,iel,1) .eq. 'W  ') boundaryID(ifc,iel) = 1 
+         if (cbc(ifc,iel,1) .eq. 'sh ') boundaryID(ifc,iel) = 1 
          cbc(ifc,iel,2) = cbc(ifc,iel,1) 
-         if (cbc(ifc,iel,1) .eq. 'W  ') cbc(ifc,iel,2) = 't  '
+         if (cbc(ifc,iel,1) .eq. 'sh ') cbc(ifc,iel,2) = 't  '
       enddo
       enddo
 
@@ -1158,10 +1158,10 @@ c-----------------------------------------------------------------------
       nelz  = NUMBER_ELEMENTS_Z
       do iel=1,nelv
          do ifc=1,2*ldim
-           if ((cbc(ifc,iel,1).eq.'W  ').AND.(ym1(1,1,1,iel).gt.0)) then
+           if ((cbc(ifc,iel,1).eq.'sh ').AND.(ym1(1,1,1,iel).gt.0)) then
               flag(iel) = 1
               top_y = ym1(1,1,1,iel)
-           else if ((cbc(ifc,iel,1).eq.'W  ').AND.
+           else if ((cbc(ifc,iel,1).eq.'sh ').AND.
      $             (ym1(1,1,1,iel).lt.0)) then
               flag(iel) = -1
               bot_y = ym1(1,ly1,1,iel)

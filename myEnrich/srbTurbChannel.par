@@ -20,7 +20,7 @@ targetCFL = 1.0
 writeControl = runTime
 writeInterval = 1.0
 
-userParam01 = 0.1    # start time collecting statistics
+userParam01 = 1.0   # start time collecting statistics
 userParam02 = 1.0     # writeInterval 1D statistics 
 
 #filtering = explicit
@@ -30,7 +30,7 @@ userParam02 = 1.0     # writeInterval 1D statistics
 [PROBLEMTYPE]
 #variableProperties = yes
 equation = incompNS
-#stressFormulation = yes
+stressFormulation = yes
 
 [PRESSURE]
 preconditioner = semg_xxt
