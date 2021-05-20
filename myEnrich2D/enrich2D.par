@@ -23,7 +23,7 @@ userParam02 = 1.0     # writeInterval 1D statistics
 [PROBLEMTYPE]
 equation = incompNS
 #variableProperties = yes
-#stressFormulation = yes
+stressFormulation = yes
 
 [VELOCITY]
 density = 1.0
@@ -31,7 +31,9 @@ viscosity = -1e4
 residualTol = 1e-6
 
 [PRESSURE]
+preconditioner = semg_xxt
 residualTol = 1e-4
+residualProj = yes
 
 #[TEMPERATURE]
 #solver = none

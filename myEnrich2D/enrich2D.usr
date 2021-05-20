@@ -210,6 +210,60 @@ c-----------------------------------------------------------------------
 
       return
       end
+
+c-----------------------------------------------------------------------
+      real function calc_psi  (x,y,z,flag)
+      implicit none
+      real x, y, z ! Wall distance
+      integer flag
+      real Re_tau, utau_ref, ypb, yw
+      Re_tau = 550
+      ypb = 11.062299784340414
+      utau_ref = 5.43496e-02
+
+
+      if (flag .gt. 0) then
+        yw = (1-y)*Re_tau
+      elseif (flag .lt. 0) then
+        yw = (1+y)*Re_tau 
+      endif
+      if (yw .gt. ypb) then
+         calc_psi = utau_ref*(1.0/0.41*log(yw)+5.2)
+      elseif (yw .le. ypb) then
+         calc_psi = utau_ref*yw
+      endif
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      real function calc_gpsix_y  (x,y,z,flag)
+      implicit none
+      real x, y, z 
+      integer flag
+      real Re_tau, utau_ref, ypb, yw
+      integer sign
+      Re_tau = 550
+      ypb = 11.062299784340414
+      utau_ref = 5.43496e-02
+
+
+      if (flag .gt. 0) then
+        yw = (1-y)*Re_tau
+        sign = -1
+      elseif (flag .lt. 0) then
+        yw = (1+y)*Re_tau 
+        sign = 1
+      endif
+      if (yw .gt. ypb) then
+        calc_gpsix_y = sign*Re_tau*utau_ref*(1.0/(0.41*yw))
+      elseif (yw .le. ypb) then
+        calc_gpsix_y = sign*Re_tau*utau_ref
+      endif
+
+      return
+      end
+
 c-----------------------------------------------------------------------
       subroutine userchk ()
       include 'SIZE'
@@ -243,7 +297,7 @@ c-----------------------------------------------------------------------
       save xint, yint, zint
       save igs_x, igs_z
 
-      parameter(nstat=10)
+      parameter(nstat=11)
       real ravg(lx1*ly1*lz1*lelt,nstat)
       real stat(lx1*ly1*lz1*lelt,nstat)
       real stat_y(INTP_NMAX*nstat)
@@ -305,6 +359,8 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save T1_rhs
       integer comp_T1, comp_en_F, comp_psi
       save comp_T1, comp_en_F, comp_psi
+      real psix_int(INTP_NMAX)
+      save psix_int
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /scrns/ w1(lx1,ly1,lz1,lelv)
      $              ,w2(lx1,ly1,lz1,lelv)
@@ -378,6 +434,7 @@ c---------------------------------------------------------------
 c     WALL ENRICHMENT...START
 
       !if(nid.eq.0) write(6,*) "Perform wall enrichment"
+      
 c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       ! Start enrichment at time 50
@@ -405,38 +462,15 @@ C       if (time.lt.50) then
           ypb = 11.062299784340414
           
           do iel = 1, nelv
-            if (flag(iel) .eq. 1) then  ! boundary element is above y=0
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
                 do ix = 1,lx1
                   do iz = 1,lz1
                     do iy = 1,ly1
-                      yw = (1-ym1(ix,iy,iz,iel))*Re_tau
-                      if (yw .gt. ypb) then
-                         psix(ix,iy,iz,iel) = utau_ref*
-     $                    (1.0/0.41*log(yw)+5.2)
-                         gpsix_y(ix,iy,iz,iel) = -1.0*Re_tau*utau_ref*
-     $                    (1.0/(0.41*yw))
-                      elseif (yw .le. ypb) then
-                         psix(ix,iy,iz,iel) = utau_ref*yw
-                         gpsix_y(ix,iy,iz,iel) = -1.0*Re_tau*utau_ref
-                      endif
-                    enddo
-                  enddo
-                enddo
-
-             else if (flag(iel) .eq. -1) then ! boundary element below y=0
-                 do ix = 1,lx1
-                  do iz = 1,lz1
-                    do iy = 1,ly1
-                      yw = (1+ym1(ix,iy,iz,iel))*Re_tau
-                      if (yw .gt. ypb) then
-                         psix(ix,iy,iz,iel) = utau_ref*
-     $                   (1.0/0.41*log(yw)+5.2)
-                         gpsix_y(ix,iy,iz,iel) = Re_tau*utau_ref*
-     $                    (1.0/(0.41*yw))
-                      elseif (yw .le. ypb) then
-                         psix(ix,iy,iz,iel) = utau_ref*yw
-                         gpsix_y(ix,iy,iz,iel) = Re_tau*utau_ref
-                      endif
+                      psix(ix,iy,iz,iel) = calc_psi(xm1(ix,iy,iz,iel),
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel))
+                      gpsix_y(ix,iy,iz,iel) = 
+     $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel))
                     enddo
                   enddo
                  enddo
@@ -450,13 +484,9 @@ C       if (time.lt.50) then
                   do iz = 1,lz1
 C                     do iy = 1,ly1
                       iy = ly1
-                      yw = (1-ym1(ix,iy,iz,iel))*Re_tau
-                      if (yw .gt. ypb) then
-                         psix_rhs(ix,iy,iz,iel) = utau_ref*
-     $                    (1.0/0.41*log(yw)+5.2)
-                      elseif (yw .le. ypb) then
-                         psix_rhs(ix,iy,iz,iel) = utau_ref*yw
-                      endif
+                      psix_rhs(ix,iy,iz,iel) = 
+     $                   calc_psi(xm1(ix,iy,iz,iel),
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel))
 C                     enddo
                   enddo
                 enddo
@@ -466,19 +496,14 @@ C                     enddo
                   do iz = 1,lz1
 C                     do iy = 1,ly1
                       iy = 1
-                      yw = (1+ym1(ix,iy,iz,iel))*Re_tau
-                      if (yw .gt. ypb) then
-                         psix_rhs(ix,iy,iz,iel) = utau_ref*
-     $                   (1.0/0.41*log(yw)+5.2)
-                      elseif (yw .le. ypb) then
-                         psix_rhs(ix,iy,iz,iel) = utau_ref*yw
-                      endif
+                      psix_rhs(ix,iy,iz,iel) = 
+     $                   calc_psi(xm1(ix,iy,iz,iel),
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel))
 C                     enddo
                   enddo
                  enddo
              endif
           enddo
-
         endif
 
         if (secondcall .ne. 1) then
@@ -752,6 +777,16 @@ c
              yint(i) = tanh(BETAM*(2*yi-1))/tanh(BETAM)
           enddo
           call cfill(zint,ZCINT,size(zint))
+
+          do i = 1,INTP_NMAX 
+            if (yint(i) < ym1(1,ly1,1,1)) then
+              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1)
+            elseif (yint(i) > ym1(1,1,1,nelv)) then
+              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),1)
+            else
+              psix_int(i) = 0
+            endif
+          enddo
         endif
         iffpts = .true. ! dummy call to find points
         call interp_nfld(stat_y,ravg,1,xint,yint,zint,nint,
@@ -798,6 +833,7 @@ c
         dragx_avg = alpha*dragx_avg + beta*dragx(iobj_wall)
 c        write(6,*) 'dragx(iobj_wall) = ', dragx(iobj_wall)
         call projenrich
+        call avg1(ravg(1,11),vx   ,alpha,beta,n,'upol',ifverbose)
       endif
       
 c      write(6,*) 'dragx_avg = ', dragx_avg
@@ -846,14 +882,16 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
      $    u_tau
  
          open(unit=56,file='vel_fluc_prof.dat')
-         write(56,'(A,1pe14.7)') '%time = ', time
+         write(56,'(A,1pe14.7)(A,1pe14.7)') '%time = ', time, 
+     $     '%Re_tau = ', Re_tau 
          write(56,'(A)') 
      $    '%  y    y+    uu    vv    ww    uv    tt    ut    -vt'
 
          open(unit=57,file='mean_prof.dat')
-         write(57,'(A,1pe14.7)') '%time = ', time
+         write(57,'(A,1pe14.7)(A,1pe14.7)') '%time = ', time,
+     $     '%Re_tau = ', Re_tau
          write(57,'(A)') 
-     $    '%  y    y+    Umean    Psimean'
+     $    '%  y    y+    Umean    Psimean  Upolymean    Psi'
 
          do i = 1,nint
             yy = 1+yint(i)
@@ -872,7 +910,9 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
      &           yy,
      &           yy*Re_tau, 
      &           stat_y(0*nint+i)/u_tau,
-     &           stat_y(10*nint+i)/t_tau
+     &           stat_y(9*nint+i)/u_tau,
+     &           stat_y(10*nint+i)/u_tau,
+     &           psix_int(i)/u_tau
 
   3         format(1p15e17.9)
          enddo
@@ -1001,14 +1041,14 @@ c      common /wallshear/ taunew
       if (y.lt.0) temp = 1.0
       if (y.gt.0) temp = 0.0
 
-c      e = gllel(ieg)
+      e = gllel(ieg)
 
 c     Imposing shear stress B.C.s
-c      if(cbc(iside,e,1).eq.'sh ') then
-c        TRX=taunew(ix,iy,iz,e)
-c        TRY=0.0
-c        TRZ=0.0
-c      endif
+      if(cbc(iside,e,1).eq.'sh ') then
+        TRX=-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
+        TRY=0.0
+        TRZ=0.0
+      endif
       
       return
       end
@@ -1036,7 +1076,7 @@ c-----------------------------------------------------------------------
      $      (1 - exp(-yp/11) - yp/11*exp(-yp/3))
       ux  = ux * Re_tau*param(2)
 
-      eps = 0
+      eps = 1e-2
       kx  = 23
       kz  = 13
 
@@ -1106,9 +1146,15 @@ c-----------------------------------------------------------------------
 
       do iel=1,nelt
       do ifc=1,2*ndim
-         if (cbc(ifc,iel,1) .eq. 'W  ') boundaryID(ifc,iel) = 1 
+         if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $       (cbc(ifc,iel,1) .eq. 'W  ')) then 
+           boundaryID(ifc,iel) = 1
+         endif 
          cbc(ifc,iel,2) = cbc(ifc,iel,1) 
-         if (cbc(ifc,iel,1) .eq. 'W  ') cbc(ifc,iel,2) = 't  '
+         if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $       (cbc(ifc,iel,1) .eq. 'W  ')) then 
+           cbc(ifc,iel,2) = 't  '
+         endif
       enddo
       enddo
 
@@ -1118,10 +1164,13 @@ c-----------------------------------------------------------------------
       nelz  = NUMBER_ELEMENTS_Z
       do iel=1,nelv
          do ifc=1,2*ldim
-           if ((cbc(ifc,iel,1).eq.'W  ').AND.(ym1(1,1,1,iel).gt.0)) then
+           if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $          (cbc(ifc,iel,1) .eq. 'W  ')).AND.(ym1(1,1,1,iel).gt.0)) 
+     $          then
               flag(iel) = 1
               top_y = ym1(1,1,1,iel)
-           else if ((cbc(ifc,iel,1).eq.'W  ').AND.
+           else if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $               (cbc(ifc,iel,1) .eq. 'W  ')).AND.
      $             (ym1(1,1,1,iel).lt.0)) then
               flag(iel) = -1
               bot_y = ym1(1,ly1,1,iel)
