@@ -212,15 +212,14 @@ c-----------------------------------------------------------------------
       end
 
 c-----------------------------------------------------------------------
-      real function calc_psi  (x,y,z,flag)
+      real function calc_psi  (x,y,z,flag,utau,nu)
       implicit none
-      real x, y, z ! Wall distance
+      real x, y, z, utau, nu ! Wall distance
       integer flag
-      real Re_tau, utau_ref, ypb, yw
-      Re_tau = 550
+      real Re_tau, ypb, yw
+      
       ypb = 11.062299784340414
-      utau_ref = 5.43496e-02
-
+      Re_tau = utau/nu
 
       if (flag .gt. 0) then
         yw = (1-y)*Re_tau
@@ -228,25 +227,24 @@ c-----------------------------------------------------------------------
         yw = (1+y)*Re_tau 
       endif
       if (yw .gt. ypb) then
-         calc_psi = utau_ref*(1.0/0.41*log(yw)+5.2)
+         calc_psi = utau*(1.0/0.41*log(yw)+5.2)
       elseif (yw .le. ypb) then
-         calc_psi = utau_ref*yw
+         calc_psi = utau*yw
       endif
 
       return
       end
 
 c-----------------------------------------------------------------------
-      real function calc_gpsix_y  (x,y,z,flag)
+      real function calc_gpsix_y  (x,y,z,flag,utau,nu)
       implicit none
-      real x, y, z 
+      real x, y, z, utau, nu 
       integer flag
-      real Re_tau, utau_ref, ypb, yw
+      real Re_tau, ypb, yw
       integer sign
-      Re_tau = 550
-      ypb = 11.062299784340414
-      utau_ref = 5.43496e-02
 
+      ypb = 11.062299784340414
+      Re_tau = utau/nu
 
       if (flag .gt. 0) then
         yw = (1-y)*Re_tau
@@ -256,9 +254,9 @@ c-----------------------------------------------------------------------
         sign = 1
       endif
       if (yw .gt. ypb) then
-        calc_gpsix_y = sign*Re_tau*utau_ref*(1.0/(0.41*yw))
+        calc_gpsix_y = sign*Re_tau*utau*(1.0/(0.41*yw))
       elseif (yw .le. ypb) then
-        calc_gpsix_y = sign*Re_tau*utau_ref
+        calc_gpsix_y = sign*Re_tau*utau
       endif
 
       return
@@ -467,10 +465,12 @@ C       if (time.lt.50) then
                   do iz = 1,lz1
                     do iy = 1,ly1
                       psix(ix,iy,iz,iel) = calc_psi(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel))
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+     $                   utau_ref,param(2))
                       gpsix_y(ix,iy,iz,iel) = 
      $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel))
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+     $                   utau_ref,param(2))
                     enddo
                   enddo
                 enddo
@@ -486,7 +486,8 @@ C                     do iy = 1,ly1
                       iy = ly1
                       psix_rhs(ix,iy,iz,iel) = 
      $                   calc_psi(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel))
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+     $                   utau_ref,param(2))
 C                     enddo
                   enddo
                 enddo
@@ -498,7 +499,8 @@ C                     do iy = 1,ly1
                       iy = 1
                       psix_rhs(ix,iy,iz,iel) = 
      $                   calc_psi(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel))
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+     $                   utau_ref,param(2))
 C                     enddo
                   enddo
                  enddo
@@ -780,9 +782,11 @@ c
 
           do i = 1,INTP_NMAX 
             if (yint(i) < ym1(1,ly1,1,1)) then
-              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1)
+              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1,
+     $                               utau_ref,param(2))
             elseif (yint(i) > ym1(1,1,1,nelv)) then
-              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),1)
+              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),1,
+     $                               utau_ref,param(2))
             else
               psix_int(i) = 0
             endif
