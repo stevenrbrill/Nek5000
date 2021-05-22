@@ -212,13 +212,51 @@ c-----------------------------------------------------------------------
       end
 
 c-----------------------------------------------------------------------
-      real function calc_psi  (x,y,z,flag,utau,nu)
+      real function lotw (yw,utau,nu)
       implicit none
       real x, y, z, utau, nu ! Wall distance
       integer flag
       real Re_tau, ypb, yw
       
       ypb = 11.062299784340414
+
+      if (yw .gt. ypb) then
+         lotw = utau*(1.0/0.41*log(yw)+5.2)
+      elseif (yw .le. ypb) then
+         lotw = utau*yw
+      endif
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      real function dlotwdy (yw,utau,nu)
+      implicit none
+      real x, y, z, utau, nu 
+      integer flag
+      real Re_tau, ypb, yw
+      integer sign
+
+      ypb = 11.062299784340414
+      Re_tau = utau/nu
+
+      if (yw .gt. ypb) then
+        dlotwdy = Re_tau*utau*(1.0/(0.41*yw))
+      elseif (yw .le. ypb) then
+        dlotwdy = Re_tau*utau
+      endif
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      real function calc_psi  (x,y,z,flag,utau,nu)
+      implicit none
+      real x, y, z, utau, nu ! Wall distance
+      integer flag
+      real Re_tau, ypb, yw
+      real lotw
+      
       Re_tau = utau/nu
 
       if (flag .gt. 0) then
@@ -226,11 +264,7 @@ c-----------------------------------------------------------------------
       elseif (flag .lt. 0) then
         yw = (1+y)*Re_tau 
       endif
-      if (yw .gt. ypb) then
-         calc_psi = utau*(1.0/0.41*log(yw)+5.2)
-      elseif (yw .le. ypb) then
-         calc_psi = utau*yw
-      endif
+      calc_psi = lotw(yw,utau,nu)
 
       return
       end
@@ -242,6 +276,7 @@ c-----------------------------------------------------------------------
       integer flag
       real Re_tau, ypb, yw
       integer sign
+      real dlotwdy
 
       ypb = 11.062299784340414
       Re_tau = utau/nu
@@ -253,11 +288,7 @@ c-----------------------------------------------------------------------
         yw = (1+y)*Re_tau 
         sign = 1
       endif
-      if (yw .gt. ypb) then
-        calc_gpsix_y = sign*Re_tau*utau*(1.0/(0.41*yw))
-      elseif (yw .le. ypb) then
-        calc_gpsix_y = sign*Re_tau*utau
-      endif
+      calc_gpsix_y = sign*dlotwdy(yw,utau,nu)
 
       return
       end
