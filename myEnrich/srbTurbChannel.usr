@@ -470,6 +470,10 @@ c     WALL ENRICHMENT...START
 c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       if (istep.eq.0) then
+          call oprzero(psix,psiy,psiz)
+          call oprzero(gpsix_x,gpsix_y,gpsix_z)
+          call oprzero(gpsiy_x,gpsiy_y,gpsiy_z)
+          call oprzero(gpsiz_x,gpsiz_y,gpsiz_z)
          do iel = 1, nelv
           do ix = 1, lx1
            do iy = 1, ly1
@@ -483,7 +487,7 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       ! Start enrichment at time 50
 C       if (time.lt.50) then
-      if (time.lt.10) then
+      if (time.lt.0) then
         call oprzero(psix,psiy,psiz)
         call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
         call oprzero(wsx,wsy,wsz)
@@ -496,10 +500,9 @@ C       if (time.lt.50) then
 C           comp_psi = 1 ! comment for adaptation
 
           ! compute enrichment function psi
-          call oprzero(psix,psiy,psiz)
-          call oprzero(gpsix_x,gpsix_y,gpsix_z)
-          call oprzero(gpsiy_x,gpsiy_y,gpsiy_z)
-          call oprzero(gpsiz_x,gpsiz_y,gpsiz_z)
+          if (secondcall .eq. 1) then
+            call unprojenrich
+          endif
 
 C           print  *, "Printing UTI"
           do iel = 1, nelv
@@ -547,10 +550,6 @@ C      $                   uti(ix,iy_ut,iz,iel),param(2))
           endif
 
           count = 0
-
-          if (secondcall .eq. 1) then
-            call unprojenrich
-          endif
 
 C           print *, "Print uti"
 C           call srbprint(uti)
@@ -846,6 +845,7 @@ c     WALL ENRICHMENT...END
          ! reconstruct velocity field
          call add3 (vx_,vx,psix,n) !calculate actual velocity
          call outpost(psix,psiy,psiz,vx_,t,'enr')
+C          call outpost(psix,gpsix_y,psiz,vx_,t,'enr')
 C          call outpost(tr1x,tr1y,tr1z,vx_,t,'Tr1')
 C          call outpost(tr2x,tr2y,tr2z,vx_,t,'Tr2')
 C          call outpost(tr3x,tr3y,tr3z,vx_,t,'Tr3')
