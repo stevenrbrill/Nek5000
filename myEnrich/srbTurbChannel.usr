@@ -216,14 +216,15 @@ c-----------------------------------------------------------------------
       implicit none
       real x, y, z, utau, nu ! Wall distance
       integer flag
-      real Re_tau, ypb, yw
+      real Re_tau, ypb, yw, yp
       
       ypb = 11.062299784340414
+      yp = yw*utau/nu
 
-      if (yw .gt. ypb) then
-         lotw = utau*(1.0/0.41*log(yw)+5.2)
-      elseif (yw .le. ypb) then
-         lotw = utau*yw
+      if (yp .gt. ypb) then
+         lotw = utau*(1.0/0.41*log(yp)+5.2)
+      elseif (yp .le. ypb) then
+         lotw = utau*yp
       endif
 
       return
@@ -234,15 +235,16 @@ c-----------------------------------------------------------------------
       implicit none
       real x, y, z, utau, nu 
       integer flag
-      real Re_tau, ypb, yw
+      real Re_tau, ypb, yw, yp
       integer sign
 
       ypb = 11.062299784340414
       Re_tau = utau/nu
+      yp = yw*utau/nu
 
-      if (yw .gt. ypb) then
-        dlotwdy = Re_tau*utau*(1.0/(0.41*yw))
-      elseif (yw .le. ypb) then
+      if (yp .gt. ypb) then
+        dlotwdy = Re_tau*utau*(1.0/(0.41*yp))
+      elseif (yp .le. ypb) then
         dlotwdy = Re_tau*utau
       endif
 
@@ -260,9 +262,9 @@ c-----------------------------------------------------------------------
       Re_tau = utau/nu
 
       if (flag .gt. 0) then
-        yw = (1-y)*Re_tau
+        yw = (1-y)
       elseif (flag .lt. 0) then
-        yw = (1+y)*Re_tau 
+        yw = (1+y) 
       endif
       calc_psi = lotw(yw,utau,nu)
 
@@ -282,10 +284,10 @@ c-----------------------------------------------------------------------
       Re_tau = utau/nu
 
       if (flag .gt. 0) then
-        yw = (1-y)*Re_tau
+        yw = (1-y)
         sign = -1
       elseif (flag .lt. 0) then
-        yw = (1+y)*Re_tau 
+        yw = (1+y)
         sign = 1
       endif
       calc_gpsix_y = sign*dlotwdy(yw,utau,nu)
@@ -1393,3 +1395,38 @@ c     $ f(bisection,flag,up,yp,rho,mu)
 c      return
 c      end
 c-------------------------------------------------------------------
+
+C c-----------------------------------------------------------------------
+C       real function lotw (yw,utau,nu)
+C       implicit none
+C       real x, y, z, utau, nu ! Wall distance
+C       integer flag
+C       real Re_tau, ypb, yw, yp
+      
+C       yp = yw*utau/nu
+
+C       lotw = utau*((1/0.41)*log(1+0.41*yp)+7.8*(1-exp(-yp/(11.0))-
+C      $      yp/(11)*exp(-yp/3.)))
+
+
+C       return
+C       end
+
+C c-----------------------------------------------------------------------
+C       real function dlotwdy (yw,utau,nu)
+C       implicit none
+C       real x, y, z, utau, nu 
+C       integer flag
+C       real Re_tau, ypb, yw, yp
+C       integer sign
+
+C       Re_tau = utau/nu
+C       yp = yw*utau/nu
+
+C       dlotwdy = Re_tau*utau*((1/0.41)*(0.41)/(1+0.41*yp)
+C      $   +7.8*(1.0/11.0*exp(-yp/(11.0))+
+C      $      (yp-3.0)/(33)*exp(-yp/3.)))
+
+
+C       return
+C       end
