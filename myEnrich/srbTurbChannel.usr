@@ -1048,34 +1048,33 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          write(56,'(A,1pe14.7)(A,1pe14.7)') '%time = ', time, 
      $     '%Re_tau = ', Re_tau 
          write(56,'(A)') 
-     $    '%  y    y+    uu    vv    ww    uv    tt    ut    -vt'
+     $    '%  y    y+    uu    vv    ww    uv    u_tau'
 
          open(unit=57,file='mean_prof.dat')
          write(57,'(A,1pe14.7)(A,1pe14.7)') '%time = ', time,
      $     '%Re_tau = ', Re_tau
          write(57,'(A)') 
-     $    '%  y    y+    Umean    Psimean  Upolymean    Psi'
+     $    '%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau'
 
          do i = 1,nint
             yy = 1+yint(i)
             write(56,3) 
      &           yy,
      &           yy*Re_tau,
-     &           (stat_y(1*nint+i)-(stat_y(0*nint+i))**2)/u_tau**2,
-     &           stat_y(2*nint+i)/u_tau**2,
-     &           stat_y(3*nint+i)/u_tau**2,
-     &           stat_y(4*nint+i)/u_tau**2,
-     &           (stat_y(6*nint+i)-(stat_y(5*nint+i))**2)/t_tau**2,
-     &           stat_y(7*nint+i)/qw,
-     &           -stat_y(8*nint+i)/qw
+     &           (stat_y(1*nint+i)-(stat_y(0*nint+i))**2),
+     &           stat_y(2*nint+i),
+     &           stat_y(3*nint+i),
+     &           stat_y(4*nint+i),
+     &           u_tau
 
             write(57,3) 
      &           yy,
      &           yy*Re_tau, 
-     &           stat_y(0*nint+i)/u_tau,
-     &           stat_y(9*nint+i)/u_tau,
-     &           stat_y(10*nint+i)/u_tau,
-     &           psix_int(i)/u_tau
+     &           stat_y(0*nint+i),
+     &           stat_y(9*nint+i),
+     &           stat_y(10*nint+i),
+     &           psix_int(i),
+     &           u_tau
 
   3         format(1p15e17.9)
          enddo
