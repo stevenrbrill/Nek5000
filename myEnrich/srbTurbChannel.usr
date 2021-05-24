@@ -388,7 +388,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real T1_rhs_y(lx1,ly1,lz1,lelv), T1_rhs_z(lx1,ly1,lz1,lelv) 
       save T1_rhs_x, T1_rhs_y, T1_rhs_z
       save T1_rhs
-      integer comp_T1, comp_en_F, comp_psi, iy_ut
+      integer comp_T1, comp_en_F, comp_psi, iy_ut, avg_ind
       save comp_T1, comp_en_F, comp_psi
       real srbtest
       real psix_int(INTP_NMAX)
@@ -521,7 +521,9 @@ C                     do iy = 1,ly1
                       iy_ut = 1
                     endif
                     srbtest = uti(ix,iy_ut,iz,iel)
-                    utau = newton(flg,vx(ix,iy,iz,iel),yp,param(1),
+                    avg_ind = ix+(iy-1)*lx1+(iz-1)*lx1*ly1+
+     $                 (iel-1)*lx1*ly1*lz1
+                    utau = newton(flg,ravg(avg_ind,1),yp,param(1),
      $                 param(2),uti(ix,iy_ut,iz,iel),rtol,
      $                 maxiter)
                     if (utau .eq. 0.0) then
@@ -533,7 +535,7 @@ C                     do iy = 1,ly1
                       taunew(ix,iy_ut,iz,iel) = -param(1)*utau**2 ! shear stress
                     endif
 C                     print *, iel, ix, iz, ym1(ix,iy,iz,iel), yp,  
-C      $                 vx(ix,iy,iz,iel), srbtest, uti(ix,iy_ut,iz,iel), 
+C      $                 ravg(avg_ind,1), srbtest, uti(ix,iy_ut,iz,iel), 
 C      $                 taunew(ix,iy_ut,iz,iel), 
 C      $                 calc_psi(xm1(ix,iy,iz,iel),
 C      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
