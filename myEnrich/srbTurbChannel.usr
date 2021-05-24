@@ -785,22 +785,22 @@ C           comp_T1 = 1 ! Comment for adaptation
                 ! Compute dot product of gphi and gpsi
                 if (ldim == 2) then
                   call vdot2(w1,tx,ty,gpsix_x,gpsix_y,n)
-                  call vdot2(w2,tx,ty,gpsiy_x,gpsiy_y,n)
-                  call vdot2(w3,tx,ty,gpsiz_x,gpsiz_y,n)
+C                   call vdot2(w2,tx,ty,gpsiy_x,gpsiy_y,n)
+C                   call vdot2(w3,tx,ty,gpsiz_x,gpsiz_y,n)
                 endif
                 if (ldim == 3) then
                   call vdot3(w1,tx,ty,tz,gpsix_x,gpsix_y,gpsix_z,n)
-                  call vdot3(w2,tx,ty,tz,gpsiy_x,gpsiy_y,gpsiy_z,n)
-                  call vdot3(w3,tx,ty,tz,gpsiz_x,gpsiz_y,gpsiz_z,n)
+C                   call vdot3(w2,tx,ty,tz,gpsiy_x,gpsiy_y,gpsiy_z,n)
+C                   call vdot3(w3,tx,ty,tz,gpsiz_x,gpsiz_y,gpsiz_z,n)
                 endif
                 ! Multiply by Re
                 call col2(w1,vdiff(1,1,1,1,1),n)
-                call col2(w2,vdiff(1,1,1,1,1),n)
-                call col2(w3,vdiff(1,1,1,1,1),n)
+C                 call col2(w2,vdiff(1,1,1,1,1),n)
+C                 call col2(w3,vdiff(1,1,1,1,1),n)
                 ! Multiply by quadrature weights and Jacobian
                 call col2(w1,bm1,n)
-                call col2(w2,bm1,n)
-                call col2(w3,bm1,n)
+C                 call col2(w2,bm1,n)
+C                 call col2(w3,bm1,n)
                 ! Iterate over each element and add result to final sum
                 do iel = 1, nelv
                   if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
@@ -809,10 +809,10 @@ C           comp_T1 = 1 ! Comment for adaptation
                         do iy2 = 1,ly1
                          T1_rhs_x(ix,iy,iz,iel) = T1_rhs_x(ix,iy,iz,iel) 
      $                     + w1(ix2,iy2,iz2,iel)
-                         T1_rhs_y(ix,iy,iz,iel) = T1_rhs_y(ix,iy,iz,iel) 
-     $                     + w2(ix2,iy2,iz2,iel)
-                         T1_rhs_z(ix,iy,iz,iel) = T1_rhs_z(ix,iy,iz,iel) 
-     $                     + w3(ix2,iy2,iz2,iel)
+C                          T1_rhs_y(ix,iy,iz,iel) = T1_rhs_y(ix,iy,iz,iel) 
+C      $                     + w2(ix2,iy2,iz2,iel)
+C                          T1_rhs_z(ix,iy,iz,iel) = T1_rhs_z(ix,iy,iz,iel) 
+C      $                     + w3(ix2,iy2,iz2,iel)
                         enddo
                       enddo
                     enddo
@@ -823,12 +823,12 @@ C           comp_T1 = 1 ! Comment for adaptation
           enddo
           ! Add to rhs term
           call cmult (T1_rhs_x,-1.,n)
-          call cmult (T1_rhs_y,-1.,n)
-          call cmult (T1_rhs_z,-1.,n)
+C           call cmult (T1_rhs_y,-1.,n)
+C           call cmult (T1_rhs_z,-1.,n)
         endif
         call add2 (wintx,T1_rhs_x,n)
-        call add2 (wintx,T1_rhs_y,n)
-        call add2 (wintx,T1_rhs_z,n)
+C         call add2 (wintx,T1_rhs_y,n)
+C         call add2 (wintx,T1_rhs_z,n)
 
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
 C       call oprzero(psix,psiy,psiz)
