@@ -580,6 +580,9 @@ C           print *, "Print"
              endif
           enddo
 
+          ! Assume SEM basis in X and Z. Use analytical grad in y
+          call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
+
           call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
           do iel = 1, nelv
             if (flag(iel) .eq. 2) then  ! boundary element is above y=0
