@@ -388,9 +388,10 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real T1_rhs_y(lx1,ly1,lz1,lelv), T1_rhs_z(lx1,ly1,lz1,lelv) 
       save T1_rhs_x, T1_rhs_y, T1_rhs_z
       save T1_rhs
-      integer comp_T1, comp_en_F, comp_psi, iy_ut, avg_ind
+      integer comp_T1, comp_en_F, comp_psi, iy_ut, avg_ind, use_default
       save comp_T1, comp_en_F, comp_psi
-      real srbtest
+      real tau_w(lx1,ly1,lz1,lelv)
+      real srbtest, ut_param
       real psix_int(INTP_NMAX)
       save psix_int
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
@@ -468,6 +469,8 @@ c     WALL ENRICHMENT...START
       !if(nid.eq.0) write(6,*) "Perform wall enrichment"
       
 c      call add3 (vx_,vx,psix,n) !calculate actual velocity
+
+      use_default = 1
 
       if (istep.eq.0) then
           call oprzero(psix,psiy,psiz)
@@ -567,13 +570,17 @@ C           print *, "Print"
                 do ix = 1,lx1
                   do iz = 1,lz1
                     do iy = 1,ly1
+                      ut_param = uti(ix,iy_ut,iz,iel)
+                      if (use_default .eq. 1) then
+                        ut_param = utau_ref
+                      endif
                       psix(ix,iy,iz,iel) = calc_psi(xm1(ix,iy,iz,iel),
      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
-     $                   uti(ix,iy_ut,iz,iel),param(2))
+     $                   ut_param,param(2))
                       gpsix_y(ix,iy,iz,iel) = 
      $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
-     $                   uti(ix,iy_ut,iz,iel),param(2))
+     $                   ut_param,param(2))
                     enddo
                   enddo
                 enddo
@@ -590,10 +597,14 @@ C           print *, "Print"
                   do iz = 1,lz1
 C                     do iy = 1,ly1
                       iy = ly1
+                      ut_param = uti(ix,iy_ut,iz,iel)
+                      if (use_default .eq. 1) then
+                        ut_param = utau_ref
+                      endif
                       psix_rhs(ix,iy,iz,iel) = 
      $                   calc_psi(xm1(ix,iy,iz,iel),
      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
-     $                   utau_ref,param(2))
+     $                   ut_param,param(2))
 C                     enddo
                   enddo
                 enddo
@@ -603,10 +614,46 @@ C                     enddo
                   do iz = 1,lz1
 C                     do iy = 1,ly1
                       iy = 1
+                      ut_param = uti(ix,iy_ut,iz,iel)
+                      if (use_default .eq. 1) then
+                        ut_param = utau_ref
+                      endif
                       psix_rhs(ix,iy,iz,iel) = 
      $                   calc_psi(xm1(ix,iy,iz,iel),
      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
-     $                   utau_ref,param(2))
+     $                   ut_param,param(2))
+C                     enddo
+                  enddo
+                 enddo
+             endif
+          enddo
+
+          call rzero  (tau_w,n)
+          do iel = 1, nelv
+            if (flag(iel) .eq. 1) then  ! boundary element is above y=0
+                do ix = 1,lx1
+                  do iz = 1,lz1
+C                     do iy = 1,ly1
+                      iy = ly1
+                      ut_param = uti(ix,iy_ut,iz,iel)
+                      if (use_default .eq. 1) then
+                        ut_param = utau_ref
+                      endif
+                      tau_w(ix,iy,iz,iel) = -param(1)*ut_param*ut_param
+C                     enddo
+                  enddo
+                enddo
+
+             else if (flag(iel) .eq. -1) then ! boundary element below y=0
+                 do ix = 1,lx1
+                  do iz = 1,lz1
+C                     do iy = 1,ly1
+                      iy = 1
+                      ut_param = uti(ix,iy_ut,iz,iel)
+                      if (use_default .eq. 1) then
+                        ut_param = utau_ref
+                      endif
+                      tau_w(ix,iy,iz,iel) = -param(1)*ut_param*ut_param
 C                     enddo
                   enddo
                  enddo
