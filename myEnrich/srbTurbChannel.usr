@@ -628,37 +628,37 @@ C                     enddo
              endif
           enddo
 
-          call rzero  (tau_w,n)
-          do iel = 1, nelv
-            if (flag(iel) .eq. 1) then  ! boundary element is above y=0
-                do ix = 1,lx1
-                  do iz = 1,lz1
-C                     do iy = 1,ly1
-                      iy = ly1
-                      ut_param = uti(ix,iy_ut,iz,iel)
-                      if (use_default .eq. 1) then
-                        ut_param = utau_ref
-                      endif
-                      tau_w(ix,iy,iz,iel) = -param(1)*ut_param*ut_param
-C                     enddo
-                  enddo
-                enddo
+C           call rzero  (tau_w,n)
+C           do iel = 1, nelv
+C             if (flag(iel) .eq. 1) then  ! boundary element is above y=0
+C                 do ix = 1,lx1
+C                   do iz = 1,lz1
+C C                     do iy = 1,ly1
+C                       iy = ly1
+C                       ut_param = uti(ix,iy_ut,iz,iel)
+C                       if (use_default .eq. 1) then
+C                         ut_param = utau_ref
+C                       endif
+C                       tau_w(ix,iy,iz,iel) = -param(1)*ut_param*ut_param
+C C                     enddo
+C                   enddo
+C                 enddo
 
-             else if (flag(iel) .eq. -1) then ! boundary element below y=0
-                 do ix = 1,lx1
-                  do iz = 1,lz1
-C                     do iy = 1,ly1
-                      iy = 1
-                      ut_param = uti(ix,iy_ut,iz,iel)
-                      if (use_default .eq. 1) then
-                        ut_param = utau_ref
-                      endif
-                      tau_w(ix,iy,iz,iel) = -param(1)*ut_param*ut_param
-C                     enddo
-                  enddo
-                 enddo
-             endif
-          enddo
+C              else if (flag(iel) .eq. -1) then ! boundary element below y=0
+C                  do ix = 1,lx1
+C                   do iz = 1,lz1
+C C                     do iy = 1,ly1
+C                       iy = 1
+C                       ut_param = uti(ix,iy_ut,iz,iel)
+C                       if (use_default .eq. 1) then
+C                         ut_param = utau_ref
+C                       endif
+C                       tau_w(ix,iy,iz,iel) = -param(1)*ut_param*ut_param
+C C                     enddo
+C                   enddo
+C                  enddo
+C              endif
+C           enddo
         endif
 
         if (secondcall .ne. 1) then
