@@ -6,4 +6,4 @@ Box
 -3  -6                                nelx,nely,nelz for Box
 0 1 1.                             x0,x1,gain
 0 1 1.
-P  ,P  ,sh ,sh   
+P  ,P  ,W  ,W    
