@@ -671,6 +671,8 @@ C           enddo
           ! compute forcing terms in 3 directions
           call oprzero(wsx,wsy,wsz)
 
+C           call add2   (wsx,tau_w,n)
+
           ! ----------------------------------------------------------------
           ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
           ! + Term 4: -rho*dot(psi,gradient(psi))     Should be zero
