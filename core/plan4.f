@@ -98,7 +98,8 @@ c
          ! compute velocity
          if(ifstrs .and. .not.ifaxis) then
             call bcneutr
-            call srbbcdirvc  (vx,vy,vz,v1mask,v2mask,v3mask) 
+            ! call srbbcneutr
+            ! call srbbcdirvc  (vx,vy,vz,v1mask,v2mask,v3mask) 
             call cresvsp_weak(res1,res2,res3,h1,h2)
          else
             call cresvsp     (res1,res2,res3,h1,h2)

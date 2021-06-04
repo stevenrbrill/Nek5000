@@ -664,6 +664,8 @@ c     write(6,*) 'BCDIRV: ifield',ifield
  2000    CONTINUE
          DO 2010 IE=1,NEL
          DO 2010 IFACE=1,NFACES
+            ! IF ((CBC(IFACE,IE,IFIELD).EQ.'W  ') .or. 
+C     ! $           (CBC(IFACE,IE,IFIELD).EQ.' ')) THEN
             IF (CBC(IFACE,IE,IFIELD).EQ.'W  ') THEN
                CALL FACEV (TMP1,IE,IFACE,0.0,lx1,ly1,lz1)
                CALL FACEV (TMP2,IE,IFACE,0.0,lx1,ly1,lz1)
@@ -760,6 +762,7 @@ C
 C     Velocity boundary conditions
 C
 c     write(6,*) 'BCDIRV: ifield',ifield
+      ! print *, "Print SRBBCDIRVC?"
          DO 2010 IE=1,NEL
          DO 2010 IFACE=1,NFACES
             IF (CBC(IFACE,IE,IFIELD).EQ.'sh ') THEN
@@ -792,6 +795,10 @@ C
       ELSE
          CALL RMASK (V1,V2,V3,NELV)
       ENDIF
+
+      ! print *, "Print Wall BC"
+      ! call srbprint(TMP1)
+      ! print *, "Print"
 
       CALL ADD2(V1,TMP1,NTOT)
       CALL ADD2(V2,TMP2,NTOT)
@@ -1214,6 +1221,48 @@ C
 C
       RETURN
       END
+
+c-----------------------------------------------------------------------
+      SUBROUTINE SRBFACEIV (CB,V1,V2,V3,IEL,IFACE,NX,NY,NZ)
+C
+C     Assign fortran function boundary conditions to 
+C     face IFACE of element IEL for vector (V1,V2,V3).
+C
+      INCLUDE 'SIZE'
+      INCLUDE 'NEKUSE'
+      INCLUDE 'PARALLEL'
+C
+      dimension v1(nx,ny,nz),v2(nx,ny,nz),v3(nx,ny,nz)
+      character cb*3
+c
+      character*1 cb1(3)
+c
+      common  /nekcb/ cb3
+      character*3 cb3
+      cb3 = cb
+c
+      call chcopy(cb1,cb,3)
+c
+      ieg = lglel(iel)
+      CALL FACIND (KX1,KX2,KY1,KY2,KZ1,KZ2,NX,NY,NZ,IFACE)
+C
+      IF ((CB.EQ.'W  ') .or. (CB.EQ.'V  '))THEN
+C
+         DO 200 IZ=KZ1,KZ2
+         DO 200 IY=KY1,KY2
+         DO 200 IX=KX1,KX2
+            if (optlevel.le.2) CALL NEKASGN (IX,IY,IZ,IEL)
+            CALL USERBC  (IX,IY,IZ,IFACE,IEG)
+            V1(IX,IY,IZ) = TRX
+            V2(IX,IY,IZ) = TRY
+            V3(IX,IY,IZ) = TRZ
+  200    CONTINUE
+         RETURN
+C
+      ENDIF
+C
+      RETURN
+      END
 c-----------------------------------------------------------------------
       subroutine nekasgn (ix,iy,iz,e)
 C
@@ -1388,8 +1437,64 @@ c            IF (CB.EQ.'ms '.or.cb.eq.'mm ') THEN
                 CALL TRST3D (TRX,TRY,TRZ,SIGST,IEL,IFC)
              ENDIF
          ENDIF
+           
+  ! print *, "Print SHEAR BC"
+  !         call srbprint(TRX)
+  !         print *, "Print"
+C 
+  120      CALL ADD2 (BFX(1,1,1,IEL),TRX,NXYZ1)
+         CALL ADD2 (BFY(1,1,1,IEL),TRY,NXYZ1)
+         IF (ldim.EQ.3) CALL ADD2 (BFZ(1,1,1,IEL),TRZ,NXYZ1)
 C
-  120    CALL ADD2 (BFX(1,1,1,IEL),TRX,NXYZ1)
+  100 CONTINUE
+C
+      RETURN
+      END
+c-----------------------------------------------------------------------
+      SUBROUTINE SRBBCNEUTR
+C
+      INCLUDE 'SIZE'
+      INCLUDE 'SOLN'
+      INCLUDE 'GEOM'
+      INCLUDE 'INPUT'
+      COMMON /SCRSF/ TRX(LX1,LY1,LZ1)
+     $             , TRY(LX1,LY1,LZ1)
+     $             , TRZ(LX1,LY1,LZ1)
+      COMMON /CTMP0/ STC(LX1,LY1,LZ1)
+      REAL SIGST(LX1,LY1)
+C
+      LOGICAL IFALGN,IFNORX,IFNORY,IFNORZ
+      common  /nekcb/ cb
+      CHARACTER CB*3
+C
+      IFLD  = 1
+      NFACE = 2*ldim
+      NXY1  = lx1*ly1
+      NXYZ1 = lx1*ly1*lz1
+C
+      DO 100 IEL=1,NELV
+      DO 100 IFC=1,NFACE
+C
+         CB  = CBC (IFC,IEL,IFLD)
+         BC1 = BC(1,IFC,IEL,IFLD)
+         BC2 = BC(2,IFC,IEL,IFLD)
+         BC3 = BC(3,IFC,IEL,IFLD)
+         BC4 = BC(4,IFC,IEL,IFLD)
+         CALL RZERO3 (TRX,TRY,TRZ,NXYZ1)
+C
+C        Prescribed tractions and shear tractions
+C
+         IF ((CB.EQ.'W  ') .or. (CB.EQ.'V  ')) THEN
+             CALL SRBFACEIV (CB,TRX,TRY,TRZ,IEL,IFC,lx1,ly1,lz1)
+             CALL FACCVS (TRX,TRY,TRZ,AREA(1,1,IFC,IEL),IFC)
+             IF (IFQINP(IFC,IEL)) CALL GLOBROT (TRX,TRY,TRZ,IEL,IFC)
+             GOTO 120
+         ENDIF          
+           ! print *, "Print SHEAR BC"
+           ! call srbprint(TRX)
+           ! print *, "Print"
+C 
+  120      CALL ADD2 (BFX(1,1,1,IEL),TRX,NXYZ1)
          CALL ADD2 (BFY(1,1,1,IEL),TRY,NXYZ1)
          IF (ldim.EQ.3) CALL ADD2 (BFZ(1,1,1,IEL),TRZ,NXYZ1)
 C
