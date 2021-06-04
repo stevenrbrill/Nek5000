@@ -1203,6 +1203,15 @@ c-----------------------------------------------------------------------
 
       e = gllel(ieg)
 
+      if((cbc(iside,e,1).eq.'v  ') .or. (cbc(iside,e,1).eq.'V  ')) then
+        UX=0.0
+        UY=0.0
+        UZ=0.0
+        TRX=-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
+        TRY=0.0
+        TRZ=0.0
+      endif
+
 c     Imposing shear stress B.C.s
       if(cbc(iside,e,1).eq.'sh ') then
         TRX=taunew(ix,iy,iz,e) !-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
@@ -1307,12 +1316,14 @@ c-----------------------------------------------------------------------
       do iel=1,nelt
       do ifc=1,2*ndim
          if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
-     $       (cbc(ifc,iel,1) .eq. 'W  ')) then 
+     $       (cbc(ifc,iel,1) .eq. 'W  ') .or. 
+     $       (cbc(ifc,iel,1) .eq. 'V  ')) then 
            boundaryID(ifc,iel) = 1
          endif 
          cbc(ifc,iel,2) = cbc(ifc,iel,1) 
          if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
-     $       (cbc(ifc,iel,1) .eq. 'W  ')) then 
+     $       (cbc(ifc,iel,1) .eq. 'W  ') .or.
+     $       (cbc(ifc,iel,1) .eq. 'V  ')) then 
            cbc(ifc,iel,2) = 't  '
          endif
       enddo
@@ -1325,12 +1336,14 @@ c-----------------------------------------------------------------------
       do iel=1,nelv
          do ifc=1,2*ldim
            if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
-     $          (cbc(ifc,iel,1) .eq. 'W  ')).AND.(ym1(1,1,1,iel).gt.0)) 
+     $          (cbc(ifc,iel,1) .eq. 'W  ') .or.
+     $          (cbc(ifc,iel,1) .eq. 'V  ')).AND.(ym1(1,1,1,iel).gt.0)) 
      $          then
               flag(iel) = 1
               top_y = ym1(1,1,1,iel)
            else if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
-     $               (cbc(ifc,iel,1) .eq. 'W  ')).AND.
+     $               (cbc(ifc,iel,1) .eq. 'W  ') .or.
+     $               (cbc(ifc,iel,1) .eq. 'V  ')).AND.
      $               (ym1(1,1,1,iel).lt.0)) then
               flag(iel) = -1
               bot_y = ym1(1,ly1,1,iel)
