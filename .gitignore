@@ -4,6 +4,12 @@
 *.mod
 *.o
 *0.f*
+*.jpg
+*.txt
+*.m
+*.dat
+*.nek5000
+*.zip
 
 # tool executables built by running maketools
 bin/cgns2nek
@@ -25,3 +31,4 @@ myEnrich/makefile
 myEnrich/*.out
 myEnrich/*.slurm
 myEnrich/*.dat
+myEnrich/*.txt
