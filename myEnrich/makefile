@@ -1,17 +1,17 @@
-### makefile automatically created by makenek 06/02/2021 03:25:12 ###
+### makefile automatically created by makenek 03/29/2021 10:12:12 ###
 OBJDIR=obj
 BINNAME=nek5000
 LIB=$(OBJDIR)/libnek5000.a
 CASENAME:=srbTurbChannel
-CASEDIR:=/home/ihme/srbrill/research/myNek5000/Nek5000/myEnrich
-S:=/home/ihme/srbrill/research/myNek5000/Nek5000
+CASEDIR:=/home/steven/Documents/Research/Nek5000/myEnrich
+S:=/home/steven/Documents/Research/Nek5000
 SCMT=$S/core/cmt
 OPT_INCDIR=./
 
 LD=mpif77
 FC=mpif77
 CC=mpicc
-FFLAGS+=-cpp -fdefault-real-8 -fdefault-double-8 -std=legacy -O3
+FFLAGS+=-cpp -fdefault-real-8 -fdefault-double-8 -std=legacy 
 CFLAGS+=-O3
 LDFLAGS+= -Wl,--allow-multiple-definition
 

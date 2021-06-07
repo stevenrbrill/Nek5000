@@ -1180,19 +1180,6 @@ C
             V3(IX,IY,IZ) = TRZ
   200    CONTINUE
          RETURN
-
-C      ELSEIF (CB.EQ.'W  ' .OR. CB.EQ.'w  ') THEN
-CC
-C         DO 201 IZ=KZ1,KZ2
-C         DO 201 IY=KY1,KY2
-C         DO 201 IX=KX1,KX2
-C            if (optlevel.le.2) CALL NEKASGN (IX,IY,IZ,IEL)
-C            CALL USERBC  (IX,IY,IZ,IFACE,IEG)
-C            V1(IX,IY,IZ) = TRX
-C            V2(IX,IY,IZ) = TRY
-C            V3(IX,IY,IZ) = TRZ
-C  201    CONTINUE
-C         RETURN
 C
       ELSEIF (CB.EQ.'sl ' .OR. CB.EQ.'shl') THEN
 C

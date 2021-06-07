@@ -1,6 +1,6 @@
-NEK_SOURCE_ROOT=/home/ihme/srbrill/research/myNek5000/Nek5000
+NEK_SOURCE_ROOT=/home/steven/Documents/Research/Nek5000
 FC=mpif77
-FFLAGS=-O3
+FFLAGS=
 FCPP=-cpp
 FR8=-fdefault-real-8 -fdefault-double-8
 FF77=-std=legacy

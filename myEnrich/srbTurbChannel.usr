@@ -13,9 +13,9 @@ c mesh dimensions
 #define PI (4.*atan(1.))
 #define XLEN (2.*PI)
 #define ZLEN PI
-#define NUMBER_ELEMENTS_X 8
+#define NUMBER_ELEMENTS_X 4
 #define NUMBER_ELEMENTS_Y 14
-#define NUMBER_ELEMENTS_Z 8
+#define NUMBER_ELEMENTS_Z 4
 
 c-----------------------------------------------------------------------
       subroutine projenrich ()
@@ -598,7 +598,7 @@ C           print *, "Print"
                   do iz = 1,lz1
 C                     do iy = 1,ly1
                       iy = ly1
-                      ut_param = uti(ix,iy,iz,iel)
+                      ut_param = uti(ix,iy_ut,iz,iel)
                       if (use_default .eq. 1) then
                         ut_param = utau_ref
                       endif
@@ -615,7 +615,7 @@ C                     enddo
                   do iz = 1,lz1
 C                     do iy = 1,ly1
                       iy = 1
-                      ut_param = uti(ix,iy,iz,iel)
+                      ut_param = uti(ix,iy_ut,iz,iel)
                       if (use_default .eq. 1) then
                         ut_param = utau_ref
                       endif

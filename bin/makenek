@@ -5,7 +5,7 @@ set -a
 #-------------------------------------------------------------------------------
 
 # source path 
-NEK_SOURCE_ROOT="/home/ihme/srbrill/research/myNek5000/Nek5000" 
+NEK_SOURCE_ROOT="/home/steven/Documents/Research/Nek5000" 
 
 # Linker
 #LD="mpif77"
@@ -22,8 +22,8 @@ NEK_SOURCE_ROOT="/home/ihme/srbrill/research/myNek5000/Nek5000"
 #-------------------------------------------------------------------------------
 
 # optional compiler flags
-FFLAGS="-O3"
-CFLAGS="-O3"
+#FFLAGS=""
+#CFLAGS=""
 
 # optional linking flags
 #USR_LFLAGS+=" -L/usr/lib -lfoo"
