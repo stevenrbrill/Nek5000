@@ -598,7 +598,7 @@ C           print *, "Print"
                   do iz = 1,lz1
 C                     do iy = 1,ly1
                       iy = ly1
-                      ut_param = uti(ix,iy_ut,iz,iel)
+                      ut_param = uti(ix,iy,iz,iel)
                       if (use_default .eq. 1) then
                         ut_param = utau_ref
                       endif
@@ -615,7 +615,7 @@ C                     enddo
                   do iz = 1,lz1
 C                     do iy = 1,ly1
                       iy = 1
-                      ut_param = uti(ix,iy_ut,iz,iel)
+                      ut_param = uti(ix,iy,iz,iel)
                       if (use_default .eq. 1) then
                         ut_param = utau_ref
                       endif
