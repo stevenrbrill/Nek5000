@@ -14,7 +14,7 @@ c mesh dimensions
 #define XLEN (2.*PI)
 #define ZLEN PI
 #define NUMBER_ELEMENTS_X 4
-#define NUMBER_ELEMENTS_Y 14
+#define NUMBER_ELEMENTS_Y 4
 #define NUMBER_ELEMENTS_Z 4
 
 c-----------------------------------------------------------------------
@@ -218,14 +218,7 @@ c-----------------------------------------------------------------------
       integer flag
       real Re_tau, ypb, yw, yp
       
-      ypb = 11.062299784340414
-      yp = yw*utau/nu
-
-      if (yp .gt. ypb) then
-         lotw = utau*(1.0/0.41*log(yp)+5.2)
-      elseif (yp .le. ypb) then
-         lotw = utau*yp
-      endif
+      lotw = 3./2.*(1.-yw*yw)
 
       return
       end
@@ -238,15 +231,7 @@ c-----------------------------------------------------------------------
       real Re_tau, ypb, yw, yp
       integer sign
 
-      ypb = 11.062299784340414
-      Re_tau = utau/nu
-      yp = yw*utau/nu
-
-      if (yp .gt. ypb) then
-        dlotwdy = Re_tau*utau*(1.0/(0.41*yp))
-      elseif (yp .le. ypb) then
-        dlotwdy = Re_tau*utau
-      endif
+      dlotwdy = -3./2.*2.*yw
 
       return
       end
@@ -259,14 +244,7 @@ c-----------------------------------------------------------------------
       real Re_tau, ypb, yw
       real lotw
       
-      Re_tau = utau/nu
-
-      if (flag .gt. 0) then
-        yw = (1-y)
-      elseif (flag .lt. 0) then
-        yw = (1+y) 
-      endif
-      calc_psi = lotw(yw,utau,nu)
+      calc_psi = lotw(y,utau,nu)
 
       return
       end
@@ -280,17 +258,7 @@ c-----------------------------------------------------------------------
       integer sign
       real dlotwdy
 
-      ypb = 11.062299784340414
-      Re_tau = utau/nu
-
-      if (flag .gt. 0) then
-        yw = (1-y)
-        sign = -1
-      elseif (flag .lt. 0) then
-        yw = (1+y)
-        sign = 1
-      endif
-      calc_gpsix_y = sign*dlotwdy(yw,utau,nu)
+      calc_gpsix_y = dlotwdy(y,utau,nu)
 
       return
       end
@@ -473,6 +441,12 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
       use_default = 1
 
       if (istep.eq.0) then
+        call oprzero(psix,psiy,psiz)
+        call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
+        call oprzero(wsx,wsy,wsz)
+        call oprzero(wintx,winty,wintz)
+        call oprzero(wrhsx,wrhsy,wrhsz)
+        
           call oprzero(psix,psiy,psiz)
           call oprzero(gpsix_x,gpsix_y,gpsix_z)
           call oprzero(gpsiy_x,gpsiy_y,gpsiy_z)
@@ -901,7 +875,7 @@ c     WALL ENRICHMENT...END
       if (istep.eq.0 .or. ifoutfld) then
          ! reconstruct velocity field
          call add3 (vx_,vx,psix,n) !calculate actual velocity
-         call outpost(psix,psiy,psiz,vx_,t,'enr')
+         call outpost(psix,psiy,gpsix_y,vx_,t,'enr')
 C          call outpost(psix,gpsix_y,psiz,vx_,t,'enr')
 C          call outpost(tr1x,tr1y,tr1z,vx_,t,'Tr1')
 C          call outpost(tr2x,tr2y,tr2z,vx_,t,'Tr2')
@@ -1236,39 +1210,15 @@ c-----------------------------------------------------------------------
 
       real C, k, kx, ky
 
-      Re_tau = 543.496 
-      C      = 5.17
-      k      = 0.41
-
-      yp = (1-y)*Re_tau
-      if (y.lt.0) yp = (1+y)*Re_tau
-      
-      ! Reichardt function
-      ux  = 1/k*log(1+k*yp) + (C - (1/k)*log(k)) *
-     $      (1 - exp(-yp/11) - yp/11*exp(-yp/3))
-      ux  = ux * Re_tau*param(2)
-
-      eps = 1e-2
-      kx  = 23
-      kz  = 13
-
-      alpha = kx * 2*PI/XLEN
-      beta  = kz * 2*PI/ZLEN 
-
-      ! add perturbation to trigger turbulence 
       if (ldim == 3) then
-        ux  = ux  + eps*beta  * sin(alpha*x)*cos(beta*z) 
-        uy  =       eps       * sin(alpha*x)*sin(beta*z)
-        uz  =      -eps*alpha * cos(alpha*x)*sin(beta*z)
+        ux  = 3./2.*(1.-y*y) 
+        uy  = 0.
+        uz  = 0.
       elseif (ldim == 2) then 
-        ux  = ux  + eps  * sin(alpha*x)
-        uy  =       eps  * sin(alpha*x)
+        ux  = 3./2.*(1.-y*y) 
+        uy  = 0.
         uz  = 0.
       endif
-
-      ! thin boundary layer at the lower wall
-      gamma = 5e-6 ! initial thickness
-      temp = erfc((1+y)/sqrt(1./param(8) * gamma))
 
       return
       end
