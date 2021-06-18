@@ -212,54 +212,91 @@ c-----------------------------------------------------------------------
       end
 
 c-----------------------------------------------------------------------
-      real function calc_psi  (x,y,z,flag)
+      real function lotw (yw,utau,nu)
       implicit none
-      real x, y, z ! Wall distance
+      real x, y, z, utau, nu ! Wall distance
       integer flag
-      real Re_tau, utau_ref, ypb, yw
-      Re_tau = 550
+      real Re_tau, ypb, yw, yp
+      
       ypb = 11.062299784340414
-      utau_ref = 5.43496e-02
+      yp = yw*utau/nu
 
+      if (yp .gt. ypb) then
+         lotw = utau*(1.0/0.41*log(yp)+5.2)
+      elseif (yp .le. ypb) then
+         lotw = utau*yp
+      endif
 
-      if (flag .gt. 0) then
-        yw = (1-y)*Re_tau
-      elseif (flag .lt. 0) then
-        yw = (1+y)*Re_tau 
-      endif
-      if (yw .gt. ypb) then
-         calc_psi = utau_ref*(1.0/0.41*log(yw)+5.2)
-      elseif (yw .le. ypb) then
-         calc_psi = utau_ref*yw
-      endif
+C       lotw = utau*((1/0.41)*log(1+0.41*yp)+7.8*
+C      $      (1-exp(-yp/(11))-yp/(11)*exp(-yp/(3)))) ! Reichardt
 
       return
       end
 
 c-----------------------------------------------------------------------
-      real function calc_gpsix_y  (x,y,z,flag)
+      real function dlotwdy (yw,utau,nu)
       implicit none
-      real x, y, z 
+      real x, y, z, utau, nu 
       integer flag
-      real Re_tau, utau_ref, ypb, yw
+      real Re_tau, ypb, yw, yp
       integer sign
-      Re_tau = 550
-      ypb = 11.062299784340414
-      utau_ref = 5.43496e-02
 
+      ypb = 11.062299784340414
+      Re_tau = utau/nu
+      yp = yw*utau/nu
+
+      if (yp .gt. ypb) then
+        dlotwdy = Re_tau*utau*(1.0/(0.41*yp))
+      elseif (yp .le. ypb) then
+        dlotwdy = Re_tau*utau
+      endif
+
+C       dlotwdy = Re_tau*utau*(1/(1+0.41*yp)+7.8*
+C      $      (1/11*exp(-yp/(11))+(yp-3)/(33)*exp(-yp/(3)))) ! Reichardt
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      real function calc_psi  (x,y,z,flag,utau,nu)
+      implicit none
+      real x, y, z, utau, nu ! Wall distance
+      integer flag
+      real Re_tau, ypb, yw
+      real lotw
+      
+      Re_tau = utau/nu
 
       if (flag .gt. 0) then
-        yw = (1-y)*Re_tau
+        yw = (1-y)
+      elseif (flag .lt. 0) then
+        yw = (1+y) 
+      endif
+      calc_psi = lotw(yw,utau,nu)
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      real function calc_gpsix_y  (x,y,z,flag,utau,nu)
+      implicit none
+      real x, y, z, utau, nu 
+      integer flag
+      real Re_tau, ypb, yw
+      integer sign
+      real dlotwdy
+
+      ypb = 11.062299784340414
+      Re_tau = utau/nu
+
+      if (flag .gt. 0) then
+        yw = (1-y)
         sign = -1
       elseif (flag .lt. 0) then
-        yw = (1+y)*Re_tau 
+        yw = (1+y)
         sign = 1
       endif
-      if (yw .gt. ypb) then
-        calc_gpsix_y = sign*Re_tau*utau_ref*(1.0/(0.41*yw))
-      elseif (yw .le. ypb) then
-        calc_gpsix_y = sign*Re_tau*utau_ref
-      endif
+      calc_gpsix_y = sign*dlotwdy(yw,utau,nu)
 
       return
       end
@@ -357,8 +394,10 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real T1_rhs_y(lx1,ly1,lz1,lelv), T1_rhs_z(lx1,ly1,lz1,lelv) 
       save T1_rhs_x, T1_rhs_y, T1_rhs_z
       save T1_rhs
-      integer comp_T1, comp_en_F, comp_psi
+      integer comp_T1, comp_en_F, comp_psi, iy_ut, avg_ind, use_default
       save comp_T1, comp_en_F, comp_psi
+      real tau_w(lx1,ly1,lz1,lelv)
+      real srbtest, ut_param
       real psix_int(INTP_NMAX)
       save psix_int
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
@@ -437,6 +476,27 @@ c     WALL ENRICHMENT...START
       
 c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
+      use_default = 1
+
+      if (istep.eq.0) then
+            print *, "Print vx userf first"
+            call srbprint(vx)
+            print *, "Print"
+          call oprzero(psix,psiy,psiz)
+          call oprzero(gpsix_x,gpsix_y,gpsix_z)
+          call oprzero(gpsiy_x,gpsiy_y,gpsiy_z)
+          call oprzero(gpsiz_x,gpsiz_y,gpsiz_z)
+         do iel = 1, nelv
+          do ix = 1, lx1
+           do iy = 1, ly1
+            do iz = 1, lz1
+               uti(ix,iy,iz,iel) = 0.08 ! Guess value for N-R solver
+            enddo
+           enddo
+          enddo
+         enddo
+      endif
+
       ! Start enrichment at time 50
 C       if (time.lt.50) then
       if (time.lt.0) then
@@ -449,33 +509,96 @@ C       if (time.lt.50) then
       else
 
         if (comp_psi .ne. 1) then
-          comp_psi = 1
+C           if (use_default .eq. 1) then
+C             comp_psi = 1 ! comment for adaptation
+C           endif
 
           ! compute enrichment function psi
-          call oprzero(psix,psiy,psiz)
-          call oprzero(gpsix_x,gpsix_y,gpsix_z)
-          call oprzero(gpsiy_x,gpsiy_y,gpsiy_z)
-          call oprzero(gpsiz_x,gpsiz_y,gpsiz_z)
-
-          ! TODO: Add computing grad psi
-          Re_tau = 550
-          ypb = 11.062299784340414
-          
           do iel = 1, nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
                 do ix = 1,lx1
                   do iz = 1,lz1
-                    do iy = 1,ly1
-                      psix(ix,iy,iz,iel) = calc_psi(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel))
-                      gpsix_y(ix,iy,iz,iel) = 
-     $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel))
-                    enddo
+C                     do iy = 1,ly1
+                    ! Get wall distance and y index
+                    if (flag(iel) .eq. 1) then
+                      iy = 1
+                      yp = 1-ym1(ix,iy,iz,iel)
+                      iy_ut = ly1
+                    else
+                      iy = ly1
+                      yp = 1+ym1(ix,iy,iz,iel)
+                      iy_ut = 1
+                    endif
+                    srbtest = uti(ix,iy_ut,iz,iel)
+                    avg_ind = ix+(iy-1)*lx1+(iz-1)*lx1*ly1+
+     $                 (iel-1)*lx1*ly1*lz1
+                    utau = newton(flg,ravg(avg_ind,1),yp,param(1),
+     $                 param(2),uti(ix,iy_ut,iz,iel),rtol,
+     $                 maxiter)
+                    if (utau .eq. 0.0) then
+                      count = count + 1 ! count unconverged solutions
+                      taunew(ix,iy,iz,iel) = -param(1)
+     $                                        *uti(ix,iy_ut,iz,iel)**2
+                    else
+                      uti(ix,iy_ut,iz,iel) = utau ! update guess value                  ! for next time step
+                      taunew(ix,iy_ut,iz,iel) = -param(1)*utau**2 ! shear stress
+                    endif
+C                     print *, iel, ix, iz, ym1(ix,iy,iz,iel), yp,  
+C      $                 ravg(avg_ind,1), srbtest, uti(ix,iy_ut,iz,iel), 
+C      $                 taunew(ix,iy_ut,iz,iel), 
+C      $                 calc_psi(xm1(ix,iy,iz,iel),
+C      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+C      $                   uti(ix,iy_ut,iz,iel),param(2))
                   enddo
-                 enddo
+                enddo
              endif
           enddo
+
+C           print *, "Print taunew"
+C           call srbprint(taunew)
+C           print *, "Print"
+
+          count = iglsum(count,1)
+
+          if(nid.eq.0) then
+            write(6,*) 'Solutions not converged: ', count
+          endif
+
+          count = 0
+
+C           print *, "Print uti"
+C           call srbprint(uti)
+C           print *, "Print"
+          
+          do iel = 1, nelv
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
+              if (flag(iel) .eq. 1) then
+                iy_ut = ly1
+              else
+                iy_ut = 1
+              endif
+                do ix = 1,lx1
+                  do iz = 1,lz1
+                    do iy = 1,ly1
+                      ut_param = uti(ix,iy_ut,iz,iel)
+                      if (use_default .eq. 1) then
+                        ut_param = utau_ref
+                      endif
+                      psix(ix,iy,iz,iel) = calc_psi(xm1(ix,iy,iz,iel),
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+     $                   ut_param,param(2))
+                      gpsix_y(ix,iy,iz,iel) = 
+     $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+     $                   ut_param,param(2))
+                    enddo
+                  enddo
+                enddo
+             endif
+          enddo
+
+          ! Assume SEM basis in X and Z. Use analytical grad in y
+          call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
 
           call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
           do iel = 1, nelv
@@ -484,9 +607,14 @@ C       if (time.lt.50) then
                   do iz = 1,lz1
 C                     do iy = 1,ly1
                       iy = ly1
+                      ut_param = uti(ix,iy,iz,iel)
+                      if (use_default .eq. 1) then
+                        ut_param = utau_ref
+                      endif
                       psix_rhs(ix,iy,iz,iel) = 
      $                   calc_psi(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel))
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+     $                   ut_param,param(2))
 C                     enddo
                   enddo
                 enddo
@@ -496,25 +624,83 @@ C                     enddo
                   do iz = 1,lz1
 C                     do iy = 1,ly1
                       iy = 1
+                      ut_param = uti(ix,iy,iz,iel)
+                      if (use_default .eq. 1) then
+                        ut_param = utau_ref
+                      endif
                       psix_rhs(ix,iy,iz,iel) = 
      $                   calc_psi(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel))
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+     $                   ut_param,param(2))
 C                     enddo
                   enddo
                  enddo
              endif
           enddo
+
+          print *, "Print x"
+          call srbprint(xm1)
+          print *, "Print"
+          print *, "Print y"
+          call srbprint(ym1)
+          print *, "Print"
+          print *, "Print psix"
+          call srbprint(psix)
+          print *, "Print"
+          print *, "Print gpsix"
+          call srbprint(gpsix_y)
+          print *, "Print"
+
+C           call rzero  (tau_w,n)
+C           do iel = 1, nelv
+C             if (flag(iel) .eq. 1) then  ! boundary element is above y=0
+C                 do ix = 1,lx1
+C                   do iz = 1,lz1
+C C                     do iy = 1,ly1
+C                       iy = ly1
+C                       ut_param = uti(ix,iy_ut,iz,iel)
+C                       if (use_default .eq. 1) then
+C                         ut_param = utau_ref
+C                       endif
+C                       tau_w(ix,iy,iz,iel) = -param(1)*ut_param*ut_param
+C C                     enddo
+C                   enddo
+C                 enddo
+
+C              else if (flag(iel) .eq. -1) then ! boundary element below y=0
+C                  do ix = 1,lx1
+C                   do iz = 1,lz1
+C C                     do iy = 1,ly1
+C                       iy = 1
+C                       ut_param = uti(ix,iy_ut,iz,iel)
+C                       if (use_default .eq. 1) then
+C                         ut_param = utau_ref
+C                       endif
+C                       tau_w(ix,iy,iz,iel) = -param(1)*ut_param*ut_param
+C C                     enddo
+C                   enddo
+C                  enddo
+C              endif
+C           enddo
         endif
 
         if (secondcall .ne. 1) then
           secondcall = 1
-          call projenrich
         endif
+        call projenrich
+          print *, "Print vx userf"
+          call srbprint(vx)
+          print *, "Print"
+          print *, "Print vy userf"
+          call srbprint(vy)
+          print *, "Print"
 
         if (comp_en_F.ne. 1) then
           ! comp_en_F = 1 ! This loop shouldn't be here. you always need it
           ! compute forcing terms in 3 directions
           call oprzero(wsx,wsy,wsz)
+
+C           call add2   (wsx,tau_w,n)
 
           ! ----------------------------------------------------------------
           ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
@@ -657,7 +843,9 @@ C                     enddo
         call oprzero(wintx,winty,wintz)
         ! Compute T1
         if (comp_T1 .ne. 1) then
-          comp_T1 = 1
+          if (use_default .eq. 1) then
+            comp_T1 = 1 ! Comment for adaptation
+          endif
           call rzero  (T1_rhs_x,n)
           call rzero  (T1_rhs_y,n)
           call rzero  (T1_rhs_z,n)
@@ -725,8 +913,8 @@ C                     enddo
         endif
         call add2 (wintx,T1_rhs_x,n)
         call add2 (wintx,T1_rhs_y,n)
-C         call add2 (wintx,T1_rhs_z,n)
-  
+        call add2 (wintx,T1_rhs_z,n)
+
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
 C       call oprzero(psix,psiy,psiz)
 C       call oprzero(wsx,wsy,wsz)
@@ -742,6 +930,7 @@ c     WALL ENRICHMENT...END
          ! reconstruct velocity field
          call add3 (vx_,vx,psix,n) !calculate actual velocity
          call outpost(psix,psiy,psiz,vx_,t,'enr')
+C          call outpost(psix,gpsix_y,psiz,vx_,t,'enr')
 C          call outpost(tr1x,tr1y,tr1z,vx_,t,'Tr1')
 C          call outpost(tr2x,tr2y,tr2z,vx_,t,'Tr2')
 C          call outpost(tr3x,tr3y,tr3z,vx_,t,'Tr3')
@@ -780,9 +969,11 @@ c
 
           do i = 1,INTP_NMAX 
             if (yint(i) < ym1(1,ly1,1,1)) then
-              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1)
+              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1,
+     $                               utau_ref,param(2))
             elseif (yint(i) > ym1(1,1,1,nelv)) then
-              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),1)
+              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),1,
+     $                               utau_ref,param(2))
             else
               psix_int(i) = 0
             endif
@@ -885,34 +1076,33 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          write(56,'(A,1pe14.7)(A,1pe14.7)') '%time = ', time, 
      $     '%Re_tau = ', Re_tau 
          write(56,'(A)') 
-     $    '%  y    y+    uu    vv    ww    uv    tt    ut    -vt'
+     $    '%  y    y+    uu    vv    ww    uv    u_tau'
 
          open(unit=57,file='mean_prof.dat')
          write(57,'(A,1pe14.7)(A,1pe14.7)') '%time = ', time,
      $     '%Re_tau = ', Re_tau
          write(57,'(A)') 
-     $    '%  y    y+    Umean    Psimean  Upolymean    Psi'
+     $    '%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau'
 
          do i = 1,nint
             yy = 1+yint(i)
             write(56,3) 
      &           yy,
      &           yy*Re_tau,
-     &           (stat_y(1*nint+i)-(stat_y(0*nint+i))**2)/u_tau**2,
-     &           stat_y(2*nint+i)/u_tau**2,
-     &           stat_y(3*nint+i)/u_tau**2,
-     &           stat_y(4*nint+i)/u_tau**2,
-     &           (stat_y(6*nint+i)-(stat_y(5*nint+i))**2)/t_tau**2,
-     &           stat_y(7*nint+i)/qw,
-     &           -stat_y(8*nint+i)/qw
+     &           (stat_y(1*nint+i)-(stat_y(0*nint+i))**2),
+     &           stat_y(2*nint+i),
+     &           stat_y(3*nint+i),
+     &           stat_y(4*nint+i),
+     &           u_tau
 
             write(57,3) 
      &           yy,
      &           yy*Re_tau, 
-     &           stat_y(0*nint+i)/u_tau,
-     &           stat_y(9*nint+i)/u_tau,
-     &           stat_y(10*nint+i)/u_tau,
-     &           psix_int(i)/u_tau
+     &           stat_y(0*nint+i),
+     &           stat_y(9*nint+i),
+     &           stat_y(10*nint+i),
+     &           psix_int(i),
+     &           u_tau
 
   3         format(1p15e17.9)
          enddo
@@ -1035,17 +1225,26 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'NEKUSE'
 
-c      real taunew(lx1,ly1,lz1,lelv)
-c      common /wallshear/ taunew
+      real taunew(lx1,ly1,lz1,lelv)
+      common /wallshear/ taunew
 
       if (y.lt.0) temp = 1.0
       if (y.gt.0) temp = 0.0
 
       e = gllel(ieg)
 
+      if((cbc(iside,e,1).eq.'v  ') .or. (cbc(iside,e,1).eq.'V  ')) then
+        UX=0.0
+        UY=0.0
+        UZ=0.0
+        TRX=taunew(ix,iy,iz,e)
+        TRY=0.0
+        TRZ=0.0
+      endif
+
 c     Imposing shear stress B.C.s
       if(cbc(iside,e,1).eq.'sh ') then
-        TRX=-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
+        TRX=taunew(ix,iy,iz,e) !-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
         TRY=0.0
         TRZ=0.0
       endif
@@ -1147,12 +1346,14 @@ c-----------------------------------------------------------------------
       do iel=1,nelt
       do ifc=1,2*ndim
          if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
-     $       (cbc(ifc,iel,1) .eq. 'W  ')) then 
+     $       (cbc(ifc,iel,1) .eq. 'W  ') .or. 
+     $       (cbc(ifc,iel,1) .eq. 'V  ')) then 
            boundaryID(ifc,iel) = 1
          endif 
          cbc(ifc,iel,2) = cbc(ifc,iel,1) 
          if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
-     $       (cbc(ifc,iel,1) .eq. 'W  ')) then 
+     $       (cbc(ifc,iel,1) .eq. 'W  ') .or.
+     $       (cbc(ifc,iel,1) .eq. 'V  ')) then 
            cbc(ifc,iel,2) = 't  '
          endif
       enddo
@@ -1165,13 +1366,15 @@ c-----------------------------------------------------------------------
       do iel=1,nelv
          do ifc=1,2*ldim
            if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
-     $          (cbc(ifc,iel,1) .eq. 'W  ')).AND.(ym1(1,1,1,iel).gt.0)) 
+     $          (cbc(ifc,iel,1) .eq. 'W  ') .or.
+     $          (cbc(ifc,iel,1) .eq. 'V  ')).AND.(ym1(1,1,1,iel).gt.0)) 
      $          then
               flag(iel) = 1
               top_y = ym1(1,1,1,iel)
            else if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
-     $               (cbc(ifc,iel,1) .eq. 'W  ')).AND.
-     $             (ym1(1,1,1,iel).lt.0)) then
+     $               (cbc(ifc,iel,1) .eq. 'W  ') .or.
+     $               (cbc(ifc,iel,1) .eq. 'V  ')).AND.
+     $               (ym1(1,1,1,iel).lt.0)) then
               flag(iel) = -1
               bot_y = ym1(1,ly1,1,iel)
            endif
@@ -1236,14 +1439,9 @@ c     WALL FUNCTIONS DEFINED HERE
                             !,density and dyn.viscosity for the matching 
                             !point; x is the unknown (utau at the wall)
       integer flag
+      real lotw
 
-      if (flag .eq. 1) then
-        f = up/x-(1/0.41)*log(yp*rho*x/mu)-5.17 ! Classical Log Law
-      else if (flag .eq. 2) then
-        f = up/x-(1/0.41)*log(1+0.41*yp*rho*x/mu)-7.8*
-     $      (1-exp(-yp*rho*x/(11*mu))-
-     $      yp*rho*x/(11*mu)*exp(-yp*rho*x/(3*mu))) ! Reichardt
-      endif
+      f = up - lotw (yp,x,mu/rho)
 
       return
       end
@@ -1254,15 +1452,9 @@ c     WALL FUNCTION DERIVATIVES DEFINED HERE (used in N-R solver)
                             !,density and dyn.viscosity for the matching
                             !point; x is the unknown (utau at the wall)
       integer flag
+      real dlotwdy
 
-      if (flag .eq. 1) then
-        fprime = -up/x**2-1/(0.41*x) ! Classical Log Law
-      else if (flag .eq. 2) then
-        fprime = -up/x**2-yp*rho/(mu*(1+0.41*yp*rho*x/mu))-7.8*
-     $     (yp*rho/(11*mu)*exp(-yp*rho*x/(11*mu))-
-     $      yp*rho/(11*mu)*exp(-yp*rho*x/(3*mu))+x/33*(yp*rho/mu)**2*
-     $     exp(-yp*rho*x/(3*mu))) ! Reichardt
-      endif
+      fprime = up - dlotwdy(yp,x,mu/rho)
 
       return
       end
@@ -1358,3 +1550,38 @@ c     $ f(bisection,flag,up,yp,rho,mu)
 c      return
 c      end
 c-------------------------------------------------------------------
+
+C c-----------------------------------------------------------------------
+C       real function lotw (yw,utau,nu)
+C       implicit none
+C       real x, y, z, utau, nu ! Wall distance
+C       integer flag
+C       real Re_tau, ypb, yw, yp
+      
+C       yp = yw*utau/nu
+
+C       lotw = utau*((1/0.41)*log(1+0.41*yp)+7.8*(1-exp(-yp/(11.0))-
+C      $      yp/(11)*exp(-yp/3.)))
+
+
+C       return
+C       end
+
+C c-----------------------------------------------------------------------
+C       real function dlotwdy (yw,utau,nu)
+C       implicit none
+C       real x, y, z, utau, nu 
+C       integer flag
+C       real Re_tau, ypb, yw, yp
+C       integer sign
+
+C       Re_tau = utau/nu
+C       yp = yw*utau/nu
+
+C       dlotwdy = Re_tau*utau*((1/0.41)*(0.41)/(1+0.41*yp)
+C      $   +7.8*(1.0/11.0*exp(-yp/(11.0))+
+C      $      (yp-3.0)/(33)*exp(-yp/3.)))
+
+
+C       return
+C       end
