@@ -57,10 +57,6 @@ c
 
          ! compute explicit contributions bfx,bfy,bfz 
          call makef 
-         print *, "Print bfx post makef"
-          call srbprint(bfx)
-          print *, "Print"
-
 
          call sumab(vx_e,vx,vxlag,ntot1,ab,nab)
          call sumab(vy_e,vy,vylag,ntot1,ab,nab)
@@ -101,23 +97,15 @@ c
 
          ! compute velocity
          if(ifstrs .and. .not.ifaxis) then
-          ! print *, "weak solve"
             call bcneutr
             ! call srbbcneutr
             ! call srbbcdirvc  (vx,vy,vz,v1mask,v2mask,v3mask) 
             call cresvsp_weak(res1,res2,res3,h1,h2)
          else
-            ! print *, "Strong solve"
             call cresvsp     (res1,res2,res3,h1,h2)
          endif
          call ophinv       (dv1,dv2,dv3,res1,res2,res3,h1,h2,tolhv,nmxv)
-         print *, "Print dv1"
-          call srbprint(dv1)
-          print *, "Print"
          call opadd2       (vx,vy,vz,dv1,dv2,dv3)
-         print *, "Print vx"
-          call srbprint(vx)
-          print *, "Print"
          ! SRB - Add enrichment in here?
          ! call opadd2 (vx,vy,vz,psix,psiy,psiz)
 
@@ -386,10 +374,6 @@ C     Compute the residual for the velocity
       call cmult   (ta4,scale,ntot)
       call opgrad  (ta1,ta2,ta3,TA4)
 
-      print *, "Print Qx"
-          call srbprint(ta1)
-          print *, "Print"
-
       call cdtp    (wa1,pr ,rxm1,sxm1,txm1,1)
       call cdtp    (wa2,pr ,rym1,sym1,tym1,1)
       if(if3d) call cdtp    (wa3,pr ,rzm1,szm1,tzm1,1)
@@ -397,30 +381,15 @@ C     Compute the residual for the velocity
       call sub2    (ta1,wa1,ntot)
       call sub2    (ta2,wa2,ntot)
       if(if3d) call sub2    (ta3,wa3,ntot)
-      print *, "Print Prx"
-          call srbprint(wa1)
-          print *, "Print"
 
       if(IFAXIS) then
          CALL COL2 (TA2, OMASK,NTOT)
          CALL COL2 (TA3, OMASK,NTOT)
       endif
 c
-      print *, "Print Hu"
-          call srbprint(resv1)
-          print *, "Print"
-          print *, "Print bfx at resv"
-          call srbprint(bfx)
-          print *, "Print"
-          print *, "Print brhsx"
-          call srbprint(brhsx)
-          print *, "Print"
       call opsub2  (resv1,resv2,resv3,ta1,ta2,ta3)
       call opadd2  (resv1,resv2,resv3,bfx,bfy,bfz)
       call opadd2  (resv1,resv2,resv3,brhsx,brhsy,brhsz) ! SRB not sure if this is right
-      print *, "Print resv1 final"
-          call srbprint(resv1)
-          print *, "Print"
 
       return
       end

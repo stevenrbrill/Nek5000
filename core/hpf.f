@@ -36,7 +36,6 @@
 c---------------------------------------- 
       if(.not. iffilter(ifield)) return
 
-      print *, "hpf"
       hpf_kut = int(param(101))+1
       hpf_chi = -1.0*abs(param(103))
 c     Boyd transform to preserve element boundary values is 

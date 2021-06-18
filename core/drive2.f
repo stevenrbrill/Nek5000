@@ -1428,9 +1428,6 @@ c     in userf then the true FFX is given by ffx_userf + scale.
      $   ,time,scale,delta_flow,current_flow,flow_rate
     1    format(i11,'  Volflow ',a1,11x,1p5e13.4)
 
-      print *, "Print vxc"
-          call srbprint(vxc)
-          print *, "Print"
       call add2s2(vx,vxc,scale,ntot1)
       call add2s2(vy,vyc,scale,ntot1)
       call add2s2(vz,vzc,scale,ntot1)

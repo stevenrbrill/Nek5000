@@ -496,7 +496,7 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       ! Start enrichment at time 50
 C       if (time.lt.50) then
-      if (time.lt.0) then
+      if (time.lt.50) then
         call oprzero(psix,psiy,psiz)
         call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
         call oprzero(wsx,wsy,wsz)
@@ -554,10 +554,6 @@ C      $                   uti(ix,iy_ut,iz,iel),param(2))
                 enddo
              endif
           enddo
-
-          print *, "Print taunew"
-          call srbprint(taunew)
-          print *, "Print"
 
           count = iglsum(count,1)
 
@@ -1219,7 +1215,7 @@ c-----------------------------------------------------------------------
         UX=0.0
         UY=0.0
         UZ=0.0
-        TRX=taunew(ix,iy,iz,e)
+        TRX=-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
         TRY=0.0
         TRZ=0.0
       endif
