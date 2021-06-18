@@ -1363,6 +1363,10 @@ C
       NFACE = 2*ldim
       NXY1  = lx1*ly1
       NXYZ1 = lx1*ly1*lz1
+
+      ! print *, "Print RHS Before"
+      !    call srbprint(BFX)
+      !    print *, "Print"
 C
       DO 100 IEL=1,NELV
       DO 100 IFC=1,NFACE
@@ -1447,6 +1451,9 @@ C
          IF (ldim.EQ.3) CALL ADD2 (BFZ(1,1,1,IEL),TRZ,NXYZ1)
 C
   100 CONTINUE
+        ! print *, "Print RHS After"
+        !  call srbprint(BFX)
+        !  print *, "Print"
 C
       RETURN
       END

@@ -1443,15 +1443,39 @@ C----------------------------------------------------------------------
 
       etime1 = dnekclock()
                                                 call makeuf
+      print *, "Print BFX Post makeuf"
+      call srbprint(BFX)
+      print *, "Print"
+      print *, "Print BFY Post makeuf"
+      call srbprint(BFY)
+      print *, "Print"
       if (filterType.eq.2)                      call make_hpf
       if (ifexplvis.and.ifsplit)                call makevis
       if (ifnav .and..not.ifchar)               call advab
+      print *, "Print BFX Post advab"
+      call srbprint(BFX)
+      print *, "Print"
+      print *, "Print BFY Post advab"
+      call srbprint(BFY)
+      print *, "Print"
       if (ifmvbd.and..not.ifchar)               call admeshv
       if (iftran)                               call makeabf
+      print *, "Print BFX Post abf"
+      call srbprint(BFX)
+      print *, "Print"
+      print *, "Print BFY Post abf"
+      call srbprint(BFY)
+      print *, "Print"
       if ((iftran.and..not.ifchar).or.
      $    (iftran.and..not.ifnav.and.ifchar))   call makebdf
+      print *, "Print BFX Post bdf"
+      call srbprint(BFX)
+      print *, "Print"
+      print *, "Print BFY Post bdf"
+      call srbprint(BFY)
+      print *, "Print"
       if (ifnav.and.ifchar)                     call advchar
-
+      
 c     Adding this call allows prescribed pressure bc for PnPn-2
 c     if (.not.ifsplit.and..not.ifstrs)         call bcneutr
       
@@ -1475,6 +1499,18 @@ C
       CALL SRB_NEKUF   (BFX,BFY,BFZ,BFINTX,BFINTY,BFINTZ,
      $  BRHSX,BRHSY,BRHSZ)
       CALL OPCOLV  (BFX,BFY,BFZ,BM1)
+      print *, "Print Force X"
+      call srbprint(BFX)
+      print *, "Print"
+      print *, "Print T1x"
+      call srbprint(BFINTX)
+      print *, "Print"
+      print *, "Print Force Y"
+      call srbprint(BFY)
+      print *, "Print"
+      print *, "Print T1 y"
+      call srbprint(BFINTY)
+      print *, "Print"
       ! SRB Add in here????
       CALL OPADD2 (BFX,BFY,BFZ,BFINTX,BFINTY,BFINTZ)
       TIME = TIME+DT
@@ -1580,6 +1616,8 @@ C
      $ ,             TA2 (LX1,LY1,LZ1,LELV)
      $ ,             TA3 (LX1,LY1,LZ1,LELV)
 C
+
+      print *, "advab"
       NTOT1 = lx1*ly1*lz1*NELV
       CALL CONVOP  (TA1,VX)
       CALL CONVOP  (TA2,VY)
@@ -1617,6 +1655,8 @@ C
 C
       NTOT1 = lx1*ly1*lz1*NELV
       CONST = 1./DT
+
+      print *, "bdf"
 
       if(iflomach) then
         call cfill(h2,CONST,ntot1)
@@ -1661,6 +1701,8 @@ C
      $ ,             TA3 (LX1,LY1,LZ1,LELV)
 C
       NTOT1 = lx1*ly1*lz1*NELV
+
+      print *, "abf"
 C
       AB0 = AB(1)
       AB1 = AB(2)
@@ -3250,6 +3292,9 @@ C
          if (ifpert) then
            call convect_new (conv,fi,.false.,vx,vy,vz,.false.)
          else
+           print *, "Print vxd"
+      call srbprint(vxd)
+      print *, "Print"
            call convect_new (conv,fi,.false.,vxd,vyd,vzd,.true.)
          endif
          call invcol2     (conv,bm1,ntot1)  ! local mass inverse
@@ -4313,7 +4358,8 @@ C
 
       REAL fac
 C----------------------------------------------------------------------
-
+  
+      print *, "vis"
       NTOT = lx1*ly1*lz1*NELV
 
       ! CONSTRUCT strain rate tensor S (SXX, ..., SZZ)

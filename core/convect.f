@@ -926,6 +926,7 @@ c
       nadvc=icalld
       etime1=dnekclock()
 
+      print *, "advchar"
       dti = 1./dt
       n   = lx1*ly1*lz1*nelv
 
