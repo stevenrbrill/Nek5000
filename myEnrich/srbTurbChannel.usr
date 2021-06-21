@@ -533,12 +533,12 @@ C                     do iy = 1,ly1
                     srbtest = uti(ix,iy_ut,iz,iel)
                     avg_ind = ix+(iy-1)*lx1+(iz-1)*lx1*ly1+
      $                 (iel-1)*lx1*ly1*lz1
-                    utau = newton(flg,ravg(avg_ind,1),yp,param(1),
+                    utau = newton(flg,vx(ix,iy,iz,iel),yp,param(1),
      $                 param(2),uti(ix,iy_ut,iz,iel),rtol,
      $                 maxiter)
                     if (utau .eq. 0.0) then
                       count = count + 1 ! count unconverged solutions
-                      taunew(ix,iy,iz,iel) = -param(1)
+                      taunew(ix,iy_ut,iz,iel) = -param(1)
      $                                        *uti(ix,iy_ut,iz,iel)**2
                     else
                       uti(ix,iy_ut,iz,iel) = utau ! update guess value                  ! for next time step
@@ -567,73 +567,73 @@ C           print *, "Print uti"
 C           call srbprint(uti)
 C           print *, "Print"
           
-          do iel = 1, nelv
-            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
-              if (flag(iel) .eq. 1) then
-                iy_ut = ly1
-              else
-                iy_ut = 1
-              endif
-                do ix = 1,lx1
-                  do iz = 1,lz1
-                    do iy = 1,ly1
-                      ut_param = uti(ix,iy_ut,iz,iel)
-                      if (use_default .eq. 1) then
-                        ut_param = utau_ref
-                      endif
-                      psix(ix,iy,iz,iel) = calc_psi(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
-     $                   ut_param,param(2))
-                      gpsix_y(ix,iy,iz,iel) = 
-     $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
-     $                   ut_param,param(2))
-                    enddo
-                  enddo
-                enddo
-             endif
-          enddo
-
-          ! Assume SEM basis in X and Z. Use analytical grad in y
-          call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
-
-          call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
-          do iel = 1, nelv
-            if (flag(iel) .eq. 2) then  ! boundary element is above y=0
-                do ix = 1,lx1
-                  do iz = 1,lz1
+C           do iel = 1, nelv
+C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
+C               if (flag(iel) .eq. 1) then
+C                 iy_ut = ly1
+C               else
+C                 iy_ut = 1
+C               endif
+C                 do ix = 1,lx1
+C                   do iz = 1,lz1
 C                     do iy = 1,ly1
-                      iy = ly1
-                      ut_param = uti(ix,iy,iz,iel)
-                      if (use_default .eq. 1) then
-                        ut_param = utau_ref
-                      endif
-                      psix_rhs(ix,iy,iz,iel) = 
-     $                   calc_psi(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
-     $                   ut_param,param(2))
+C                       ut_param = uti(ix,iy_ut,iz,iel)
+C                       if (use_default .eq. 1) then
+C                         ut_param = utau_ref
+C                       endif
+C                       psix(ix,iy,iz,iel) = calc_psi(xm1(ix,iy,iz,iel),
+C      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+C      $                   ut_param,param(2))
+C                       gpsix_y(ix,iy,iz,iel) = 
+C      $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
+C      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+C      $                   ut_param,param(2))
 C                     enddo
-                  enddo
-                enddo
+C                   enddo
+C                 enddo
+C              endif
+C           enddo
 
-             else if (flag(iel) .eq. -2) then ! boundary element below y=0
-                 do ix = 1,lx1
-                  do iz = 1,lz1
-C                     do iy = 1,ly1
-                      iy = 1
-                      ut_param = uti(ix,iy,iz,iel)
-                      if (use_default .eq. 1) then
-                        ut_param = utau_ref
-                      endif
-                      psix_rhs(ix,iy,iz,iel) = 
-     $                   calc_psi(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
-     $                   ut_param,param(2))
-C                     enddo
-                  enddo
-                 enddo
-             endif
-          enddo
+C           ! Assume SEM basis in X and Z. Use analytical grad in y
+C           call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
+
+C           call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
+C           do iel = 1, nelv
+C             if (flag(iel) .eq. 2) then  ! boundary element is above y=0
+C                 do ix = 1,lx1
+C                   do iz = 1,lz1
+C C                     do iy = 1,ly1
+C                       iy = ly1
+C                       ut_param = uti(ix,iy,iz,iel)
+C                       if (use_default .eq. 1) then
+C                         ut_param = utau_ref
+C                       endif
+C                       psix_rhs(ix,iy,iz,iel) = 
+C      $                   calc_psi(xm1(ix,iy,iz,iel),
+C      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+C      $                   ut_param,param(2))
+C C                     enddo
+C                   enddo
+C                 enddo
+
+C              else if (flag(iel) .eq. -2) then ! boundary element below y=0
+C                  do ix = 1,lx1
+C                   do iz = 1,lz1
+C C                     do iy = 1,ly1
+C                       iy = 1
+C                       ut_param = uti(ix,iy,iz,iel)
+C                       if (use_default .eq. 1) then
+C                         ut_param = utau_ref
+C                       endif
+C                       psix_rhs(ix,iy,iz,iel) = 
+C      $                   calc_psi(xm1(ix,iy,iz,iel),
+C      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+C      $                   ut_param,param(2))
+C C                     enddo
+C                   enddo
+C                  enddo
+C              endif
+C           enddo
 
 C           call rzero  (tau_w,n)
 C           do iel = 1, nelv
@@ -668,230 +668,230 @@ C              endif
 C           enddo
         endif
 
-        if (secondcall .ne. 1) then
-          secondcall = 1
-        endif
-        call projenrich
+C         if (secondcall .ne. 1) then
+C           secondcall = 1
+C         endif
+C         call projenrich
 
-        if (comp_en_F.ne. 1) then
-          ! comp_en_F = 1 ! This loop shouldn't be here. you always need it
-          ! compute forcing terms in 3 directions
-          call oprzero(wsx,wsy,wsz)
+C         if (comp_en_F.ne. 1) then
+C           ! comp_en_F = 1 ! This loop shouldn't be here. you always need it
+C           ! compute forcing terms in 3 directions
+C           call oprzero(wsx,wsy,wsz)
 
-C           call add2   (wsx,tau_w,n)
+C C           call add2   (wsx,tau_w,n)
 
-          ! ----------------------------------------------------------------
-          ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
-          ! + Term 4: -rho*dot(psi,gradient(psi))     Should be zero
+C           ! ----------------------------------------------------------------
+C           ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
+C           ! + Term 4: -rho*dot(psi,gradient(psi))     Should be zero
 
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! M and T2 for x
-          ! M^psi,2 * u or dot(gpsi, u)
-          ! Should be zero in the simple case
-          call copy (tx,gpsix_x,n)
-          call copy (ty,gpsix_y,n)
-          call copy (tz,gpsix_z,n)
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! M and T2 for x
+C           ! M^psi,2 * u or dot(gpsi, u)
+C           ! Should be zero in the simple case
+C           call copy (tx,gpsix_x,n)
+C           call copy (ty,gpsix_y,n)
+C           call copy (tz,gpsix_z,n)
 
-          if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
-          if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
-          call copy   (tr2x,w1,n)
-          call cmult  (tr2x,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsx,w1,n)
+C           if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
+C           if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
+C           call copy   (tr2x,w1,n)
+C           call cmult  (tr2x,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsx,w1,n)
 
-          ! T^psi,2 or dot(psi,gpsi_x)
-          ! Should be zero in the simple case
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
-          call copy   (tr4x,w1,n)
-          call cmult  (tr4x,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsx,w1,n)
+C           ! T^psi,2 or dot(psi,gpsi_x)
+C           ! Should be zero in the simple case
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
+C           call copy   (tr4x,w1,n)
+C           call cmult  (tr4x,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsx,w1,n)
 
-          ! store gpsi_x
-          call copy   (txx,tx,n)
-          call copy   (txy,ty,n)
-          call copy   (txz,tz,n)
+C           ! store gpsi_x
+C           call copy   (txx,tx,n)
+C           call copy   (txy,ty,n)
+C           call copy   (txz,tz,n)
 
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! M and T2 for y
-          ! M^psi,2 * v or dot(gpsi, v)
-          call copy (tx,gpsiy_x,n)
-          call copy (ty,gpsiy_y,n)
-          call copy (tz,gpsiy_z,n)
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! M and T2 for y
+C           ! M^psi,2 * v or dot(gpsi, v)
+C           call copy (tx,gpsiy_x,n)
+C           call copy (ty,gpsiy_y,n)
+C           call copy (tz,gpsiy_z,n)
 
-          if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
-          if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
-          call copy   (tr2y,w1,n)
-          call cmult  (tr2y,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsy,w1,n)
+C           if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
+C           if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
+C           call copy   (tr2y,w1,n)
+C           call cmult  (tr2y,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsy,w1,n)
 
-          ! T^psi,2 or dot(psi,gpsi_y)
-          ! Should be zero in the simple case
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
-          call copy   (tr4y,w1,n)
-          call cmult  (tr4y,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsy,w1,n)
+C           ! T^psi,2 or dot(psi,gpsi_y)
+C           ! Should be zero in the simple case
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
+C           call copy   (tr4y,w1,n)
+C           call cmult  (tr4y,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsy,w1,n)
 
-          ! store gpsi_y
-          call add2   (txy,tx,n)
-          call copy   (tyy,ty,n)
-          call copy   (tyz,tz,n)
+C           ! store gpsi_y
+C           call add2   (txy,tx,n)
+C           call copy   (tyy,ty,n)
+C           call copy   (tyz,tz,n)
 
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! M and T2 for z
-          ! M^psi,3 * w or dot(gpsi, w)
-          ! Should be zero in the simple case
-          call copy (tx,gpsiz_x,n)
-          call copy (ty,gpsiz_y,n)
-          call copy (tz,gpsiz_z,n)
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! M and T2 for z
+C           ! M^psi,3 * w or dot(gpsi, w)
+C           ! Should be zero in the simple case
+C           call copy (tx,gpsiz_x,n)
+C           call copy (ty,gpsiz_y,n)
+C           call copy (tz,gpsiz_z,n)
 
-          if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
-          if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
-          call copy   (tr2z,w1,n)
-          call cmult  (tr2z,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsz,w1,n)
+C           if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
+C           if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
+C           call copy   (tr2z,w1,n)
+C           call cmult  (tr2z,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsz,w1,n)
 
-          ! T^psi,2 or dot(psi,gpsi_z)
-          ! Should be zero in the simple case
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
-          call copy   (tr4z,w1,n)
-          call cmult  (tr4z,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsz,w1,n)
+C           ! T^psi,2 or dot(psi,gpsi_z)
+C           ! Should be zero in the simple case
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
+C           call copy   (tr4z,w1,n)
+C           call cmult  (tr4z,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsz,w1,n)
 
-          ! store gpsi_z
-          call add2   (txz,tx,n)
-          call add2   (tyz,ty,n)
-          call copy   (tzz,tz,n)
+C           ! store gpsi_z
+C           call add2   (txz,tx,n)
+C           call add2   (tyz,ty,n)
+C           call copy   (tzz,tz,n)
 
 
-          ! ----------------------------------------------------------------
-          ! Term 3: -rho*dot(psi,gradient(u0))   S^psi
+C           ! ----------------------------------------------------------------
+C           ! Term 3: -rho*dot(psi,gradient(u0))   S^psi
 
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! S for x
-          ! S^psi * u
-          ! Compute grad of u
-          call gradm1 (tx,ty,tz,vx)
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
-          call copy   (tr3x,w1,n)
-          call cmult  (tr3x,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsx,w1,n)
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! S for x
+C           ! S^psi * u
+C           ! Compute grad of u
+C           call gradm1 (tx,ty,tz,vx)
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
+C           call copy   (tr3x,w1,n)
+C           call cmult  (tr3x,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsx,w1,n)
 
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! S for y
-          ! S^psi * v
-          ! Compute grad of v
-          call gradm1 (tx,ty,tz,vy)
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
-          call copy   (tr3y,w1,n)
-          call cmult  (tr3y,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsy,w1,n)
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! S for y
+C           ! S^psi * v
+C           ! Compute grad of v
+C           call gradm1 (tx,ty,tz,vy)
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
+C           call copy   (tr3y,w1,n)
+C           call cmult  (tr3y,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsy,w1,n)
 
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! S for z
-          ! S^psi * w
-          ! Compute grad of w
-          call gradm1 (tx,ty,tz,vz)
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
-          call copy   (tr3z,w1,n)
-          call cmult  (tr3z,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsz,w1,n)
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! S for z
+C           ! S^psi * w
+C           ! Compute grad of w
+C           call gradm1 (tx,ty,tz,vz)
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
+C           call copy   (tr3z,w1,n)
+C           call cmult  (tr3z,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsz,w1,n)
 
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! multiply wsx,wsy,wsz by -rho
-          call opcmult(wsx,wsy,wsz,-1.0)
-          call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! multiply wsx,wsy,wsz by -rho
+C           call opcmult(wsx,wsy,wsz,-1.0)
+C           call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
 
-        endif
+C         endif
 
         ! ----------------------------------------------------------------
         call oprzero(wintx,winty,wintz)
         ! Compute T1
-        if (comp_T1 .ne. 1) then
-          if (use_default .eq. 1) then
-            comp_T1 = 1 ! Comment for adaptation
-          endif
-          call rzero  (T1_rhs_x,n)
-          call rzero  (T1_rhs_y,n)
-          call rzero  (T1_rhs_z,n)
-          call rzero  (phi_temp,n)
-          do ix = 1,lx1
-            do iz = 1,lz1
-              do iy = 1,ly1
-                ! Iterate over each element and set coefficient = 1
-                do iel = 1, nelv
-                  if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-                    phi_temp(ix,iy,iz,iel) = 1.0;
-                  endif
-                enddo
-                ! Compute gradient of basis function
-                call gradm1 (tx,ty,tz,phi_temp)
-                ! Reset to zero
-                do iel = 1, nelv
-                  if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-                    phi_temp(ix,iy,iz,iel) = 0.0;
-                  endif
-                enddo
-                ! Compute dot product of gphi and gpsi
-                if (ldim == 2) then
-                  call vdot2(w1,tx,ty,gpsix_x,gpsix_y,n)
-                  call vdot2(w2,tx,ty,gpsiy_x,gpsiy_y,n)
-                  call vdot2(w3,tx,ty,gpsiz_x,gpsiz_y,n)
-                endif
-                if (ldim == 3) then
-                  call vdot3(w1,tx,ty,tz,gpsix_x,gpsix_y,gpsix_z,n)
-                  call vdot3(w2,tx,ty,tz,gpsiy_x,gpsiy_y,gpsiy_z,n)
-                  call vdot3(w3,tx,ty,tz,gpsiz_x,gpsiz_y,gpsiz_z,n)
-                endif
-                ! Multiply by Re
-                call col2(w1,vdiff(1,1,1,1,1),n)
-                call col2(w2,vdiff(1,1,1,1,1),n)
-                call col2(w3,vdiff(1,1,1,1,1),n)
-                ! Multiply by quadrature weights and Jacobian
-                call col2(w1,bm1,n)
-                call col2(w2,bm1,n)
-                call col2(w3,bm1,n)
-                ! Iterate over each element and add result to final sum
-                do iel = 1, nelv
-                  if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-                    do ix2 = 1,lx1
-                      do iz2 = 1,lz1
-                        do iy2 = 1,ly1
-                         T1_rhs_x(ix,iy,iz,iel) = T1_rhs_x(ix,iy,iz,iel) 
-     $                     + w1(ix2,iy2,iz2,iel)
-                         T1_rhs_y(ix,iy,iz,iel) = T1_rhs_y(ix,iy,iz,iel) 
-     $                     + w2(ix2,iy2,iz2,iel)
-                         T1_rhs_z(ix,iy,iz,iel) = T1_rhs_z(ix,iy,iz,iel) 
-     $                     + w3(ix2,iy2,iz2,iel)
-                        enddo
-                      enddo
-                    enddo
-                  endif
-                enddo
-              enddo
-            enddo
-          enddo
-          ! Add to rhs term
-          call cmult (T1_rhs_x,-1.,n)
-          call cmult (T1_rhs_y,-1.,n)
-          call cmult (T1_rhs_z,-1.,n)
-        endif
-        call add2 (wintx,T1_rhs_x,n)
-        call add2 (wintx,T1_rhs_y,n)
-        call add2 (wintx,T1_rhs_z,n)
+C         if (comp_T1 .ne. 1) then
+C           if (use_default .eq. 1) then
+C             comp_T1 = 1 ! Comment for adaptation
+C           endif
+C           call rzero  (T1_rhs_x,n)
+C           call rzero  (T1_rhs_y,n)
+C           call rzero  (T1_rhs_z,n)
+C           call rzero  (phi_temp,n)
+C           do ix = 1,lx1
+C             do iz = 1,lz1
+C               do iy = 1,ly1
+C                 ! Iterate over each element and set coefficient = 1
+C                 do iel = 1, nelv
+C                   if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C                     phi_temp(ix,iy,iz,iel) = 1.0;
+C                   endif
+C                 enddo
+C                 ! Compute gradient of basis function
+C                 call gradm1 (tx,ty,tz,phi_temp)
+C                 ! Reset to zero
+C                 do iel = 1, nelv
+C                   if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C                     phi_temp(ix,iy,iz,iel) = 0.0;
+C                   endif
+C                 enddo
+C                 ! Compute dot product of gphi and gpsi
+C                 if (ldim == 2) then
+C                   call vdot2(w1,tx,ty,gpsix_x,gpsix_y,n)
+C                   call vdot2(w2,tx,ty,gpsiy_x,gpsiy_y,n)
+C                   call vdot2(w3,tx,ty,gpsiz_x,gpsiz_y,n)
+C                 endif
+C                 if (ldim == 3) then
+C                   call vdot3(w1,tx,ty,tz,gpsix_x,gpsix_y,gpsix_z,n)
+C                   call vdot3(w2,tx,ty,tz,gpsiy_x,gpsiy_y,gpsiy_z,n)
+C                   call vdot3(w3,tx,ty,tz,gpsiz_x,gpsiz_y,gpsiz_z,n)
+C                 endif
+C                 ! Multiply by Re
+C                 call col2(w1,vdiff(1,1,1,1,1),n)
+C                 call col2(w2,vdiff(1,1,1,1,1),n)
+C                 call col2(w3,vdiff(1,1,1,1,1),n)
+C                 ! Multiply by quadrature weights and Jacobian
+C                 call col2(w1,bm1,n)
+C                 call col2(w2,bm1,n)
+C                 call col2(w3,bm1,n)
+C                 ! Iterate over each element and add result to final sum
+C                 do iel = 1, nelv
+C                   if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C                     do ix2 = 1,lx1
+C                       do iz2 = 1,lz1
+C                         do iy2 = 1,ly1
+C                          T1_rhs_x(ix,iy,iz,iel) = T1_rhs_x(ix,iy,iz,iel) 
+C      $                     + w1(ix2,iy2,iz2,iel)
+C                          T1_rhs_y(ix,iy,iz,iel) = T1_rhs_y(ix,iy,iz,iel) 
+C      $                     + w2(ix2,iy2,iz2,iel)
+C                          T1_rhs_z(ix,iy,iz,iel) = T1_rhs_z(ix,iy,iz,iel) 
+C      $                     + w3(ix2,iy2,iz2,iel)
+C                         enddo
+C                       enddo
+C                     enddo
+C                   endif
+C                 enddo
+C               enddo
+C             enddo
+C           enddo
+C           ! Add to rhs term
+C           call cmult (T1_rhs_x,-1.,n)
+C           call cmult (T1_rhs_y,-1.,n)
+C           call cmult (T1_rhs_z,-1.,n)
+C         endif
+C         call add2 (wintx,T1_rhs_x,n)
+C         call add2 (wintx,T1_rhs_y,n)
+C         call add2 (wintx,T1_rhs_z,n)
 
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
 C       call oprzero(psix,psiy,psiz)
