@@ -1253,16 +1253,6 @@ C
          DO 200 IX=KX1,KX2
             if (optlevel.le.2) CALL NEKASGN (IX,IY,IZ,IEL)
             CALL USERBC  (IX,IY,IZ,IFACE,IEG)
-            ! if (IY .eq. 1) then
-            !   V1(IX,IY+1,IZ) = TRX
-            !   V2(IX,IY+1,IZ) = TRY
-            !   V3(IX,IY+1,IZ) = TRZ
-            ! endif
-            ! if (IY .eq. 1) then
-            !   V1(IX,IY-1,IZ) = TRX
-            !   V2(IX,IY-1,IZ) = TRY
-            !   V3(IX,IY-1,IZ) = TRZ
-            ! endif
             V1(IX,IY,IZ) = TRX
             V2(IX,IY,IZ) = TRY
             V3(IX,IY,IZ) = TRZ
@@ -1476,7 +1466,6 @@ C
       LOGICAL IFALGN,IFNORX,IFNORY,IFNORZ
       common  /nekcb/ cb
       CHARACTER CB*3
-      integer ix, iz
 C
       IFLD  = 1
       NFACE = 2*ldim
@@ -1499,19 +1488,6 @@ C
              CALL SRBFACEIV (CB,TRX,TRY,TRZ,IEL,IFC,lx1,ly1,lz1)
              CALL FACCVS (TRX,TRY,TRZ,AREA(1,1,IFC,IEL),IFC)
              IF (IFQINP(IFC,IEL)) CALL GLOBROT (TRX,TRY,TRZ,IEL,IFC)
-
-             ! HACK to try to set traction in first off wall nodes
-             ! do iel = 1, nelv
-               do ix = 1, lx1
-                ! do iy = 1, ly1
-                 do iz = 1, lz1
-                    TRX(IX,2,IZ) = TRX(IX,1,IZ)
-                    TRX(IX,ly1-1,IZ) = TRX(IX,ly1,IZ)
-                 enddo
-                ! enddo
-               enddo
-              ! enddo
-
              GOTO 120
          ENDIF          
            ! print *, "Print SHEAR BC"
