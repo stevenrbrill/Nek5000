@@ -401,6 +401,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real psix_int(INTP_NMAX)
       save psix_int
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
+      common /y_ends/ bot_y, top_y
       common /scrns/ w1(lx1,ly1,lz1,lelv)
      $              ,w2(lx1,ly1,lz1,lelv)
      $              ,w3(lx1,ly1,lz1,lelv)
@@ -1031,10 +1032,10 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
                ut_param = utau_ref
          endif
          do i = 1,INTP_NMAX 
-           if (yint(i) < ym1(1,ly1,1,1)) then
+           if (yint(i) < bot_y) then
              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1,
      $                              ut_param,param(2))
-           elseif (yint(i) > ym1(1,1,1,nelv)) then
+           elseif (yint(i) > top_y) then
              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),1,
      $                              ut_param,param(2))
            else
@@ -1321,8 +1322,8 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       
       integer flag(lelv), counterp, countern, counterp2, countern2
-      real top_y, bot_y
       common /beflag/ flag
+      common /y_ends/ bot_y, top_y
       
       counterp = 0
       countern = 0
