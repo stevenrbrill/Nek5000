@@ -831,98 +831,99 @@ C           call add2   (wsx,tau_w,n)
         endif
 
         ! ----------------------------------------------------------------
-        call oprzero(wintx,winty,wintz)
+C         call oprzero(wintx,winty,wintz)
+C         ! Compute T1
+C         if (comp_T1 .ne. 1) then
+C           if (use_default .eq. 1) then
+C             comp_T1 = 1 ! Comment for adaptation
+C           endif
+C           call rzero  (T1_rhs_x,n)
+C           call rzero  (T1_rhs_y,n)
+C           call rzero  (T1_rhs_z,n)
+C           call rzero  (phi_temp,n)
+C           do ix = 1,lx1
+C             do iz = 1,lz1
+C               do iy = 1,ly1
+C                 ! Iterate over each element and set coefficient = 1
+C                 do iel = 1, nelv
+C                   if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C                     phi_temp(ix,iy,iz,iel) = 1.0;
+C                   endif
+C                 enddo
+C                 ! Compute gradient of basis function
+C                 call gradm1 (tx,ty,tz,phi_temp)
+C                 ! Reset to zero
+C                 do iel = 1, nelv
+C                   if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C                     phi_temp(ix,iy,iz,iel) = 0.0;
+C                   endif
+C                 enddo
+C                 ! Compute dot product of gphi and gpsi
+C                 if (ldim == 2) then
+C                   call vdot2(w1,tx,ty,gpsix_x,gpsix_y,n)
+C                   call vdot2(w2,tx,ty,gpsiy_x,gpsiy_y,n)
+C                   call vdot2(w3,tx,ty,gpsiz_x,gpsiz_y,n)
+C                 endif
+C                 if (ldim == 3) then
+C                   call vdot3(w1,tx,ty,tz,gpsix_x,gpsix_y,gpsix_z,n)
+C                   call vdot3(w2,tx,ty,tz,gpsiy_x,gpsiy_y,gpsiy_z,n)
+C                   call vdot3(w3,tx,ty,tz,gpsiz_x,gpsiz_y,gpsiz_z,n)
+C                 endif
+C                 ! Multiply by Re
+C                 call col2(w1,vdiff(1,1,1,1,1),n)
+C                 call col2(w2,vdiff(1,1,1,1,1),n)
+C                 call col2(w3,vdiff(1,1,1,1,1),n)
+C                 ! Multiply by quadrature weights and Jacobian
+C                 call col2(w1,bm1,n)
+C                 call col2(w2,bm1,n)
+C                 call col2(w3,bm1,n)
+C                 ! Iterate over each element and add result to final sum
+C                 do iel = 1, nelv
+C                   if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C                     do ix2 = 1,lx1
+C                       do iz2 = 1,lz1
+C                         do iy2 = 1,ly1
+C                          T1_rhs_x(ix,iy,iz,iel) = T1_rhs_x(ix,iy,iz,iel) 
+C      $                     + w1(ix2,iy2,iz2,iel)
+C                          T1_rhs_y(ix,iy,iz,iel) = T1_rhs_y(ix,iy,iz,iel) 
+C      $                     + w2(ix2,iy2,iz2,iel)
+C                          T1_rhs_z(ix,iy,iz,iel) = T1_rhs_z(ix,iy,iz,iel) 
+C      $                     + w3(ix2,iy2,iz2,iel)
+C                         enddo
+C                       enddo
+C                     enddo
+C                   endif
+C                 enddo
+C               enddo
+C             enddo
+C           enddo
+C           ! Add to rhs term
+C           call cmult (T1_rhs_x,-1.,n)
+C           call cmult (T1_rhs_y,-1.,n)
+C           call cmult (T1_rhs_z,-1.,n)
+C         endif
+C         call add2 (wintx,T1_rhs_x,n)
+C         call add2 (wintx,T1_rhs_y,n)
+C         call add2 (wintx,T1_rhs_z,n)
+
+        ! ------------------New Method----------------------------------------------
         ! Compute T1
         if (comp_T1 .ne. 1) then
           if (use_default .eq. 1) then
             comp_T1 = 1 ! Comment for adaptation
           endif
+
+          call oprzero(wintx,winty,wintz)
           call rzero  (T1_rhs_x,n)
           call rzero  (T1_rhs_y,n)
           call rzero  (T1_rhs_z,n)
+          call rzero  (tx,n)
+          call rzero  (ty,n)
+          call rzero  (tz,n)
+          call rzero  (w1,n)
+          call rzero  (w2,n)
+          call rzero  (w3,n)
           call rzero  (phi_temp,n)
-          do ix = 1,lx1
-            do iz = 1,lz1
-              do iy = 1,ly1
-                ! Iterate over each element and set coefficient = 1
-                do iel = 1, nelv
-                  if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-                    phi_temp(ix,iy,iz,iel) = 1.0;
-                  endif
-                enddo
-                ! Compute gradient of basis function
-                call gradm1 (tx,ty,tz,phi_temp)
-                ! Reset to zero
-                do iel = 1, nelv
-                  if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-                    phi_temp(ix,iy,iz,iel) = 0.0;
-                  endif
-                enddo
-                ! Compute dot product of gphi and gpsi
-                if (ldim == 2) then
-                  call vdot2(w1,tx,ty,gpsix_x,gpsix_y,n)
-                  call vdot2(w2,tx,ty,gpsiy_x,gpsiy_y,n)
-                  call vdot2(w3,tx,ty,gpsiz_x,gpsiz_y,n)
-                endif
-                if (ldim == 3) then
-                  call vdot3(w1,tx,ty,tz,gpsix_x,gpsix_y,gpsix_z,n)
-                  call vdot3(w2,tx,ty,tz,gpsiy_x,gpsiy_y,gpsiy_z,n)
-                  call vdot3(w3,tx,ty,tz,gpsiz_x,gpsiz_y,gpsiz_z,n)
-                endif
-                ! Multiply by Re
-                call col2(w1,vdiff(1,1,1,1,1),n)
-                call col2(w2,vdiff(1,1,1,1,1),n)
-                call col2(w3,vdiff(1,1,1,1,1),n)
-                ! Multiply by quadrature weights and Jacobian
-                call col2(w1,bm1,n)
-                call col2(w2,bm1,n)
-                call col2(w3,bm1,n)
-                ! Iterate over each element and add result to final sum
-                do iel = 1, nelv
-                  if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-                    do ix2 = 1,lx1
-                      do iz2 = 1,lz1
-                        do iy2 = 1,ly1
-                         T1_rhs_x(ix,iy,iz,iel) = T1_rhs_x(ix,iy,iz,iel) 
-     $                     + w1(ix2,iy2,iz2,iel)
-                         T1_rhs_y(ix,iy,iz,iel) = T1_rhs_y(ix,iy,iz,iel) 
-     $                     + w2(ix2,iy2,iz2,iel)
-                         T1_rhs_z(ix,iy,iz,iel) = T1_rhs_z(ix,iy,iz,iel) 
-     $                     + w3(ix2,iy2,iz2,iel)
-                        enddo
-                      enddo
-                    enddo
-                  endif
-                enddo
-              enddo
-            enddo
-          enddo
-          ! Add to rhs term
-          call cmult (T1_rhs_x,-1.,n)
-          call cmult (T1_rhs_y,-1.,n)
-          call cmult (T1_rhs_z,-1.,n)
-        endif
-        call add2 (wintx,T1_rhs_x,n)
-        call add2 (wintx,T1_rhs_y,n)
-        call add2 (wintx,T1_rhs_z,n)
-
-        ! ------------------New Method----------------------------------------------
-        call oprzero(wintx,winty,wintz)
-        call rzero  (T1_rhs_x,n)
-        call rzero  (T1_rhs_y,n)
-        call rzero  (T1_rhs_z,n)
-        call rzero  (tx,n)
-        call rzero  (ty,n)
-        call rzero  (tz,n)
-        call rzero  (w1,n)
-        call rzero  (w2,n)
-        call rzero  (w3,n)
-        call rzero  (phi_temp,n)
-        ! Compute T1
-        if (comp_T1 .ne. 1) then
-          if (use_default .eq. 1) then
-            comp_T1 = 1 ! Comment for adaptation
-          endif
 
           ! Compute phi grads of reference elements
           if (comp_phi_grad .ne. 1) then
@@ -991,6 +992,9 @@ C           call add2   (wsx,tau_w,n)
               call add2(T1_rhs_x(1,1,1,iel),w3,nb)
             endif
           enddo
+          call add2 (wintx,T1_rhs_x,n)
+          call add2 (wintx,T1_rhs_y,n)
+          call add2 (wintx,T1_rhs_z,n)
 
           if (comp_phi_grad .ne. 1) then
             comp_phi_grad = 1
