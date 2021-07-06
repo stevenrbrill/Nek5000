@@ -405,12 +405,12 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       integer comp_phi_grad
       save comp_phi_grad
       integer nb
-      real dpdx(lx1*ly1*lz1,lx1*ly1*lz1)
-      real dpdy(lx1*ly1*lz1,lx1*ly1*lz1)
-      real dpdz(lx1*ly1*lz1,lx1*ly1*lz1)
       common /phigrad/ dpdr(lx1*ly1*lz1,lx1*ly1*lz1)
      $                ,dpds(lx1*ly1*lz1,lx1*ly1*lz1)
      $                ,dpdt(lx1*ly1*lz1,lx1*ly1*lz1)
+     $                ,dpdx(lx1*ly1*lz1,lx1*ly1*lz1,lelv)
+     $                ,dpdy(lx1*ly1*lz1,lx1*ly1*lz1,lelv)
+     $                ,dpdz(lx1*ly1*lz1,lx1*ly1*lz1,lelv)
                                !(nb,nq)
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /y_ends/ bot_y, top_y
@@ -948,7 +948,6 @@ C           call add2   (wsx,tau_w,n)
                 enddo
               enddo
             enddo
-            comp_phi_grad = 1
           endif   
 
           nb = lx1*ly1
@@ -958,35 +957,30 @@ C           call add2   (wsx,tau_w,n)
           do iel = 1,nelv 
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
               ! Compute phi grad
-              do j=1,nb ! actually nb
-                do i=1,nb ! actually nq
-                  dpdx(j,i) = jacmi(i,iel)*(dpdr(i,j)*rxm1(i,1,1,iel)
-     $                                    + dpds(i,j)*sxm1(i,1,1,iel)
-     $                                    + dpdt(i,j)*txm1(i,1,1,iel) )
-                  dpdy(j,i) = jacmi(i,iel)*(dpdr(i,j)*rym1(i,1,1,iel)
-     $                                    + dpds(i,j)*sym1(i,1,1,iel)
-     $                                    + dpdt(i,j)*tym1(i,1,1,iel) )
-                  dpdz(j,i) = jacmi(i,iel)*(dpdr(i,j)*rzm1(i,1,1,iel)
-     $                                    + dpds(i,j)*szm1(i,1,1,iel)
-     $                                    + dpdt(i,j)*tzm1(i,1,1,iel) )
-
+              if (comp_phi_grad .ne. 1) then
+                do j=1,nb ! actually nb
+                  do i=1,nb ! actually nq
+                   dpdx(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rxm1(i,1,1,iel)
+     $                                     + dpds(i,j)*sxm1(i,1,1,iel)
+     $                                     + dpdt(i,j)*txm1(i,1,1,iel) )
+                   dpdy(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rym1(i,1,1,iel)
+     $                                     + dpds(i,j)*sym1(i,1,1,iel)
+     $                                     + dpdt(i,j)*tym1(i,1,1,iel) )
+                   dpdz(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rzm1(i,1,1,iel)
+     $                                     + dpds(i,j)*szm1(i,1,1,iel)
+     $                                     + dpdt(i,j)*tzm1(i,1,1,iel) )
+                  enddo
                 enddo
-              enddo
-              call rzero  (tx,nb)
-              call rzero  (ty,nb)
-              call rzero  (tz,nb)
-              call rzero  (w1,nb)
-              call rzero  (w2,nb)
-              call rzero  (w3,nb)
+              endif
               ! Compute other parts of T1
               call col3(srb_temp,bm1(1,1,1,iel),vdiff(1,1,1,iel,1),nb)
               call col3(tx,srb_temp,gpsix_x(1,1,1,iel),nb)
               call col3(ty,srb_temp,gpsix_y(1,1,1,iel),nb)
               call col3(tz,srb_temp,gpsix_z(1,1,1,iel),nb)
 
-              call mxm(dpdx ,nb,tx,nb,w1,1)
-              call mxm(dpdy ,nb,ty,nb,w2,1)
-              call mxm(dpdz ,nb,tz,nb,w3,1)
+              call mxm(dpdx(1,1,iel) ,nb,tx,nb,w1,1)
+              call mxm(dpdy(1,1,iel) ,nb,ty,nb,w2,1)
+              call mxm(dpdz(1,1,iel) ,nb,tz,nb,w3,1)
 
               call cmult (w1,-1.,nb)
               call cmult (w2,-1.,nb)
@@ -997,6 +991,10 @@ C           call add2   (wsx,tau_w,n)
               call add2(T1_rhs_x(1,1,1,iel),w3,nb)
             endif
           enddo
+
+          if (comp_phi_grad .ne. 1) then
+            comp_phi_grad = 1
+          endif
 
 C           call rzero  (T1_rhs_x,n)
 C           call rzero  (T1_rhs_y,n)
