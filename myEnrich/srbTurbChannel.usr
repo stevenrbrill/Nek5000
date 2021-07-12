@@ -433,15 +433,15 @@ c     VARIABLES DECLARED FOR ENRICHMENT METHOD
       save secondcall
       real utau_ref, Re_tau
 C       real psix(lx1,ly1,lz1,lelv)
-      real gpsix_x(lx1,ly1,lz1,lelv), gpsix_y(lx1,ly1,lz1,lelv)
-      real gpsix_z(lx1,ly1,lz1,lelv), gpsiy_x(lx1,ly1,lz1,lelv)
-      real gpsiy_y(lx1,ly1,lz1,lelv), gpsiy_z(lx1,ly1,lz1,lelv)
-      real gpsiz_x(lx1,ly1,lz1,lelv), gpsiz_y(lx1,ly1,lz1,lelv)
-      real gpsiz_z(lx1,ly1,lz1,lelv)
+      real gpsix_x(lxd,lyd,lzd,lelv), gpsix_y(lxd,lyd,lzd,lelv)
+      real gpsix_z(lxd,lyd,lzd,lelv), gpsiy_x(lxd,lyd,lzd,lelv)
+      real gpsiy_y(lxd,lyd,lzd,lelv), gpsiy_z(lxd,lyd,lzd,lelv)
+      real gpsiz_x(lxd,lyd,lzd,lelv), gpsiz_y(lxd,lyd,lzd,lelv)
+      real gpsiz_z(lxd,lyd,lzd,lelv)
 C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv) 
       real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
       real myH1_rhs(lx1,ly1,lz1,lelv), myH2_rhs(lx1,ly1,lz1,lelv) 
-      real phi_temp(lx1,ly1,lz1,lelv), T1_rhs_x(lx1,ly1,lz1,lelv) 
+      real phi_temp(lxd,lyd,lzd,lelv), T1_rhs_x(lx1,ly1,lz1,lelv) 
       real T1_rhs_y(lx1,ly1,lz1,lelv), T1_rhs_z(lx1,ly1,lz1,lelv) 
       save T1_rhs_x, T1_rhs_y, T1_rhs_z
       save T1_rhs
@@ -449,7 +449,16 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save comp_T1, comp_en_F, comp_psi
       real tau_w(lx1,ly1,lz1,lelv)
       real srb_temp(lx1,ly1,lz1,lelv)
-      integer ib, ib2, iz_end
+
+      real xmd(lxd,lyd,lzd,lelv), ymd(lxd,lyd,lzd,lelv) 
+      real zmd(lxd,lyd,lzd,lelv), vx_d(lxd,lyd,lzd,lelv)
+      real vy_d(lxd,lyd,lzd,lelv), vz_d(lxd,lyd,lzd,lelv)
+      real psix_d(lxd,lyd,lzd,lelv)
+      real psiy_d(lxd,lyd,lzd,lelv)
+      real psiz_d(lxd,lyd,lzd,lelv)
+      real uti_d(lxd,lyd,lzd,lelv)
+      save uti_d
+      integer ib, ib2, iz_end, iy_match, iy_ut_match
       real srbtest, ut_param
       real psix_int(INTP_NMAX)
       save psix_int
@@ -471,24 +480,30 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $              ,tx(lx1,ly1,lz1,lelv)
      $              ,ty(lx1,ly1,lz1,lelv)
      $              ,tz(lx1,ly1,lz1,lelv)
-      common /tensor/ txx(lx1,ly1,lz1,lelv)
-     $               ,tyy(lx1,ly1,lz1,lelv)
-     $               ,tzz(lx1,ly1,lz1,lelv)
-     $               ,txy(lx1,ly1,lz1,lelv)
-     $               ,tyz(lx1,ly1,lz1,lelv)
-     $               ,txz(lx1,ly1,lz1,lelv)
-     $               ,tr1x(lx1,ly1,lz1,lelv)
-     $               ,tr1y(lx1,ly1,lz1,lelv)
-     $               ,tr1z(lx1,ly1,lz1,lelv)
-     $               ,tr2x(lx1,ly1,lz1,lelv)
-     $               ,tr2y(lx1,ly1,lz1,lelv)
-     $               ,tr2z(lx1,ly1,lz1,lelv)
-     $               ,tr3x(lx1,ly1,lz1,lelv)
-     $               ,tr3y(lx1,ly1,lz1,lelv)
-     $               ,tr3z(lx1,ly1,lz1,lelv)
-     $               ,tr4x(lx1,ly1,lz1,lelv)
-     $               ,tr4y(lx1,ly1,lz1,lelv)
-     $               ,tr4z(lx1,ly1,lz1,lelv)
+      common /srb_scrns/ w1_d(lxd,lyd,lzd,lelv)
+     $              ,w2_d(lxd,lyd,lzd,lelv)
+     $              ,w3_d(lxd,lyd,lzd,lelv)
+     $              ,tx_d(lxd,lyd,lzd,lelv)
+     $              ,ty_d(lxd,lyd,lzd,lelv)
+     $              ,tz_d(lxd,lyd,lzd,lelv)
+      common /tensor/ txx(lxd,lyd,lzd,lelv)
+     $               ,tyy(lxd,lyd,lzd,lelv)
+     $               ,tzz(lxd,lyd,lzd,lelv)
+     $               ,txy(lxd,lyd,lzd,lelv)
+     $               ,tyz(lxd,lyd,lzd,lelv)
+     $               ,txz(lxd,lyd,lzd,lelv)
+     $               ,tr1x(lxd,lyd,lzd,lelv)
+     $               ,tr1y(lxd,lyd,lzd,lelv)
+     $               ,tr1z(lxd,lyd,lzd,lelv)
+     $               ,tr2x(lxd,lyd,lzd,lelv)
+     $               ,tr2y(lxd,lyd,lzd,lelv)
+     $               ,tr2z(lxd,lyd,lzd,lelv)
+     $               ,tr3x(lxd,lyd,lzd,lelv)
+     $               ,tr3y(lxd,lyd,lzd,lelv)
+     $               ,tr3z(lxd,lyd,lzd,lelv)
+     $               ,tr4x(lxd,lyd,lzd,lelv)
+     $               ,tr4y(lxd,lyd,lzd,lelv)
+     $               ,tr4z(lxd,lyd,lzd,lelv)
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)
@@ -512,6 +527,7 @@ C       save psix, psiy, psiz
 c---------------------------------------------------------------
 
       n     = nx1*ny1*nz1*nelv
+      n_d   = nxd*nyd*nzd*nelv
       nelx  = NUMBER_ELEMENTS_X
       nely  = NUMBER_ELEMENTS_Y
       nelz  = NUMBER_ELEMENTS_Z
@@ -544,14 +560,20 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       if (istep.eq.0) then
           call oprzero(psix,psiy,psiz)
-          call oprzero(gpsix_x,gpsix_y,gpsix_z)
-          call oprzero(gpsiy_x,gpsiy_y,gpsiy_z)
-          call oprzero(gpsiz_x,gpsiz_y,gpsiz_z)
+          call oprzero_d(psix_d,psiy_d,psiz_d)
+          call oprzero_d(gpsix_x,gpsix_y,gpsix_z)
+          call oprzero_d(gpsiy_x,gpsiy_y,gpsiy_z)
+          call oprzero_d(gpsiz_x,gpsiz_y,gpsiz_z)
          do iel = 1, nelv
           do ix = 1, lx1
            do iy = 1, ly1
             do iz = 1, lz1
-               uti(ix,iy,iz,iel) = 0.08 ! Guess value for N-R solver
+               uti(ix,iy,iz,iel) = 0.00 ! Guess value for N-R solver
+               if ((flag(iel) .eq. 1) .and. (iy .eq. ly1)) then
+                  uti(ix,iy,iz,iel) = 0.08
+               elseif ((flag(iel) .eq. -1) .and. (iy .eq. 1)) then
+                  uti(ix,iy,iz,iel) = 0.08
+               endif
             enddo
            enddo
           enddo
@@ -560,8 +582,9 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       ! Start enrichment at time 50
 C       if (time.lt.50) then
-      if (time.lt.50) then
+      if (time.lt.0) then
         call oprzero(psix,psiy,psiz)
+        call oprzero_d(psix_d,psiy_d,psiz_d)
         call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
         call oprzero(wsx,wsy,wsz)
         call oprzero(wintx,winty,wintz)
@@ -581,6 +604,12 @@ C           endif
 
           do iel = 1, nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
+            call intp_rstd(xmd(1,1,1,iel),xm1(1,1,1,iel),lx1,lxd,if3d,0)
+            call intp_rstd(ymd(1,1,1,iel),ym1(1,1,1,iel),lx1,lxd,if3d,0)
+            call intp_rstd(zmd(1,1,1,iel),zm1(1,1,1,iel),lx1,lxd,if3d,0)
+            call intp_rstd(vx_d(1,1,1,iel),vx(1,1,1,iel),lx1,lxd,if3d,0)
+            call intp_rstd(vy_d(1,1,1,iel),vy(1,1,1,iel),lx1,lxd,if3d,0)
+            call intp_rstd(vz_d(1,1,1,iel),vz(1,1,1,iel),lx1,lxd,if3d,0)
                 do ix = 1,lx1
                   do iz = 1,lz1
 C                     do iy = 1,ly1
@@ -588,11 +617,15 @@ C                     do iy = 1,ly1
                     if (flag(iel) .eq. 1) then
                       iy = 1
                       yp = 1-ym1(ix,iy,iz,iel)
-                      iy_ut = ly1
+                      iy_ut = ly1 ! matching point is slightly different
+                      iy_match = 1
+                      iy_ut_match = ly1
                     else
                       iy = ly1
                       yp = 1+ym1(ix,iy,iz,iel)
                       iy_ut = 1
+                      iy_match = ly1
+                      iy_ut_match = 1
                     endif
                     srbtest = uti(ix,iy_ut,iz,iel)
                     avg_ind = ix+(iy-1)*lx1+(iz-1)*lx1*ly1+
@@ -603,14 +636,16 @@ C                     do iy = 1,ly1
      $                 maxiter)
                     if (utau .eq. 0.0) then
                       count = count + 1 ! count unconverged solutions
-                      taunew(ix,iy,iz,iel) = -param(1)
-     $                                        *uti(ix,iy_ut,iz,iel)**2
+                      taunew(ix,iy_ut,iz,iel) = -param(1)
+     $                                   *uti(ix,iy_ut,iz,iel)**2
                     else
                       uti(ix,iy_ut,iz,iel) = utau ! update guess value                  ! for next time step
                       taunew(ix,iy_ut,iz,iel) = -param(1)*utau**2 ! shear stress
                     endif
                   enddo
                 enddo
+                call intp_rstd(uti_d(1,1,1,iel),uti(1,1,1,iel),
+     $             lx1,lxd,if3d,0)
              endif
           enddo
 
@@ -628,8 +663,10 @@ C                     do iy = 1,ly1
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
               if (flag(iel) .eq. 1) then
                 iy_ut = ly1
+                iy_ut_match = lyd
               else
                 iy_ut = 1
+                iy_ut_match = 1
               endif
                 do ix = 1,lx1
                   do iz = 1,lz1
@@ -641,15 +678,47 @@ C                     do iy = 1,ly1
                       psix(ix,iy,iz,iel) = calc_psi(xm1(ix,iy,iz,iel),
      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
      $                   ut_param,param(2))
+                    enddo
+                  enddo
+                enddo
+                do ix = 1,lxd
+                  do iz = 1,lzd
+                    do iy = 1,lyd
+                      ut_param = uti_d(ix,iy_ut_match,iz,iel)
+                      if (use_default .eq. 1) then
+                        ut_param = utau_ref
+                      endif
+                      psix_d(ix,iy,iz,iel) = calc_psi(xmd(ix,iy,iz,iel),
+     $                   ymd(ix,iy,iz,iel),zmd(ix,iy,iz,iel),flag(iel),
+     $                   ut_param,param(2))
                       gpsix_y(ix,iy,iz,iel) = 
-     $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+     $                   calc_gpsix_y(xmd(ix,iy,iz,iel),
+     $                   ymd(ix,iy,iz,iel),zmd(ix,iy,iz,iel),flag(iel),
      $                   ut_param,param(2))
                     enddo
                   enddo
                 enddo
              endif
           enddo
+C           print *, "print x"
+C           call srbprint(xm1)
+C           print *, "print y"
+C           call srbprint(ym1)
+C           print *, "print z"
+C           call srbprint(zm1)
+C           print *, "print x_d"
+C           call srbprint_d(xmd)
+C           print *, "print y_d"
+C           call srbprint_d(ymd)
+C           print *, "print z_d"
+C           call srbprint_d(zmd)
+C           print *, "print psix"
+C           call srbprint(psix)
+C           print *, "print psix_d"
+C           call srbprint_d(psix_d)
+C           print *, "print gpsix"
+C           call srbprint_d(gpsix_y)
+C           print *, "print"
 
           ! Assume SEM basis in X and Z. Use analytical grad in y
           call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
