@@ -851,7 +851,7 @@ C           enddo
           call cmult  (tr2x,-1.0,n_d)
           ! Add to total forcing
           call add2   (wsx_d,w1_d,n_d)
-          call add2   (wsx,w1,n)
+C           call add2   (wsx,w1,n)
 
           ! T^psi,2 or dot(psi,gpsi_x)
           ! Should be zero in the simple case
@@ -862,7 +862,7 @@ C           enddo
           call cmult  (tr4x,-1.0,n_d)
           ! Add to total forcing
           call add2   (wsx_d,w1_d,n_d)
-          call add2   (wsx,w1,n)
+C           call add2   (wsx,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! M and T2 for y
@@ -878,7 +878,7 @@ C           enddo
           call cmult  (tr2y,-1.0,n_d)
           ! Add to total forcing
           call add2   (wsy_d,w1_d,n_d)
-          call add2   (wsy,w1,n)
+C           call add2   (wsy,w1,n)
 
           ! T^psi,2 or dot(psi,gpsi_y)
           ! Should be zero in the simple case
@@ -889,7 +889,7 @@ C           enddo
           call cmult  (tr4y,-1.0,n_d)
           ! Add to total forcing
           call add2   (wsy_d,w1_d,n_d)
-          call add2   (wsy,w1,n)
+C           call add2   (wsy,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! M and T2 for z
@@ -906,7 +906,7 @@ C           enddo
           call cmult  (tr2z,-1.0,n_d)
           ! Add to total forcing
           call add2   (wsz_d,w1_d,n_d)
-          call add2   (wsz,w1,n)
+C           call add2   (wsz,w1,n)
 
           ! T^psi,2 or dot(psi,gpsi_z)
           ! Should be zero in the simple case
@@ -917,7 +917,7 @@ C           enddo
           call cmult  (tr4z,-1.0,n_d)
           ! Add to total forcing
           call add2   (wsz_d,w1_d,n_d)
-          call add2   (wsz,w1,n)
+C           call add2   (wsz,w1,n)
 
           ! ----------------------------------------------------------------
           ! Term 3: -rho*dot(psi,gradient(u0))   S^psi
@@ -938,7 +938,7 @@ C           call gradm1 (tx,ty,tz,vx)
           call cmult  (tr3x,-1.0,n_d)
           ! Add to total forcing
           call add2   (wsx_d,w1_d,n_d)
-          call add2   (wsx,w1,n)
+C           call add2   (wsx,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for y
@@ -956,7 +956,7 @@ C           call gradm1 (tx,ty,tz,vy)
           call cmult  (tr3y,-1.0,n_d)
           ! Add to total forcing
           call add2   (wsy_d,w1_d,n_d)
-          call add2   (wsy,w1,n)
+C           call add2   (wsy,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for z
@@ -974,7 +974,16 @@ C           call gradm1 (tx,ty,tz,vz)
           call cmult  (tr3z,-1.0,n_d)
           ! Add to total forcing
           call add2   (wsz_d,w1_d,n_d)
-          call add2   (wsz,w1,n)
+C           call add2   (wsz,w1,n)
+
+          do iel = 1,nelv
+            call intp_rstd(wsx(1,1,1,iel),wsx_d(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(wsy(1,1,1,iel),wsy_d(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(wsz(1,1,1,iel),wsz_d(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+          enddo
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! multiply wsx,wsy,wsz by -rho
