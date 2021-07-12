@@ -864,11 +864,6 @@ C           enddo
           call add2   (wsx_d,w1_d,n_d)
           call add2   (wsx,w1,n)
 
-          ! store gpsi_x
-          call copy   (txx,tx_d,n_d)
-          call copy   (txy,ty_d,n_d)
-          call copy   (txz,tz_d,n_d)
-
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! M and T2 for y
           ! M^psi,2 * v or dot(gpsi, v)
@@ -895,11 +890,6 @@ C           enddo
           ! Add to total forcing
           call add2   (wsy_d,w1_d,n_d)
           call add2   (wsy,w1,n)
-
-          ! store gpsi_y
-          call copy   (txy,tx_d,n_d)
-          call copy   (tyy,ty_d,n_d)
-          call copy   (tyz,tz_d,n_d)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! M and T2 for z
@@ -928,12 +918,6 @@ C           enddo
           ! Add to total forcing
           call add2   (wsz_d,w1_d,n_d)
           call add2   (wsz,w1,n)
-
-          ! store gpsi_z
-          call copy   (txz,tx_d,n_d)
-          call copy   (tyz,ty_d,n_d)
-          call copy   (tzz,tz_d,n_d)
-
 
           ! ----------------------------------------------------------------
           ! Term 3: -rho*dot(psi,gradient(u0))   S^psi
