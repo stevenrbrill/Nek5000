@@ -456,6 +456,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real psix_d(lxd,lyd,lzd,lelv)
       real psiy_d(lxd,lyd,lzd,lelv)
       real psiz_d(lxd,lyd,lzd,lelv)
+      real bmd(lxd,lyd,lzd,lelv)
       real uti_d(lxd,lyd,lzd,lelv)
       save uti_d
       integer ib, ib2, iz_end, iy_match, iy_ut_match
@@ -474,6 +475,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
                                !(nb,nq)
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /y_ends/ bot_y, top_y
+      common /dealias1/ zd(lxd),wd(lxd)
       common /scrns/ w1(lx1,ly1,lz1,lelv)
      $              ,w2(lx1,ly1,lz1,lelv)
      $              ,w3(lx1,ly1,lz1,lelv)
@@ -486,6 +488,9 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $              ,tx_d(lxd,lyd,lzd,lelv)
      $              ,ty_d(lxd,lyd,lzd,lelv)
      $              ,tz_d(lxd,lyd,lzd,lelv)
+     $              ,wsx_d(lxd,lyd,lzd,lelv)
+     $              ,wsy_d(lxd,lyd,lzd,lelv)
+     $              ,wsz_d(lxd,lyd,lzd,lelv)
       common /tensor/ txx(lxd,lyd,lzd,lelv)
      $               ,tyy(lxd,lyd,lzd,lelv)
      $               ,tzz(lxd,lyd,lzd,lelv)
@@ -522,6 +527,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,psix_rhs(lx1,ly1,lz1,lelv)
      $               ,psiy_rhs(lx1,ly1,lz1,lelv)
      $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+
 
 C       save psix, psiy, psiz
 c---------------------------------------------------------------
@@ -587,6 +593,7 @@ C       if (time.lt.50) then
         call oprzero_d(psix_d,psiy_d,psiz_d)
         call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
         call oprzero(wsx,wsy,wsz)
+        call oprzero_d(wsx_d,wsy_d,wsz_d)
         call oprzero(wintx,winty,wintz)
         call oprzero(wrhsx,wrhsy,wrhsz)
 
@@ -808,11 +815,22 @@ C           enddo
         call projenrich
 
         if (comp_en_F.ne. 1) then
+          call set_dealias_rx
+          do iel = 1, nelv
+            do ix = 1,lxd
+              do iy = 1,lyd
+                do iz = 1,lzd
+                  bmd(ix,iy,iz,iel) = wd(ix)*wd(iy)*wd(iz)
+                enddo
+              enddo
+            enddo
+          enddo
+
+
           ! comp_en_F = 1 ! This loop shouldn't be here. you always need it
           ! compute forcing terms in 3 directions
           call oprzero(wsx,wsy,wsz)
-
-C           call add2   (wsx,tau_w,n)
+          call oprzero_d(wsx_d,wsy_d,wsz_d)
 
           ! ----------------------------------------------------------------
           ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
@@ -832,6 +850,7 @@ C           call add2   (wsx,tau_w,n)
           call copy   (tr2x,w1_d,n_d)
           call cmult  (tr2x,-1.0,n_d)
           ! Add to total forcing
+          call add2   (wsx_d,w1_d,n_d)
           call add2   (wsx,w1,n)
 
           ! T^psi,2 or dot(psi,gpsi_x)
@@ -842,6 +861,7 @@ C           call add2   (wsx,tau_w,n)
           call copy   (tr4x,w1_d,n_d)
           call cmult  (tr4x,-1.0,n_d)
           ! Add to total forcing
+          call add2   (wsx_d,w1_d,n_d)
           call add2   (wsx,w1,n)
 
           ! store gpsi_x
@@ -862,6 +882,7 @@ C           call add2   (wsx,tau_w,n)
           call copy   (tr2y,w1_d,n_d)
           call cmult  (tr2y,-1.0,n_d)
           ! Add to total forcing
+          call add2   (wsy_d,w1_d,n_d)
           call add2   (wsy,w1,n)
 
           ! T^psi,2 or dot(psi,gpsi_y)
@@ -872,10 +893,11 @@ C           call add2   (wsx,tau_w,n)
           call copy   (tr4y,w1_d,n_d)
           call cmult  (tr4y,-1.0,n_d)
           ! Add to total forcing
+          call add2   (wsy_d,w1_d,n_d)
           call add2   (wsy,w1,n)
 
           ! store gpsi_y
-          call add2   (txy,tx_d,n_d)
+          call copy   (txy,tx_d,n_d)
           call copy   (tyy,ty_d,n_d)
           call copy   (tyz,tz_d,n_d)
 
@@ -893,6 +915,7 @@ C           call add2   (wsx,tau_w,n)
           call copy   (tr2z,w1_d,n_d)
           call cmult  (tr2z,-1.0,n_d)
           ! Add to total forcing
+          call add2   (wsz_d,w1_d,n_d)
           call add2   (wsz,w1,n)
 
           ! T^psi,2 or dot(psi,gpsi_z)
@@ -903,11 +926,12 @@ C           call add2   (wsx,tau_w,n)
           call copy   (tr4z,w1_d,n_d)
           call cmult  (tr4z,-1.0,n_d)
           ! Add to total forcing
+          call add2   (wsz_d,w1_d,n_d)
           call add2   (wsz,w1,n)
 
           ! store gpsi_z
-          call add2   (txz,tx_d,n_d)
-          call add2   (tyz,ty_d,n_d)
+          call copy   (txz,tx_d,n_d)
+          call copy   (tyz,ty_d,n_d)
           call copy   (tzz,tz_d,n_d)
 
 
@@ -929,6 +953,7 @@ C           call gradm1 (tx,ty,tz,vx)
           call copy   (tr3x,w1_d,n_d)
           call cmult  (tr3x,-1.0,n_d)
           ! Add to total forcing
+          call add2   (wsx_d,w1_d,n_d)
           call add2   (wsx,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -946,6 +971,7 @@ C           call gradm1 (tx,ty,tz,vy)
           call copy   (tr3y,w1_d,n_d)
           call cmult  (tr3y,-1.0,n_d)
           ! Add to total forcing
+          call add2   (wsy_d,w1_d,n_d)
           call add2   (wsy,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -963,6 +989,7 @@ C           call gradm1 (tx,ty,tz,vz)
           call copy   (tr3z,w1_d,n_d)
           call cmult  (tr3z,-1.0,n_d)
           ! Add to total forcing
+          call add2   (wsz_d,w1_d,n_d)
           call add2   (wsz,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
