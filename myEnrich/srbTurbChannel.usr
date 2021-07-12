@@ -449,6 +449,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save comp_T1, comp_en_F, comp_psi
       real tau_w(lx1,ly1,lz1,lelv)
       real srb_temp(lx1,ly1,lz1,lelv)
+      real srb_temp_d(lxd,lyd,lzd,lelv)
 
       real xmd(lxd,lyd,lzd,lelv), ymd(lxd,lyd,lzd,lelv) 
       real zmd(lxd,lyd,lzd,lelv), vx_d(lxd,lyd,lzd,lelv)
@@ -456,7 +457,9 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real psix_d(lxd,lyd,lzd,lelv)
       real psiy_d(lxd,lyd,lzd,lelv)
       real psiz_d(lxd,lyd,lzd,lelv)
+      real vdiff_d(lxd,lyd,lzd,lelv)
       real bmd(lxd,lyd,lzd,lelv)
+      real jacmd(lxd*lyd*lzd,lelv)
       real uti_d(lxd,lyd,lzd,lelv)
       save uti_d
       integer ib, ib2, iz_end, iy_match, iy_ut_match
@@ -465,13 +468,13 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save psix_int
       integer comp_phi_grad
       save comp_phi_grad
-      integer nb
-      common /phigrad/ dpdr(lx1*ly1*lz1,lx1*ly1*lz1)
-     $                ,dpds(lx1*ly1*lz1,lx1*ly1*lz1)
-     $                ,dpdt(lx1*ly1*lz1,lx1*ly1*lz1)
-     $                ,dpdx(lx1*ly1*lz1,lx1*ly1*lz1,lelv)
-     $                ,dpdy(lx1*ly1*lz1,lx1*ly1*lz1,lelv)
-     $                ,dpdz(lx1*ly1*lz1,lx1*ly1*lz1,lelv)
+      integer nb, nq
+      common /phigrad/ dpdr(lxd*lyd*lzd,lx1*ly1*lz1)
+     $                ,dpds(lxd*lyd*lzd,lx1*ly1*lz1)
+     $                ,dpdt(lxd*lyd*lzd,lx1*ly1*lz1)
+     $                ,dpdx(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
+     $                ,dpdy(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
+     $                ,dpdz(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
                                !(nb,nq)
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /y_ends/ bot_y, top_y
@@ -491,6 +494,15 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $              ,wsx_d(lxd,lyd,lzd,lelv)
      $              ,wsy_d(lxd,lyd,lzd,lelv)
      $              ,wsz_d(lxd,lyd,lzd,lelv)
+     $              ,rxmd(lxd,lyd,lzd,lelv)
+     $              ,rymd(lxd,lyd,lzd,lelv)
+     $              ,rzmd(lxd,lyd,lzd,lelv)
+     $              ,sxmd(lxd,lyd,lzd,lelv)
+     $              ,symd(lxd,lyd,lzd,lelv)
+     $              ,szmd(lxd,lyd,lzd,lelv)
+     $              ,txmd(lxd,lyd,lzd,lelv)
+     $              ,tymd(lxd,lyd,lzd,lelv)
+     $              ,tzmd(lxd,lyd,lzd,lelv)
       common /tensor/ txx(lxd,lyd,lzd,lelv)
      $               ,tyy(lxd,lyd,lzd,lelv)
      $               ,tzz(lxd,lyd,lzd,lelv)
@@ -817,15 +829,18 @@ C           enddo
         if (comp_en_F.ne. 1) then
           call set_dealias_rx
           do iel = 1, nelv
+            call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),
+     $         lx1,lxd,if3d,0) ! 0 --> fwd
             do ix = 1,lxd
               do iy = 1,lyd
                 do iz = 1,lzd
-                  bmd(ix,iy,iz,iel) = wd(ix)*wd(iy)*wd(iz)
+                  ib = (iz-1)*lxd*lyd + (iy-1)*(lxd) + ix
+                  bmd(ix,iy,iz,iel) = 
+     $               jacmd(ib,iel)*wd(ix)*wd(iy)*wd(iz)
                 enddo
               enddo
             enddo
           enddo
-
 
           ! comp_en_F = 1 ! This loop shouldn't be here. you always need it
           ! compute forcing terms in 3 directions
@@ -1003,34 +1018,30 @@ C           call add2   (wsz,w1,n)
           call rzero  (T1_rhs_x,n)
           call rzero  (T1_rhs_y,n)
           call rzero  (T1_rhs_z,n)
-          call rzero  (tx,n)
-          call rzero  (ty,n)
-          call rzero  (tz,n)
-          call rzero  (w1,n)
-          call rzero  (w2,n)
-          call rzero  (w3,n)
-          call rzero  (phi_temp,n)
+          call rzero  (tx_d,n_d)
+          call rzero  (ty_d,n_d)
+          call rzero  (tz_d,n)
+          call rzero  (w1_d,n_d)
+          call rzero  (w2_d,n_d)
+          call rzero  (w3_d,n_d)
+          call rzero  (phi_temp,n_d)
 
           ! Compute phi grads of reference elements
           if (comp_phi_grad .ne. 1) then
+            call rzero(srb_temp,lx1*ly1*lz1)
+            call rzero(srb_temp_d,lxd*lyd*lzd)
             iz_end = lz1
             if (ldim .eq. 2) then
               iz_end = 1
             endif
-            do iz = 1,lz1
+            do iz = 1,iz_end
               do iy = 1,ly1
                 do ix = 1,lx1
                   ib = (iz-1)*lx1*ly1 + (iy-1)*(lx1) + ix
-                  call rzero(srb_temp,lx1*ly1*lz1*nelev)
                   srb_temp(ix,iy,iz,1) = 1
-                  if (ldim .eq. 2) then           
-                    call local_grad2(dpdr(1,ib),
-     $                   dpds(1,ib),srb_temp,lx1-1,1,dxm1,dxtm1)
-                  elseif (ldim .eq. 3) then
-                    call local_grad3(dpdr(1,ib),
-     $                   dpds(1,ib),dpdt(1,ib),
-     $                   srb_temp,lx1-1,1,dxm1,dxtm1)
-                  endif
+                  call intp_rstd(srb_temp_d,srb_temp,lx1,lxd,if3d,0)
+                  call grad_rst(dpdr(1,ib),dpds(1,ib),dpdt(1,ib),
+     $                   srb_temp_d,lxd,if3d)
                   srb_temp(ix,iy,iz,1) = 0   
                 enddo
               enddo
@@ -1038,36 +1049,50 @@ C           call add2   (wsz,w1,n)
           endif   
 
           nb = lx1*ly1
+          nq = lxd*lyd
           if (ldim .eq. 3) then
             nb = nb*lz1
+            nq = nq*lzd
           endif
           do iel = 1,nelv 
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
               ! Compute phi grad
               if (comp_phi_grad .ne. 1) then
+          call intp_rstd(rxmd(1,1,1,iel),rxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(rymd(1,1,1,iel),rym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(rzmd(1,1,1,iel),rzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(sxmd(1,1,1,iel),sxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(symd(1,1,1,iel),sym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(szmd(1,1,1,iel),szm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(txmd(1,1,1,iel),txm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(tymd(1,1,1,iel),tym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(tzmd(1,1,1,iel),tzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
                 do j=1,nb ! actually nb
-                  do i=1,nb ! actually nq
-                   dpdx(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rxm1(i,1,1,iel)
-     $                                     + dpds(i,j)*sxm1(i,1,1,iel)
-     $                                     + dpdt(i,j)*txm1(i,1,1,iel) )
-                   dpdy(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rym1(i,1,1,iel)
-     $                                     + dpds(i,j)*sym1(i,1,1,iel)
-     $                                     + dpdt(i,j)*tym1(i,1,1,iel) )
-                   dpdz(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rzm1(i,1,1,iel)
-     $                                     + dpds(i,j)*szm1(i,1,1,iel)
-     $                                     + dpdt(i,j)*tzm1(i,1,1,iel) )
+                  do i=1,nq ! actually nq
+                 dpdx(j,i,iel)=1/jacmd(i,iel)*(dpdr(i,j)*rxmd(i,1,1,iel)
+     $                                     + dpds(i,j)*sxmd(i,1,1,iel)
+     $                                     + dpdt(i,j)*txmd(i,1,1,iel) )
+                 dpdy(j,i,iel)=1/jacmd(i,iel)*(dpdr(i,j)*rymd(i,1,1,iel)
+     $                                     + dpds(i,j)*symd(i,1,1,iel)
+     $                                     + dpdt(i,j)*tymd(i,1,1,iel) )
+                 dpdz(j,i,iel)=1/jacmd(i,iel)*(dpdr(i,j)*rzmd(i,1,1,iel)
+     $                                     + dpds(i,j)*szmd(i,1,1,iel)
+     $                                     + dpdt(i,j)*tzmd(i,1,1,iel) )
                   enddo
                 enddo
               endif
               ! Compute other parts of T1
-              call col3(srb_temp,bm1(1,1,1,iel),vdiff(1,1,1,iel,1),nb)
-              call col3(tx,srb_temp,gpsix_x(1,1,1,iel),nb)
-              call col3(ty,srb_temp,gpsix_y(1,1,1,iel),nb)
-              call col3(tz,srb_temp,gpsix_z(1,1,1,iel),nb)
+              call intp_rstd(vdiff_d(1,1,1,iel),vdiff(1,1,1,iel,1),
+     $             lx1,lxd,if3d,0)
+              call col3(srb_temp,bmd(1,1,1,iel),vdiff_d(1,1,1,iel),nq)
+              call col3(tx_d,srb_temp,gpsix_x(1,1,1,iel),nq)
+              call col3(ty_d,srb_temp,gpsix_y(1,1,1,iel),nq)
+              call col3(tz_d,srb_temp,gpsix_z(1,1,1,iel),nq)
 
-              call mxm(dpdx(1,1,iel) ,nb,tx,nb,w1,1)
-              call mxm(dpdy(1,1,iel) ,nb,ty,nb,w2,1)
-              call mxm(dpdz(1,1,iel) ,nb,tz,nb,w3,1)
+              call mxm(dpdx(1,1,iel) ,nb,tx_d,nq,w1,1)
+              call mxm(dpdy(1,1,iel) ,nb,ty_d,nq,w2,1)
+              call mxm(dpdz(1,1,iel) ,nb,tz_d,nq,w3,1)
 
               call cmult (w1,-1.,nb)
               call cmult (w2,-1.,nb)
