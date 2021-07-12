@@ -101,6 +101,37 @@ c-----------------------------------------------------------------------
       end
 
 c-----------------------------------------------------------------------
+      subroutine srbprint_d (u)
+      include 'SIZE'
+      include 'TOTAL'
+
+      real u(lxd, lyd, lzd, nelv)
+
+      do iel = 1, nelv
+        do ix = 1,lxd
+          do iy = 1,lyd
+            do iz = 1,lzd
+                  print *, iel, ix, iy, iz, u(ix,iy,iz,iel)
+            enddo
+          enddo
+        enddo
+      enddo
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      subroutine oprzero_d (a,b,c)
+      include 'SIZE'
+      REAL A(1),B(1),C(1)
+      NTOT1=lxd*lyd*lzd*NELV
+      CALL RZERO(A,NTOT1)
+      CALL RZERO(B,NTOT1)
+      IF(ldim.EQ.3) CALL RZERO(C,NTOT1)
+      return
+      END
+
+c-----------------------------------------------------------------------
       subroutine userhack (ix,iy,iz,ieg)
       ! Access to the RHS hacks for continuity enforcement
       include 'SIZE'
