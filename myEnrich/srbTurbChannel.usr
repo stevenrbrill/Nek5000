@@ -438,6 +438,7 @@ C       real psix(lx1,ly1,lz1,lelv)
       real gpsiy_y(lxd,lyd,lzd,lelv), gpsiy_z(lxd,lyd,lzd,lelv)
       real gpsiz_x(lxd,lyd,lzd,lelv), gpsiz_y(lxd,lyd,lzd,lelv)
       real gpsiz_z(lxd,lyd,lzd,lelv)
+      real psi_trans(lx1,lz1,lyd,lelv), psi_trans2(lxd,lzd,lyd,lelv)
 C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv) 
       real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
       real myH1_rhs(lx1,ly1,lz1,lelv), myH2_rhs(lx1,ly1,lz1,lelv) 
@@ -676,7 +677,6 @@ C                     do iy = 1,ly1
 
           count = 0
 
-
           ! Compute psix and grad_psi at nodes
           do iel = 1, nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
@@ -700,6 +700,25 @@ C                     do iy = 1,ly1
                     enddo
                   enddo
                 enddo
+
+                ! Transition state TODO: Remove need for copy 
+                do iy = 1,lyd
+                  do ix = 1,lx1
+                    do iz = 1,lz1
+                      ut_param = uti(ix,iy_ut,iz,iel)
+                      if (use_default .eq. 1) then
+                        ut_param = utau_ref
+                      endif
+                      psi_trans(ix,iz,iy,iel) = calc_psi(
+     $                    xm1(ix,iy,iz,iel),
+     $                   ymd(1,iy,1,iel),zm1(ix,iy,iz,iel),flag(iel),
+     $                   ut_param,param(2))
+                    enddo
+                  enddo
+                  call intp_rstd(psi_trans2(1,1,iy,iel),
+     $              psi_trans(1,1,iy,iel),lx1,lxd,0,0)
+                enddo
+
                 do ix = 1,lxd
                   do iz = 1,lzd
                     do iy = 1,lyd
@@ -707,9 +726,7 @@ C                     do iy = 1,ly1
                       if (use_default .eq. 1) then
                         ut_param = utau_ref
                       endif
-                      psix_d(ix,iy,iz,iel) = calc_psi(xmd(ix,iy,iz,iel),
-     $                   ymd(ix,iy,iz,iel),zmd(ix,iy,iz,iel),flag(iel),
-     $                   ut_param,param(2))
+                      psix_d(ix,iy,iz,iel) = psi_trans2(ix,iz,iy,iel)
                       gpsix_y(ix,iy,iz,iel) = 
      $                   calc_gpsix_y(xmd(ix,iy,iz,iel),
      $                   ymd(ix,iy,iz,iel),zmd(ix,iy,iz,iel),flag(iel),
