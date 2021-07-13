@@ -991,6 +991,10 @@ C           call gradm1 (tx,ty,tz,vz)
           call add2   (wsz_d,w1_d,n_d)
 C           call add2   (wsz,w1,n)
 
+          call col2(wsx_d,bmd,n_d)
+          call col2(wsy_d,bmd,n_d)
+          call col2(wsz_d,bmd,n_d)
+
           do iel = 1,nelv
             call intp_rstd(wsx(1,1,1,iel),wsx_d(1,1,1,iel),
      $             lx1,lxd,if3d,1)
@@ -1005,6 +1009,10 @@ C           call add2   (wsz,w1,n)
           call opcmult(wsx,wsy,wsz,-1.0)
           call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
 
+          call opcopy(wintx,winty,wintz,wsx,wsy,wsz)
+          call opzero(wsx,wsy,wsz)
+
+
         endif
 
         ! Compute T1 (viscous enrichment term)
@@ -1014,7 +1022,7 @@ C           call add2   (wsz,w1,n)
             comp_T1 = 1 ! Comment for adaptation
           endif
 
-          call oprzero(wintx,winty,wintz)
+C           call oprzero(wintx,winty,wintz)
           call rzero  (T1_rhs_x,n)
           call rzero  (T1_rhs_y,n)
           call rzero  (T1_rhs_z,n)
