@@ -1472,10 +1472,11 @@ C----------------------------------------------------------------------
       include 'TSTEP'
 C
       TIME = TIME-DT
+      ! Use Steven's version of hte function to get pre-integrated values
       CALL SRB_NEKUF   (BFX,BFY,BFZ,BFINTX,BFINTY,BFINTZ,
      $  BRHSX,BRHSY,BRHSZ)
       CALL OPCOLV  (BFX,BFY,BFZ,BM1)
-      ! SRB Add in here????
+      ! Steven - Add preintegrated values into the forcing terms
       CALL OPADD2 (BFX,BFY,BFZ,BFINTX,BFINTY,BFINTZ)
       TIME = TIME+DT
 C
@@ -1517,6 +1518,7 @@ C
       END
 C
       subroutine srb_nekuf (f1,f2,f3,fint1,fint2,fint3,rhs1,rhs2,rhs3)
+C     Steven - same as nekuf but gets pre-integrated values and rhs values
       include 'SIZE'
       include 'PARALLEL'
       include 'NEKUSE'

@@ -1061,16 +1061,6 @@ c      endif
      $                  tolh,nmxhi,matmod)
       else
          if (ifield.eq.1) then
-            ! do ix = 1,lx1
-            !   do iy = 1,ly1
-            !     do iz = 1,lz1
-            !       print *, ix, iy, iz, h1(ix,iy,iz,1), h2(ix,iy,iz,1)
-            !     enddo
-            !   enddo
-            ! enddo
-
-            
-
             call hsolve ('VELX',o1,i1,h1,h2,v1mask,vmult
      $                         ,imesh,tolh,nmxhi,1
      $                         ,vproj(1,1),ivproj(1,1),binvm1)

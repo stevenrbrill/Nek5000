@@ -709,7 +709,7 @@ C
       END
 c-----------------------------------------------------------------------
       SUBROUTINE SRBBCDIRVC(V1,V2,V3,mask1,mask2,mask3)
-C
+C     Steven's way to change how dirichlet BCs are applied
 C     Apply Dirichlet boundary conditions to surface of vector (V1,V2,V3).
 C     Use IFIELD as a guide to which boundary conditions are to be applied.
 C
@@ -1224,7 +1224,7 @@ C
 
 c-----------------------------------------------------------------------
       SUBROUTINE SRBFACEIV (CB,V1,V2,V3,IEL,IFACE,NX,NY,NZ)
-C
+C     Steven's way to hack in differeny BCs
 C     Assign fortran function boundary conditions to 
 C     face IFACE of element IEL for vector (V1,V2,V3).
 C
@@ -1437,10 +1437,6 @@ c            IF (CB.EQ.'ms '.or.cb.eq.'mm ') THEN
                 CALL TRST3D (TRX,TRY,TRZ,SIGST,IEL,IFC)
              ENDIF
          ENDIF
-           
-  ! print *, "Print SHEAR BC"
-  !         call srbprint(TRX)
-  !         print *, "Print"
 C 
   120      CALL ADD2 (BFX(1,1,1,IEL),TRX,NXYZ1)
          CALL ADD2 (BFY(1,1,1,IEL),TRY,NXYZ1)
@@ -1452,7 +1448,7 @@ C
       END
 c-----------------------------------------------------------------------
       SUBROUTINE SRBBCNEUTR
-C
+C     Steven's way to hack traction BCs
       INCLUDE 'SIZE'
       INCLUDE 'SOLN'
       INCLUDE 'GEOM'

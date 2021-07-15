@@ -98,6 +98,7 @@ c
          ! compute velocity
          if(ifstrs .and. .not.ifaxis) then
             call bcneutr
+            ! Call steven's functions when hacking BCs
             ! call srbbcneutr
             ! call srbbcdirvc  (vx,vy,vz,v1mask,v2mask,v3mask) 
             call cresvsp_weak(res1,res2,res3,h1,h2)
@@ -106,8 +107,6 @@ c
          endif
          call ophinv       (dv1,dv2,dv3,res1,res2,res3,h1,h2,tolhv,nmxv)
          call opadd2       (vx,vy,vz,dv1,dv2,dv3)
-         ! SRB - Add enrichment in here?
-         ! call opadd2 (vx,vy,vz,psix,psiy,psiz)
 
       endif
 
@@ -301,16 +300,7 @@ C     Compute the residual for the velocity
       NTOT = lx1*ly1*lz1*NELV
       INTYPE = -1
 
-      ! PRINT *, "Computing U"
       CALL SETHLM  (H1,H2,INTYPE)
-
-      ! do i = 1,lx1
-      !   do j = 1,ly1
-      !     do k = 1,lz1
-      !       print *, i, j, k, H1(i,j,k,1), H2(i,j,k,1)
-      !     enddo
-      !   enddo
-      ! enddo
 
       CALL OPHX    (RESV1,RESV2,RESV3,VX,VY,VZ,H1,H2)
       CALL OPCHSGN (RESV1,RESV2,RESV3)
@@ -328,7 +318,7 @@ C     Compute the residual for the velocity
 c
       call opsub2  (resv1,resv2,resv3,ta1,ta2,ta3)
       call opadd2  (resv1,resv2,resv3,bfx,bfy,bfz)
-      call opadd2  (resv1,resv2,resv3,brhsx,brhsy,brhsz) ! SRB not sure if this is right
+      call opadd2  (resv1,resv2,resv3,brhsx,brhsy,brhsz) ! SRB - Add terms directly to RHS
 
       return
       end
@@ -389,7 +379,7 @@ C     Compute the residual for the velocity
 c
       call opsub2  (resv1,resv2,resv3,ta1,ta2,ta3)
       call opadd2  (resv1,resv2,resv3,bfx,bfy,bfz)
-      call opadd2  (resv1,resv2,resv3,brhsx,brhsy,brhsz) ! SRB not sure if this is right
+      call opadd2  (resv1,resv2,resv3,brhsx,brhsy,brhsz) ! SRB - Add terms directly to RHS
 
       return
       end

@@ -46,6 +46,7 @@ c     if (name.eq.'VELY') kfldfdm =  2
 c     if (name.eq.'VELZ') kfldfdm =  3
       if (name.eq.'PRES') kfldfdm =  ldim+1
 c     if (.not.iffdm) kfldfdm=-1
+C
       call dssum   (rhs,lx1,ly1,lz1)
       call col2    (rhs,mask,ntot)
 c      if (nio.eq.0.and.istep.le.10) 
