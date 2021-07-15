@@ -19,6 +19,7 @@ c mesh dimensions
 
 c-----------------------------------------------------------------------
       subroutine projenrich ()
+      ! Removes enrichment components from polynomial solution
       include 'SIZE'
       include 'SOLN'
 
@@ -48,6 +49,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine unprojenrich ()
+      ! Adds enrichment components to the polynomial solution
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
@@ -79,6 +81,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine srbprint (u)
+      ! Print the solution 
       include 'SIZE'
       include 'TOTAL'
 
@@ -99,6 +102,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine userhack (ix,iy,iz,ieg)
+      ! Access to the RHS hacks for continuity enforcement
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
@@ -132,6 +136,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine userfint (ix,iy,iz,ieg)
+      ! Access to the pre-integrated quantities
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
@@ -183,6 +188,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine userf  (ix,iy,iz,ieg)
+      ! Access to the forcing functions
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
@@ -213,6 +219,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       real function lotw (yw,utau,nu)
+      ! Evaluate law of the wall
       implicit none
       real x, y, z, utau, nu ! Wall distance
       integer flag
@@ -221,12 +228,14 @@ c-----------------------------------------------------------------------
       ypb = 11.062299784340414
       yp = yw*utau/nu
 
+      ! Piecewise law of the wall
 C       if (yp .gt. ypb) then
 C          lotw = utau*(1.0/0.41*log(yp)+5.2)
 C       elseif (yp .le. ypb) then
 C          lotw = utau*yp
 C       endif
 
+      ! Reichardt law of the wall
       lotw = utau*((1/0.41)*log(1+0.41*yp)+7.8*
      $      (1-exp(-yp/(11))-yp/(11)*exp(-yp/(3)))) ! Reichardt
 
@@ -235,6 +244,7 @@ C       endif
 
 c-----------------------------------------------------------------------
       real function dlotwdy (yw,utau,nu)
+      ! Evaluate gradient of of law of the wall
       implicit none
       real x, y, z, utau, nu 
       integer flag
@@ -245,12 +255,14 @@ c-----------------------------------------------------------------------
       Re_tau = utau/nu
       yp = yw*utau/nu
 
+      ! Piecewise law of the wall
 C       if (yp .gt. ypb) then
 C         dlotwdy = Re_tau*utau*(1.0/(0.41*yp))
 C       elseif (yp .le. ypb) then
 C         dlotwdy = Re_tau*utau
 C       endif
 
+      ! Reichardt law of the wall
       dlotwdy = Re_tau*utau*(1/(1+0.41*yp)+7.8*
      $      (1/11*exp(-yp/(11))+(yp-3)/(33)*exp(-yp/(3)))) ! Reichardt
 
@@ -259,6 +271,7 @@ C       endif
 
 c-----------------------------------------------------------------------
       real function calc_psi  (x,y,z,flag,utau,nu)
+      ! Evaluate enrichment function
       implicit none
       real x, y, z, utau, nu ! Wall distance
       integer flag
@@ -267,11 +280,14 @@ c-----------------------------------------------------------------------
       
       Re_tau = utau/nu
 
+      ! Distance from wall
       if (flag .gt. 0) then
         yw = (1-y)
       elseif (flag .lt. 0) then
         yw = (1+y) 
       endif
+
+      ! Enrichment value
       calc_psi = lotw(yw,utau,nu)
 
       return
@@ -279,6 +295,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       real function calc_gpsix_y  (x,y,z,flag,utau,nu)
+      ! Evaluate enrichment gradient
       implicit none
       real x, y, z, utau, nu 
       integer flag
@@ -289,6 +306,7 @@ c-----------------------------------------------------------------------
       ypb = 11.062299784340414
       Re_tau = utau/nu
 
+      ! Distance from wall
       if (flag .gt. 0) then
         yw = (1-y)
         sign = -1
@@ -296,6 +314,8 @@ c-----------------------------------------------------------------------
         yw = (1+y)
         sign = 1
       endif
+
+      ! Enrichment gradient
       calc_gpsix_y = sign*dlotwdy(yw,utau,nu)
 
       return
@@ -546,6 +566,7 @@ C                     do iy = 1,ly1
                     srbtest = uti(ix,iy_ut,iz,iel)
                     avg_ind = ix+(iy-1)*lx1+(iz-1)*lx1*ly1+
      $                 (iel-1)*lx1*ly1*lz1
+                    ! Use average value for matching point
                     utau = newton(flg,ravg(avg_ind,1),yp,param(1),
      $                 param(2),uti(ix,iy_ut,iz,iel),rtol,
      $                 maxiter)
@@ -557,12 +578,6 @@ C                     do iy = 1,ly1
                       uti(ix,iy_ut,iz,iel) = utau ! update guess value                  ! for next time step
                       taunew(ix,iy_ut,iz,iel) = -param(1)*utau**2 ! shear stress
                     endif
-C                     print *, iel, ix, iz, ym1(ix,iy,iz,iel), yp,  
-C      $                 ravg(avg_ind,1), srbtest, uti(ix,iy_ut,iz,iel), 
-C      $                 taunew(ix,iy_ut,iz,iel), 
-C      $                 calc_psi(xm1(ix,iy,iz,iel),
-C      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
-C      $                   uti(ix,iy_ut,iz,iel),param(2))
                   enddo
                 enddo
              endif
@@ -576,10 +591,8 @@ C      $                   uti(ix,iy_ut,iz,iel),param(2))
 
           count = 0
 
-C           print *, "Print uti"
-C           call srbprint(uti)
-C           print *, "Print"
-          
+
+          ! Compute psix and grad_psi at nodes
           do iel = 1, nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
               if (flag(iel) .eq. 1) then
@@ -610,6 +623,8 @@ C           print *, "Print"
           ! Assume SEM basis in X and Z. Use analytical grad in y
           call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
 
+          ! Get enrichment values on boundary of enriched region
+          ! Not currently used
           call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
           do iel = 1, nelv
             if (flag(iel) .eq. 2) then  ! boundary element is above y=0
@@ -830,7 +845,8 @@ C           call add2   (wsx,tau_w,n)
 
         endif
 
-        ! Compute T1
+        ! Compute T1 (viscous enrichment term)
+        ! (nu*dot(grad phi, grad psi))
         if (comp_T1 .ne. 1) then
           if (use_default .eq. 1) then
             comp_T1 = 1 ! Comment for adaptation
@@ -919,6 +935,7 @@ C           call add2   (wsx,tau_w,n)
           call add2 (wintx,T1_rhs_y,n)
           call add2 (wintx,T1_rhs_z,n)
 
+          ! only compute phi grads once
           if (comp_phi_grad .ne. 1) then
             comp_phi_grad = 1
           endif
@@ -1132,6 +1149,8 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
       end
 c-----------------------------------------------------------------------
       subroutine srbrhs ()
+      ! Compute forcing term added directly to RHS for continuity
+      ! Not currently needed for continuity
       include 'SIZE'
       include 'TOTAL'
 
@@ -1254,6 +1273,7 @@ c-----------------------------------------------------------------------
         UX=0.0
         UY=0.0
         UZ=0.0
+        ! This isn't actually used
         TRX=-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
         TRY=0.0
         TRZ=0.0
@@ -1360,6 +1380,7 @@ c-----------------------------------------------------------------------
       counterp2 = 0
       countern2 = 0
 
+      ! Label boundary elements
       do iel=1,nelt
       do ifc=1,2*ndim
          if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
@@ -1376,6 +1397,7 @@ c-----------------------------------------------------------------------
       enddo
       enddo
 
+      ! Label boundary elements 
       ! Flag boundary elements above and below centerline (y = 0)
       nelx  = NUMBER_ELEMENTS_X
       nely  = NUMBER_ELEMENTS_Y
@@ -1401,6 +1423,8 @@ c-----------------------------------------------------------------------
       top_y = glmax(top_y,1)
       bot_y = glmin(bot_y,1)
 
+      ! Flag elements neighboring near wall to for continuity enforcement
+      ! that isn't used
       do iel=1,nelv
         if (ym1(1,ly1,1,iel) .eq. top_y) then
           flag(iel) = 2
