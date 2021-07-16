@@ -102,6 +102,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine srbprint_d (u)
+      ! Print overintegrated solution
       include 'SIZE'
       include 'TOTAL'
 
@@ -122,6 +123,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine oprzero_d (a,b,c)
+      ! Zero overintegraded vectors
       include 'SIZE'
       REAL A(1),B(1),C(1)
       NTOT1=lxd*lyd*lzd*NELV
@@ -624,6 +626,7 @@ C           endif
 
           do iel = 1, nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
+            ! Interpolate to overtintegration points in enriched elements
             call intp_rstd(xmd(1,1,1,iel),xm1(1,1,1,iel),lx1,lxd,if3d,0)
             call intp_rstd(ymd(1,1,1,iel),ym1(1,1,1,iel),lx1,lxd,if3d,0)
             call intp_rstd(zmd(1,1,1,iel),zm1(1,1,1,iel),lx1,lxd,if3d,0)
@@ -687,6 +690,7 @@ C                     do iy = 1,ly1
                 iy_ut = 1
                 iy_ut_match = 1
               endif
+              ! Calculate psi at nodes based on u_tau found before
                 do ix = 1,lx1
                   do iz = 1,lz1
                     do iy = 1,ly1
@@ -702,6 +706,7 @@ C                     do iy = 1,ly1
                 enddo
 
                 ! Transition state TODO: Remove need for copy 
+                ! Calculate psi at the overintegration points in y
                 do iy = 1,lyd
                   do ix = 1,lx1
                     do iz = 1,lz1
@@ -715,10 +720,14 @@ C                     do iy = 1,ly1
      $                   ut_param,param(2))
                     enddo
                   enddo
+                  ! interpolate psi at overintegration points in y to
+                  ! the overintegration points in x and z
                   call intp_rstd(psi_trans2(1,1,iy,iel),
      $              psi_trans(1,1,iy,iel),lx1,lxd,0,0)
                 enddo
 
+                ! Copy psi at overintegration points to correct ordering
+                ! compute gpsi at overintegration points
                 do ix = 1,lxd
                   do iz = 1,lzd
                     do iy = 1,lyd
@@ -736,25 +745,6 @@ C                     do iy = 1,ly1
                 enddo
              endif
           enddo
-C           print *, "print x"
-C           call srbprint(xm1)
-C           print *, "print y"
-C           call srbprint(ym1)
-C           print *, "print z"
-C           call srbprint(zm1)
-C           print *, "print x_d"
-C           call srbprint_d(xmd)
-C           print *, "print y_d"
-C           call srbprint_d(ymd)
-C           print *, "print z_d"
-C           call srbprint_d(zmd)
-C           print *, "print psix"
-C           call srbprint(psix)
-C           print *, "print psix_d"
-C           call srbprint_d(psix_d)
-C           print *, "print gpsix"
-C           call srbprint_d(gpsix_y)
-C           print *, "print"
 
           ! Assume SEM basis in X and Z. Use analytical grad in y
 C           call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
@@ -844,6 +834,7 @@ C           enddo
         call projenrich
 
         if (comp_en_F.ne. 1) then
+          ! Compute the mass matrix for the overintegration points
           call set_dealias_rx
           do iel = 1, nelv
             call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),
@@ -1008,10 +999,13 @@ C           call gradm1 (tx,ty,tz,vz)
           call add2   (wsz_d,w1_d,n_d)
 C           call add2   (wsz,w1,n)
 
+          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          ! Multiply by mass matrix for integration  
           call col2(wsx_d,bmd,n_d)
           call col2(wsy_d,bmd,n_d)
           call col2(wsz_d,bmd,n_d)
 
+          ! Revert back to non-overintegrated
           do iel = 1,nelv
             call intp_rstd(wsx(1,1,1,iel),wsx_d(1,1,1,iel),
      $             lx1,lxd,if3d,1)
@@ -1026,6 +1020,7 @@ C           call add2   (wsz,w1,n)
           call opcmult(wsx,wsy,wsz,-1.0)
           call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
 
+          ! Since we already did the integration, add to preintegrated array
           call opcopy(wintx,winty,wintz,wsx,wsy,wsz)
           call opzero(wsx,wsy,wsz)
 
