@@ -992,6 +992,18 @@ c
              yint(i) = tanh(BETAM*(2*yi-1))/tanh(BETAM)
           enddo
           call cfill(zint,ZCINT,size(zint))
+
+          do i = 1,INTP_NMAX 
+            if (yint(i) < ym1(1,ly1,1,1)) then
+              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1,
+     $                               utau_ref,param(2))
+            elseif (yint(i) > ym1(1,1,1,nelv)) then
+              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),1,
+     $                               utau_ref,param(2))
+            else
+              psix_int(i) = 0
+            endif
+          enddo
         endif
         iffpts = .true. ! dummy call to find points
         call interp_nfld(stat_y,ravg,1,xint,yint,zint,nint,
