@@ -227,8 +227,9 @@ c-----------------------------------------------------------------------
          lotw = utau*yp
       endif
 
-C       lotw = utau*((1/0.41)*log(1+0.41*yp)+7.8*
-C      $      (1-exp(-yp/(11))-yp/(11)*exp(-yp/(3)))) ! Reichardt
+      ! Reichardt law of the wall
+C       lotw = utau*((1./0.41)*log(1.+0.41*yp)+7.8*
+C      $      (1.-exp(-yp/(11.))-yp/(11.)*exp(-yp/(3.)))) ! Reichardt
 
       return
       end
@@ -251,8 +252,9 @@ c-----------------------------------------------------------------------
         dlotwdy = Re_tau*utau
       endif
 
-C       dlotwdy = Re_tau*utau*(1/(1+0.41*yp)+7.8*
-C      $      (1/11*exp(-yp/(11))+(yp-3)/(33)*exp(-yp/(3)))) ! Reichardt
+      ! Reichardt law of the wall
+C       dlotwdy = Re_tau*utau*(1./(1+0.41*yp)+7.8*
+C      $      (1./11.*exp(-yp/(11.))+(yp-3.)/(33.)*exp(-yp/(3.)))) ! Reichardt
 
       return
       end
@@ -1271,8 +1273,8 @@ c-----------------------------------------------------------------------
       if (y.lt.0) yp = (1+y)*Re_tau
       
       ! Reichardt function
-      ux  = 1/k*log(1+k*yp) + (C - (1/k)*log(k)) *
-     $      (1 - exp(-yp/11) - yp/11*exp(-yp/3))
+      ux  = 1./k*log(1.+k*yp) + (C - (1./k)*log(k)) *
+     $      (1. - exp(-yp/11.) - yp/11.*exp(-yp/3.))
       ux  = ux * Re_tau*param(2)
 
       eps = 1e-2
