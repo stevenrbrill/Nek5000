@@ -917,6 +917,7 @@ C           call add2   (wsx,tau_w,n)
               call col3(tx,srb_temp,gpsix_x(1,1,1,iel),nb)
               call col3(ty,srb_temp,gpsix_y(1,1,1,iel),nb)
               call col3(tz,srb_temp,gpsix_z(1,1,1,iel),nb)
+              ! TODO: Add psiy and psiz parts
 
               call mxm(dpdx(1,1,iel) ,nb,tx,nb,w1,1)
               call mxm(dpdy(1,1,iel) ,nb,ty,nb,w2,1)
@@ -926,14 +927,26 @@ C           call add2   (wsx,tau_w,n)
               call cmult (w2,-1.,nb)
               call cmult (w3,-1.,nb)
 
+              call cmult (w2,2.0,nb)
+
               call add2(T1_rhs_x(1,1,1,iel),w1,nb)
               call add2(T1_rhs_x(1,1,1,iel),w2,nb)
               call add2(T1_rhs_x(1,1,1,iel),w3,nb)
+
+              ! Cross terms
+              call mxm(dpdx(1,1,iel) ,nb,ty,nb,w1,1)
+              call mxm(dpdx(1,1,iel) ,nb,tz,nb,w2,1)
+
+              call cmult (w1,-1.,nb)
+              call cmult (w2,-1.,nb)
+
+              call add2(T1_rhs_y(1,1,1,iel),w1,nb)
+              call add2(T1_rhs_z(1,1,1,iel),w2,nb)
             endif
           enddo
           call add2 (wintx,T1_rhs_x,n)
-          call add2 (wintx,T1_rhs_y,n)
-          call add2 (wintx,T1_rhs_z,n)
+          call add2 (winty,T1_rhs_y,n)
+          call add2 (wintz,T1_rhs_z,n)
 
           ! only compute phi grads once
           if (comp_phi_grad .ne. 1) then
