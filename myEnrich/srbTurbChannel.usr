@@ -856,97 +856,105 @@ C           call add2   (wsx,tau_w,n)
           call rzero  (T1_rhs_x,n)
           call rzero  (T1_rhs_y,n)
           call rzero  (T1_rhs_z,n)
-          call rzero  (tx,n)
-          call rzero  (ty,n)
-          call rzero  (tz,n)
-          call rzero  (w1,n)
-          call rzero  (w2,n)
-          call rzero  (w3,n)
-          call rzero  (phi_temp,n)
+C           call rzero  (tx,n)
+C           call rzero  (ty,n)
+C           call rzero  (tz,n)
+C           call rzero  (w1,n)
+C           call rzero  (w2,n)
+C           call rzero  (w3,n)
+C           call rzero  (phi_temp,n)
 
-          ! Compute phi grads of reference elements
-          if (comp_phi_grad .ne. 1) then
-            iz_end = lz1
-            if (ldim .eq. 2) then
-              iz_end = 1
-            endif
-            do iz = 1,lz1
-              do iy = 1,ly1
-                do ix = 1,lx1
-                  ib = (iz-1)*lx1*ly1 + (iy-1)*(lx1) + ix
-                  call rzero(srb_temp,lx1*ly1*lz1*nelev)
-                  srb_temp(ix,iy,iz,1) = 1
-                  if (ldim .eq. 2) then           
-                    call local_grad2(dpdr(1,ib),
-     $                   dpds(1,ib),srb_temp,lx1-1,1,dxm1,dxtm1)
-                  elseif (ldim .eq. 3) then
-                    call local_grad3(dpdr(1,ib),
-     $                   dpds(1,ib),dpdt(1,ib),
-     $                   srb_temp,lx1-1,1,dxm1,dxtm1)
-                  endif
-                  srb_temp(ix,iy,iz,1) = 0   
-                enddo
-              enddo
-            enddo
-          endif   
+C           ! Compute phi grads of reference elements
+C           if (comp_phi_grad .ne. 1) then
+C             iz_end = lz1
+C             if (ldim .eq. 2) then
+C               iz_end = 1
+C             endif
+C             do iz = 1,lz1
+C               do iy = 1,ly1
+C                 do ix = 1,lx1
+C                   ib = (iz-1)*lx1*ly1 + (iy-1)*(lx1) + ix
+C                   call rzero(srb_temp,lx1*ly1*lz1*nelev)
+C                   srb_temp(ix,iy,iz,1) = 1
+C                   if (ldim .eq. 2) then           
+C                     call local_grad2(dpdr(1,ib),
+C      $                   dpds(1,ib),srb_temp,lx1-1,1,dxm1,dxtm1)
+C                   elseif (ldim .eq. 3) then
+C                     call local_grad3(dpdr(1,ib),
+C      $                   dpds(1,ib),dpdt(1,ib),
+C      $                   srb_temp,lx1-1,1,dxm1,dxtm1)
+C                   endif
+C                   srb_temp(ix,iy,iz,1) = 0   
+C                 enddo
+C               enddo
+C             enddo
+C           endif   
 
-          nb = lx1*ly1
-          if (ldim .eq. 3) then
-            nb = nb*lz1
-          endif
-          do iel = 1,nelv 
-            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-              ! Compute phi grad
-              if (comp_phi_grad .ne. 1) then
-                do j=1,nb ! actually nb
-                  do i=1,nb ! actually nq
-                   dpdx(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rxm1(i,1,1,iel)
-     $                                     + dpds(i,j)*sxm1(i,1,1,iel)
-     $                                     + dpdt(i,j)*txm1(i,1,1,iel) )
-                   dpdy(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rym1(i,1,1,iel)
-     $                                     + dpds(i,j)*sym1(i,1,1,iel)
-     $                                     + dpdt(i,j)*tym1(i,1,1,iel) )
-                   dpdz(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rzm1(i,1,1,iel)
-     $                                     + dpds(i,j)*szm1(i,1,1,iel)
-     $                                     + dpdt(i,j)*tzm1(i,1,1,iel) )
-                  enddo
-                enddo
-              endif
-              ! Compute other parts of T1
-              call col3(srb_temp,bm1(1,1,1,iel),vdiff(1,1,1,iel,1),nb)
-              call col3(tx,srb_temp,gpsix_x(1,1,1,iel),nb)
-              call col3(ty,srb_temp,gpsix_y(1,1,1,iel),nb)
-              call col3(tz,srb_temp,gpsix_z(1,1,1,iel),nb)
-              ! TODO: Add psiy and psiz parts
+C           nb = lx1*ly1
+C           if (ldim .eq. 3) then
+C             nb = nb*lz1
+C           endif
+C           do iel = 1,nelv 
+C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C               ! Compute phi grad
+C               if (comp_phi_grad .ne. 1) then
+C                 do j=1,nb ! actually nb
+C                   do i=1,nb ! actually nq
+C                    dpdx(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rxm1(i,1,1,iel)
+C      $                                     + dpds(i,j)*sxm1(i,1,1,iel)
+C      $                                     + dpdt(i,j)*txm1(i,1,1,iel) )
+C                    dpdy(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rym1(i,1,1,iel)
+C      $                                     + dpds(i,j)*sym1(i,1,1,iel)
+C      $                                     + dpdt(i,j)*tym1(i,1,1,iel) )
+C                    dpdz(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rzm1(i,1,1,iel)
+C      $                                     + dpds(i,j)*szm1(i,1,1,iel)
+C      $                                     + dpdt(i,j)*tzm1(i,1,1,iel) )
+C                   enddo
+C                 enddo
+C               endif
+C               ! Compute other parts of T1
+C               call col3(srb_temp,bm1(1,1,1,iel),vdiff(1,1,1,iel,1),nb)
+C               call col3(tx,srb_temp,gpsix_x(1,1,1,iel),nb)
+C               call col3(ty,srb_temp,gpsix_y(1,1,1,iel),nb)
+C               call col3(tz,srb_temp,gpsix_z(1,1,1,iel),nb)
+C               ! TODO: Add psiy and psiz parts
 
-              call mxm(dpdx(1,1,iel) ,nb,tx,nb,w1,1)
-              call mxm(dpdy(1,1,iel) ,nb,ty,nb,w2,1)
-              call mxm(dpdz(1,1,iel) ,nb,tz,nb,w3,1)
+C               call mxm(dpdx(1,1,iel) ,nb,tx,nb,w1,1)
+C               call mxm(dpdy(1,1,iel) ,nb,ty,nb,w2,1)
+C               call mxm(dpdz(1,1,iel) ,nb,tz,nb,w3,1)
 
-              call cmult (w1,-1.,nb)
-              call cmult (w2,-1.,nb)
-              call cmult (w3,-1.,nb)
+C               call cmult (w1,-1.,nb)
+C               call cmult (w2,-1.,nb)
+C               call cmult (w3,-1.,nb)
 
-              call cmult (w2,2.0,nb)
+C               call cmult (w2,2.0,nb)
 
-              call add2(T1_rhs_x(1,1,1,iel),w1,nb)
-              call add2(T1_rhs_x(1,1,1,iel),w2,nb)
-              call add2(T1_rhs_x(1,1,1,iel),w3,nb)
+C               call add2(T1_rhs_x(1,1,1,iel),w1,nb)
+C               call add2(T1_rhs_x(1,1,1,iel),w2,nb)
+C               call add2(T1_rhs_x(1,1,1,iel),w3,nb)
 
-              ! Cross terms
-              call mxm(dpdx(1,1,iel) ,nb,ty,nb,w1,1)
-              call mxm(dpdx(1,1,iel) ,nb,tz,nb,w2,1)
+C               ! Cross terms
+C               call mxm(dpdx(1,1,iel) ,nb,ty,nb,w1,1)
+C               call mxm(dpdx(1,1,iel) ,nb,tz,nb,w2,1)
 
-              call cmult (w1,-1.,nb)
-              call cmult (w2,-1.,nb)
+C               call cmult (w1,-1.,nb)
+C               call cmult (w2,-1.,nb)
 
-              call add2(T1_rhs_y(1,1,1,iel),w1,nb)
-              call add2(T1_rhs_z(1,1,1,iel),w2,nb)
-            endif
-          enddo
-          call add2 (wintx,T1_rhs_x,n)
-          call add2 (winty,T1_rhs_y,n)
-          call add2 (wintz,T1_rhs_z,n)
+C               call add2(T1_rhs_y(1,1,1,iel),w1,nb)
+C               call add2(T1_rhs_z(1,1,1,iel),w2,nb)
+C             endif
+C           enddo
+C           call add2 (wintx,T1_rhs_x,n)
+C           call add2 (winty,T1_rhs_y,n)
+C           call add2 (wintz,T1_rhs_z,n)
+
+          call rzero(srb_temp,n)
+          call rzero(srb_temp,n)
+          call ophx(T1_rhs_x,T1_rhs_y,T1_rhs_z,psix,psiy,psiz,
+     $       vdiff(1,1,1,1,1),srb_temp)
+          call sub2 (wintx,T1_rhs_x,n)
+          call sub2 (winty,T1_rhs_y,n)
+          call sub2 (wintz,T1_rhs_z,n)
 
           ! only compute phi grads once
           if (comp_phi_grad .ne. 1) then
