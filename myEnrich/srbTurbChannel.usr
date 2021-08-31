@@ -418,6 +418,10 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save comp_T1, comp_en_F, comp_psi
       real tau_w(lx1,ly1,lz1,lelv)
       real srb_temp(lx1,ly1,lz1,lelv)
+      integer i, j, k, l
+      real myu1, myu2, myu3, myv1, myv2, myv3, myw1, myw2, myw3, mydj
+      real s11, s12, s13, s21, s22, s23, s31, s32, s33
+      real ur(lx1*ly1*lz1,ldim,ldim)
       integer ib, ib2, iz_end
       real srbtest, ut_param
       real psix_int(INTP_NMAX)
@@ -948,10 +952,78 @@ C           call add2 (wintx,T1_rhs_x,n)
 C           call add2 (winty,T1_rhs_y,n)
 C           call add2 (wintz,T1_rhs_z,n)
 
-          call rzero(srb_temp,n)
-          call rzero(srb_temp,n)
-          call ophx(T1_rhs_x,T1_rhs_y,T1_rhs_z,psix,psiy,psiz,
-     $       vdiff(1,1,1,1,1),srb_temp)
+C           call rzero(srb_temp,n)
+C           call rzero(srb_temp,n)
+C           call ophx(T1_rhs_x,T1_rhs_y,T1_rhs_z,psix,psiy,psiz,
+C      $       vdiff(1,1,1,1,1),srb_temp)
+C           call sub2 (wintx,T1_rhs_x,n)
+C           call sub2 (winty,T1_rhs_y,n)
+C           call sub2 (wintz,T1_rhs_z,n)
+
+          do iel = 1,nelv 
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+            do k = 1,lz1
+            do j = 1,ly1
+            do i = 1,lx1
+              l = i + (j-1)*lx1 + (k-1)*lx1*ly1
+              myu1 = gpsix_x(i,j,k,iel)
+              myu2 = gpsix_y(i,j,k,iel)
+              myu3 = gpsix_z(i,j,k,iel)
+              myv1 = gpsiy_x(i,j,k,iel)
+              myv2 = gpsiy_y(i,j,k,iel)
+              myv3 = gpsiy_z(i,j,k,iel)
+              myw1 = gpsiz_x(i,j,k,iel)
+              myw2 = gpsiz_y(i,j,k,iel)
+              myw3 = gpsiz_z(i,j,k,iel)
+
+              mydj  = vdiff(i,j,k,iel,1)*w3m1(i,j,k)*jacmi(l,iel)
+              s11 = mydj*(myu1 + myu1)! S_ij
+              s12 = mydj*(myu2 + myv1)
+              s13 = mydj*(myu3 + myw1)
+              s21 = mydj*(myv1 + myu2)
+              s22 = mydj*(myv2 + myv2)
+              s23 = mydj*(myv3 + myw2)
+              s31 = mydj*(myw1 + myu3)
+              s32 = mydj*(myw2 + myv3)
+              s33 = mydj*(myw3 + myw3)
+
+c        Sum_j : (r_p/x_j) h1 J S_ij
+            
+         ur(l,1,1)=rxm1(l,1,1,iel)*s11+rym1(l,1,1,iel)*s12
+     $       +rzm1(l,1,1,iel)*s13
+         ur(l,2,1)=sxm1(l,1,1,iel)*s11+sym1(l,1,1,iel)*s12
+     $       +szm1(l,1,1,iel)*s13
+         ur(l,3,1)=txm1(l,1,1,iel)*s11+tym1(l,1,1,iel)*s12
+     $       +tzm1(l,1,1,iel)*s13
+
+         ur(l,1,2)=rxm1(l,1,1,iel)*s21+rym1(l,1,1,iel)*s22
+     $       +rzm1(l,1,1,iel)*s23
+         ur(l,2,2)=sxm1(l,1,1,iel)*s21+sym1(l,1,1,iel)*s22
+     $       +szm1(l,1,1,iel)*s23
+         ur(l,3,2)=txm1(l,1,1,iel)*s21+tym1(l,1,1,iel)*s22
+     $       +tzm1(l,1,1,iel)*s23
+
+         ur(l,1,3)=rxm1(l,1,1,iel)*s31+rym1(l,1,1,iel)*s32
+     $       +rzm1(l,1,1,iel)*s33
+         ur(l,2,3)=sxm1(l,1,1,iel)*s31+sym1(l,1,1,iel)*s32
+     $       +szm1(l,1,1,iel)*s33
+         ur(l,3,3)=txm1(l,1,1,iel)*s31+tym1(l,1,1,iel)*s32
+     $       +tzm1(l,1,1,iel)*s33   
+              enddo
+              enddo
+              enddo
+      call local_grad3_t
+     $    (T1_rhs_x(1,1,1,iel),ur(1,1,1),ur(1,2,1),ur(1,3,1),lx1-1,1,
+     $     dxm1,dxtm1,T1_rhs_y(1,1,1,iel))
+      call local_grad3_t
+     $    (T1_rhs_y(1,1,1,iel),ur(1,1,2),ur(1,2,2),ur(1,3,2),lx1-1,1,
+     $     dxm1,dxtm1,ur)
+      call local_grad3_t
+     $    (T1_rhs_z(1,1,1,iel),ur(1,1,3),ur(1,2,3),ur(1,3,3),lx1-1,1,
+     $     dxm1,dxtm1,ur)
+            endif
+          enddo
+
           call sub2 (wintx,T1_rhs_x,n)
           call sub2 (winty,T1_rhs_y,n)
           call sub2 (wintz,T1_rhs_z,n)
