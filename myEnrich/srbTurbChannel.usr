@@ -353,6 +353,8 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
 
+      integer ILAG
+
       real x0(3)
       data x0 /0.0, 0.0, 0.0/ 
       save x0
@@ -724,10 +726,15 @@ C              endif
 C           enddo
         endif
 
+        call projenrich
         if (secondcall .ne. 1) then
           secondcall = 1
+          do ILAG = 2,NBD
+            CALL COPY(VXLAG(1,1,1,1,ILAG-1),VX,n)
+            CALL COPY(VYLAG(1,1,1,1,ILAG-1),VY,n)
+            CALL COPY(VZLAG(1,1,1,1,ILAG-1),VZ,n)
+          enddo
         endif
-        call projenrich
 
         if (comp_en_F.ne. 1) then
           ! comp_en_F = 1 ! This loop shouldn't be here. you always need it
