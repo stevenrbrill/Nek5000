@@ -542,9 +542,9 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
       use_default = 1
 
       if (istep.eq.0) then
-            print *, "Print vx userf first"
-            call srbprint(vx)
-            print *, "Print"
+C             print *, "Print vx userf first"
+C             call srbprint(vx)
+C             print *, "Print"
           call oprzero(psix,psiy,psiz)
           call oprzero(gpsix_x,gpsix_y,gpsix_z)
           call oprzero(gpsiy_x,gpsiy_y,gpsiy_z)
@@ -703,18 +703,18 @@ C                     enddo
              endif
           enddo
 
-          print *, "Print x"
-          call srbprint(xm1)
-          print *, "Print"
-          print *, "Print y"
-          call srbprint(ym1)
-          print *, "Print"
-          print *, "Print psix"
-          call srbprint(psix)
-          print *, "Print"
-          print *, "Print gpsix"
-          call srbprint(gpsix_y)
-          print *, "Print"
+C           print *, "Print x"
+C           call srbprint(xm1)
+C           print *, "Print"
+C           print *, "Print y"
+C           call srbprint(ym1)
+C           print *, "Print"
+C           print *, "Print psix"
+C           call srbprint(psix)
+C           print *, "Print"
+C           print *, "Print gpsix"
+C           call srbprint(gpsix_y)
+C           print *, "Print"
 
 C           call rzero  (tau_w,n)
 C           do iel = 1, nelv
@@ -758,12 +758,12 @@ C           enddo
             CALL COPY(VZLAG(1,1,1,1,ILAG-1),VZ,n)
           enddo
         endif
-          print *, "Print vx userf"
-          call srbprint(vx)
-          print *, "Print"
-          print *, "Print vy userf"
-          call srbprint(vy)
-          print *, "Print"
+C           print *, "Print vx userf"
+C           call srbprint(vx)
+C           print *, "Print"
+C           print *, "Print vy userf"
+C           call srbprint(vy)
+C           print *, "Print"
 
         if (comp_en_F.ne. 1) then
           ! comp_en_F = 1 ! This loop shouldn't be here. you always need it
