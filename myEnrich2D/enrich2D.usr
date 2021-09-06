@@ -990,7 +990,7 @@ C           call add2   (wsx,tau_w,n)
               call cmult (w2,-1.,nb)
               call cmult (w3,-1.,nb)
 
-              call cmult (w2,1.0,nb)
+              call cmult (w2,2.0,nb)
 
               call add2(T1_rhs_x(1,1,1,iel),w1,nb)
               call add2(T1_rhs_x(1,1,1,iel),w2,nb)
@@ -1016,7 +1016,7 @@ C           call add2   (wsx,tau_w,n)
             comp_phi_grad = 1
           endif
         endif
-        
+
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
 C       call oprzero(psix,psiy,psiz)
 C       call oprzero(wsx,wsy,wsz)
