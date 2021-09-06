@@ -290,7 +290,7 @@ C         dlotwdy = Re_tau*utau
 C       endif
 
       ! Reichardt law of the wall
-      dlotwdy = Re_tau*utau*(1./(1+0.41*yp)+7.8*
+      dlotwdy = Re_tau*utau*(1./(1.+0.41*yp)+7.8*
      $      (1./11.*exp(-yp/(11.))+(yp-3.)/(33.)*exp(-yp/(3.)))) ! Reichardt
 
       return
