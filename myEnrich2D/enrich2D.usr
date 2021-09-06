@@ -11,7 +11,7 @@ c data extraction along wall normal direction
 c mesh dimensions
 #define BETAM 2.4     /* wall normal stretching parameter */
 #define PI (4.*atan(1.))
-#define XLEN 1.5
+#define XLEN (2.*PI)
 #define ZLEN 0
 #define NUMBER_ELEMENTS_X 3
 #define NUMBER_ELEMENTS_Y 6
