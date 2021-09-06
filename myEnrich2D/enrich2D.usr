@@ -38,6 +38,9 @@ c-----------------------------------------------------------------------
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       NTOT1=lx1*ly1*lz1*NELV
       CALL SUB2(vx,psix,NTOT1)
@@ -69,6 +72,9 @@ c-----------------------------------------------------------------------
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       NTOT1=lx1*ly1*lz1*NELV
       CALL ADD2(vx,psix,NTOT1)
@@ -124,6 +130,9 @@ c-----------------------------------------------------------------------
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       e = gllel(ieg)
 
@@ -158,6 +167,9 @@ c-----------------------------------------------------------------------
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       e = gllel(ieg)
 
@@ -194,9 +206,24 @@ c-----------------------------------------------------------------------
       include 'NEKUSE'
 
 c     Effective enrichment source terms for momentum equation
-      common /enrich/ wsx(lx1,ly1,lz1,lelt)
-     $               ,wsy(lx1,ly1,lz1,lelt)
-     $               ,wsz(lx1,ly1,lz1,lelt)
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       e = gllel(ieg)
 
@@ -434,13 +461,13 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
                                !(nb,nq)
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /y_ends/ bot_y, top_y
-      common /scrns/ w1(lx1,ly1,lz1,lelv)
+      real w1(lx1,ly1,lz1,lelv)
      $              ,w2(lx1,ly1,lz1,lelv)
      $              ,w3(lx1,ly1,lz1,lelv)
      $              ,tx(lx1,ly1,lz1,lelv)
      $              ,ty(lx1,ly1,lz1,lelv)
      $              ,tz(lx1,ly1,lz1,lelv)
-      common /tensor/ txx(lx1,ly1,lz1,lelv)
+      real txx(lx1,ly1,lz1,lelv)
      $               ,tyy(lx1,ly1,lz1,lelv)
      $               ,tzz(lx1,ly1,lz1,lelv)
      $               ,txy(lx1,ly1,lz1,lelv)
@@ -1183,7 +1210,7 @@ c     VARIABLES DECLARED FOR ENRICHMENT METHOD
       real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
       real myH1_rhs(lx1,ly1,lz1,lelv), myH2_rhs(lx1,ly1,lz1,lelv) 
       real phi_temp(lx1,ly1,lz1,lelv), T1_rhs(lx1,ly1,lz1,lelv)
-      common /scrns/ w1(lx1,ly1,lz1,lelv)
+      real w1(lx1,ly1,lz1,lelv)
      $              ,w2(lx1,ly1,lz1,lelv)
      $              ,w3(lx1,ly1,lz1,lelv)
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
@@ -1295,7 +1322,7 @@ c-----------------------------------------------------------------------
         UY=0.0
         UZ=0.0
         ! This isn't actually used
-        TRX=taunew(ix,iy,iz,e)
+        TRX=-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
         TRY=0.0
         TRZ=0.0
       endif
