@@ -749,10 +749,15 @@ C              endif
 C           enddo
         endif
 
+        call projenrich
         if (secondcall .ne. 1) then
           secondcall = 1
+          do ILAG = 2,NBD
+            CALL COPY(VXLAG(1,1,1,1,ILAG-1),VX,n)
+            CALL COPY(VYLAG(1,1,1,1,ILAG-1),VY,n)
+            CALL COPY(VZLAG(1,1,1,1,ILAG-1),VZ,n)
+          enddo
         endif
-        call projenrich
           print *, "Print vx userf"
           call srbprint(vx)
           print *, "Print"
