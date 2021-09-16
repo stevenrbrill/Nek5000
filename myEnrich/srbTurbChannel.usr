@@ -1118,7 +1118,7 @@ C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 -->
               call cmult (w2,-1.,nb)
               call cmult (w3,-1.,nb)
 
-              call cmult (w2,2.0,nb)
+              call cmult (w1,2.0,nb)
 
               call add2(T1_rhs_x(1,1,1,iel),w1,nb)
               call add2(T1_rhs_x(1,1,1,iel),w2,nb)
