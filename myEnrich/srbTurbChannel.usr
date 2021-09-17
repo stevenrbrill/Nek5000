@@ -454,7 +454,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save psix_int
       integer comp_phi_grad
       save comp_phi_grad
-      integer nb
+      integer nb, en_time
       common /phigrad/ dpdr(lx1*ly1*lz1,lx1*ly1*lz1)
      $                ,dpds(lx1*ly1*lz1,lx1*ly1*lz1)
      $                ,dpdt(lx1*ly1*lz1,lx1*ly1*lz1)
@@ -558,8 +558,9 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
       endif
 
       ! Start enrichment at time 50
+      en_time = 50.0
 C       if (time.lt.50) then
-      if (time.lt.50) then
+      if (time.lt.en_time) then
         call oprzero(psix,psiy,psiz)
         call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
         call oprzero(wsx,wsy,wsz)
@@ -1000,18 +1001,22 @@ c     WALL ENRICHMENT...END
 
       ifxyo = .true.
       if (istep.eq.0) call outpost(vx,vy,vz,pr,t,'   ')
-      if (istep.eq.0 .or. ifoutfld) then
-         ! reconstruct velocity field
-         call add3 (vx_,vx,psix,n) !calculate actual velocity
-         call outpost(psix,psiy,psiz,vx_,t,'enr')
-C          call outpost(psix,gpsix_y,psiz,vx_,t,'enr')
-C          call outpost(tr1x,tr1y,tr1z,vx_,t,'Tr1')
-C          call outpost(tr2x,tr2y,tr2z,vx_,t,'Tr2')
-C          call outpost(tr3x,tr3y,tr3z,vx_,t,'Tr3')
-C          call outpost(tr4x,tr4y,tr4z,vx_,t,'Tr4')
-C          ifto = .true.
-C          call outpost(wsx,wsy,wsz,term3x,convx,'src')
-C          ifto = .false.
+      if (time .ge. en_time) then
+          !if (istep.eq.0 .or. ifoutfld) then
+             ! reconstruct velocity field
+             call add3 (vx_,vx,psix,n) !calculate actual velocity
+             call outpost(psix,psiy,psiz,vx_,t,'enr')
+             call outpost(vx,vy,vz,pr,t,'vxe')
+             call outpost(vx,psix,vx_,pr,t,'tot')
+C             call outpost(psix,gpsix_y,psiz,vx_,t,'enr')
+C             call outpost(tr1x,tr1y,tr1z,vx_,t,'Tr1')
+C             call outpost(tr2x,tr2y,tr2z,vx_,t,'Tr2')
+C             call outpost(tr3x,tr3y,tr3z,vx_,t,'Tr3')
+C             call outpost(tr4x,tr4y,tr4z,vx_,t,'Tr4')
+C             ifto = .true.
+C             call outpost(wsx,wsy,wsz,term3x,convx,'src')
+C             ifto = .false.
+          !endif
       endif
 
 
