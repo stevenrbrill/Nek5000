@@ -1,3 +1,4 @@
+c- constants -----------------------------------------------------------
 #include "experimental/rans_komg.f"
 
 #define tSTATSTART uparam(1) /* start time for averaging */
@@ -11,29 +12,26 @@ c data extraction along wall normal direction
 c mesh dimensions
 #define BETAM 2.4     /* wall normal stretching parameter */
 #define PI (4.*atan(1.))
-#define XLEN (2.*PI)
+#define XLEN 0.5
 #define ZLEN PI
 #define NUMBER_ELEMENTS_X 3
 #define NUMBER_ELEMENTS_Y 8
 #define NUMBER_ELEMENTS_Z 1
 
 c-----------------------------------------------------------------------
-c  nek5000 user-file template
-c
-c  user specified routines:
-c     - uservp  : variable properties
-c     - userf   : local acceleration term for fluid
-c     - userq   : local source term for scalars
-c     - userbc  : boundary conditions
-c     - useric  : initial conditions
-c     - userchk : general purpose routine for checking errors etc.
-c     - userqtl : thermal divergence for lowMach number flows 
-c     - usrdat  : modify element vertices 
-c     - usrdat2 : modify mesh coordinates
-c     - usrdat3 : general purpose routine for initialization
-c     
+      subroutine abssub2(a,b,n)
+      REAL A(1),B(1)
+C
+      include 'OPCTR'
+C
+      DO 100 I=1,N
+         A(I)=A(I)-abs(B(I))
+ 100  CONTINUE
+      return
+      end
 c-----------------------------------------------------------------------
       subroutine projenrich ()
+      ! Removes enrichment components from polynomial solution
       include 'SIZE'
       include 'SOLN'
 
@@ -52,7 +50,10 @@ c-----------------------------------------------------------------------
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
-
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+     
       NTOT1=lx1*ly1*lz1*NELV
       CALL SUB2(vx,psix,NTOT1)
       CALL SUB2(vy,psiy,NTOT1)
@@ -63,6 +64,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine unprojenrich ()
+      ! Adds enrichment components to the polynomial solution
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
@@ -82,6 +84,9 @@ c-----------------------------------------------------------------------
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       NTOT1=lx1*ly1*lz1*NELV
       CALL ADD2(vx,psix,NTOT1)
@@ -94,6 +99,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine srbprint (u)
+      ! Print the solution 
       include 'SIZE'
       include 'TOTAL'
 
@@ -114,6 +120,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine userhack (ix,iy,iz,ieg)
+      ! Access to the RHS hacks for continuity enforcement
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
@@ -135,6 +142,9 @@ c-----------------------------------------------------------------------
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       e = gllel(ieg)
 
@@ -147,6 +157,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine userfint (ix,iy,iz,ieg)
+      ! Access to the pre-integrated quantities
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
@@ -168,6 +179,9 @@ c-----------------------------------------------------------------------
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       e = gllel(ieg)
 
@@ -176,10 +190,10 @@ c-----------------------------------------------------------------------
       ffintz = wintz(ix,iy,iz,e)
 
       return
-      end      
+      end
 
 c-----------------------------------------------------------------------
-      subroutine uservp(ix,iy,iz,eg) ! set variable properties
+      subroutine uservp (ix,iy,iz,eg)
       implicit none
       include 'SIZE'
       include 'TOTAL'
@@ -208,37 +222,13 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine userf(ix,iy,iz,eg) ! set acceleration term
+      subroutine userf  (ix,iy,iz,ieg)
+      ! Access to the forcing functions
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
-c
-c     Note: this is an acceleration term, NOT a force!
-c     Thus, ffx will subsequently be multiplied by rho(x,t).
-c
 
 c     Effective enrichment source terms for momentum equation
-      common /enrich/ wsx(lx1,ly1,lz1,lelt)
-     $               ,wsy(lx1,ly1,lz1,lelt)
-     $               ,wsz(lx1,ly1,lz1,lelt)
-
-      e = gllel(ieg)
-
-      ffx = wsx(ix,iy,iz,e) 
-      ffy = wsy(ix,iy,iz,e)
-      ffz = wsz(ix,iy,iz,e)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine userq(ix,iy,iz,eg) ! set source term
-      include 'SIZE'
-      include 'TOTAL'
-      include 'NEKUSE'
-
-      integer ix,iy,iz,e,eg
-      real rans_komg_kSrc,rans_komg_omgSrc
-
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)
@@ -257,85 +247,148 @@ c-----------------------------------------------------------------------
      $               ,psix_rhs(lx1,ly1,lz1,lelv)
      $               ,psiy_rhs(lx1,ly1,lz1,lelv)
      $               ,psiz_rhs(lx1,ly1,lz1,lelv)
-     $               ,wsk(lx1,ly1,lz1,lelv)
-     $               ,wsomg(lx1,ly1,lz1,lelv)
+
+      e = gllel(ieg)
+
+      ffx = 0.0 !wsx(ix,iy,iz,e) 
+      ffy = 0.0 !wsy(ix,iy,iz,e)
+      ffz = 0.0 !wsz(ix,iy,iz,e)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userq(ix,iy,iz,eg) ! set source term
+      implicit none
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer ix,iy,iz,e,eg
+      real rans_komg_kSrc,rans_komg_omgSrc
 
       e = gllel(eg)
 
-      call unprojenrich
       if(ifield.eq.3) then
-        qvol = rans_komg_kSrc(ix,iy,iz,e) + wsk(ix,iy,iz,e)
+        qvol = rans_komg_kSrc(ix,iy,iz,e)
       elseif(ifield.eq.4) then
-        qvol = rans_komg_omgSrc(ix,iy,iz,e) + wsomg(ix,iy,iz,e)
+        qvol = rans_komg_omgSrc(ix,iy,iz,e)
       else
         qvol = 0.0
       endif
-      call projenrich
 
       return
       end
+
 c-----------------------------------------------------------------------
-      subroutine userbc(ix,iy,iz,iside,eg) ! set up boundary conditions
+      real function lotw (yw,utau,nu)
+      ! Evaluate law of the wall
       implicit none
-      include 'SIZE'
-      include 'TOTAL'
-      include 'NEKUSE'
-c
-c     NOTE ::: This subroutine MAY NOT be called by every process
-c
-      integer ix,iy,iz,iside,e,eg
-    
-C     U, TKE, and Omg are all zero on the wall 
-      ux   = 0.0
-      uy   = 0.0
-      uz   = 0.0
-      temp = 0.0
+      real x, y, z, utau, nu ! Wall distance
+      integer flag
+      real Re_tau, ypb, yw, yp
+      
+      ypb = 11.062299784340414
+      yp = yw*utau/nu
+
+      ! Piecewise law of the wall
+C       if (yp .gt. ypb) then
+C          lotw = utau*(1.0/0.41*log(yp)+5.2)
+C       elseif (yp .le. ypb) then
+C          lotw = utau*yp
+C       endif
+
+      ! Reichardt law of the wall
+      lotw = utau*((1./0.41)*log(1.+0.41*yp)+7.8*
+     $      (1.-exp(-yp/(11.))-yp/(11.)*exp(-yp/(3.)))) ! Reichardt
 
       return
       end
+
 c-----------------------------------------------------------------------
-      subroutine useric(ix,iy,iz,eg) ! set up initial conditions
+      real function dlotwdy (yw,utau,nu)
+      ! Evaluate gradient of of law of the wall
       implicit none
-      include 'SIZE'
-      include 'TOTAL'
-      include 'NEKUSE'
+      real x, y, z, utau, nu 
+      integer flag
+      real Re_tau, ypb, yw, yp
+      integer sign
 
-      real wd
-      common /walldist/ wd(lx1,ly1,lz1,lelv)
+      ypb = 11.062299784340414
+      Re_tau = utau/nu
+      yp = yw*utau/nu
 
-      integer ix,iy,iz,e,eg
-      real darcy,utau,sigm,kmax,omax,yplus,fact,Re
+      ! Piecewise law of the wall
+C       if (yp .gt. ypb) then
+C         dlotwdy = Re_tau*utau*(1.0/(0.41*yp))
+C       elseif (yp .le. ypb) then
+C         dlotwdy = Re_tau*utau
+C       endif
 
-      e = gllel(eg)
-
-      Re    = 1.0/param(2)
-      darcy = 0.316/(Re**0.25)
-      utau  = sqrt(darcy/8.0)
-      sigm  = 0.6
-      kmax  = 4.5*utau*utau
-      omax  = 0.5*utau*utau*Re
-      yplus = max(wd(ix,iy,iz,e)*utau*Re,1.0e-3)
-
-      ux   = 3.0/2.0*(1.0-y*y)
-      uy   = 0.0
-      uz   = 0.0
-      temp = 0.0
-
-      fact = exp(-(log10(yplus)-1.0)**2/(2.0*sigm**2))
-      if(ifield.eq.3) temp = kmax*fact
-      if(ifield.eq.4) temp = omax*fact
+      ! Reichardt law of the wall
+      dlotwdy = Re_tau*utau*(1./(1.+0.41*yp)+7.8*
+     $      (1./11.*exp(-yp/(11.))+(yp-3.)/(33.)*exp(-yp/(3.)))) ! Reichardt
 
       return
       end
+
 c-----------------------------------------------------------------------
-      subroutine userchk()
+      real function calc_psi  (x,y,z,flag,utau,nu)
+      ! Evaluate enrichment function
+      implicit none
+      real x, y, z, utau, nu ! Wall distance
+      integer flag
+      real Re_tau, ypb, yw
+      real lotw
+      
+      Re_tau = utau/nu
+
+      ! Distance from wall
+      if (flag .gt. 0) then
+        yw = (1-y)
+      elseif (flag .lt. 0) then
+        yw = (1+y) 
+      endif
+
+      ! Enrichment value
+      calc_psi = lotw(yw,utau,nu)
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      real function calc_gpsix_y  (x,y,z,flag,utau,nu)
+      ! Evaluate enrichment gradient
+      implicit none
+      real x, y, z, utau, nu 
+      integer flag
+      real Re_tau, ypb, yw
+      integer sign
+      real dlotwdy
+
+      ypb = 11.062299784340414
+      Re_tau = utau/nu
+
+      ! Distance from wall
+      if (flag .gt. 0) then
+        yw = (1-y)
+        sign = -1
+      elseif (flag .lt. 0) then
+        yw = (1+y)
+        sign = 1
+      endif
+
+      ! Enrichment gradient
+      calc_gpsix_y = sign*dlotwdy(yw,utau,nu)
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      subroutine userchk ()
       include 'SIZE'
       include 'TOTAL'
 
-      real wd
-      common /walldist/ wd(lx1,ly1,lz1,lelv)
-
-      real ypmin,ypmax,ypave,utmin,utmax,utave
+      integer ILAG
 
       real x0(3)
       data x0 /0.0, 0.0, 0.0/ 
@@ -365,13 +418,14 @@ c-----------------------------------------------------------------------
       save xint, yint, zint
       save igs_x, igs_z
 
-      parameter(nstat=10)
+      parameter(nstat=13)
       real ravg(lx1*ly1*lz1*lelt,nstat)
       real stat(lx1*ly1*lz1*lelt,nstat)
       real stat_y(INTP_NMAX*nstat)
       save ravg, stat, stat_y
 
-      save dragx_avg
+      save dragx_avg, dragx_avg_poly
+      real tw_poly, u_tau_poly
 
       logical ifverbose
       common /gaaa/    wo1(lx1,ly1,lz1,lelv)
@@ -423,18 +477,35 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real myH1_rhs(lx1,ly1,lz1,lelv), myH2_rhs(lx1,ly1,lz1,lelv) 
       real phi_temp(lx1,ly1,lz1,lelv), T1_rhs_x(lx1,ly1,lz1,lelv) 
       real T1_rhs_y(lx1,ly1,lz1,lelv), T1_rhs_z(lx1,ly1,lz1,lelv) 
-      save T1_rhs_x, T1_rhs_y
+      save T1_rhs_x, T1_rhs_y, T1_rhs_z
       save T1_rhs
-      integer comp_T1, comp_en_F, comp_psi
+      integer comp_T1, comp_en_F, comp_psi, iy_ut, avg_ind, use_default
       save comp_T1, comp_en_F, comp_psi
+      real tau_w(lx1,ly1,lz1,lelv)
+      real srb_temp(lx1,ly1,lz1,lelv)
+      integer ib, ib2, iz_end
+      real srbtest, ut_param, tau_param
+      real psix_int(INTP_NMAX)
+      save psix_int
+      integer comp_phi_grad
+      save comp_phi_grad
+      integer nb
+      common /phigrad/ dpdr(lx1*ly1*lz1,lx1*ly1*lz1)
+     $                ,dpds(lx1*ly1*lz1,lx1*ly1*lz1)
+     $                ,dpdt(lx1*ly1*lz1,lx1*ly1*lz1)
+     $                ,dpdx(lx1*ly1*lz1,lx1*ly1*lz1,lelv)
+     $                ,dpdy(lx1*ly1*lz1,lx1*ly1*lz1,lelv)
+     $                ,dpdz(lx1*ly1*lz1,lx1*ly1*lz1,lelv)
+                               !(nb,nq)
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
-      common /scrns/ w1(lx1,ly1,lz1,lelv)
+      common /y_ends/ bot_y, top_y
+      real w1(lx1,ly1,lz1,lelv)
      $              ,w2(lx1,ly1,lz1,lelv)
      $              ,w3(lx1,ly1,lz1,lelv)
      $              ,tx(lx1,ly1,lz1,lelv)
      $              ,ty(lx1,ly1,lz1,lelv)
      $              ,tz(lx1,ly1,lz1,lelv)
-      common /tensor/ txx(lx1,ly1,lz1,lelv)
+      real txx(lx1,ly1,lz1,lelv)
      $               ,tyy(lx1,ly1,lz1,lelv)
      $               ,tzz(lx1,ly1,lz1,lelv)
      $               ,txy(lx1,ly1,lz1,lelv)
@@ -470,13 +541,14 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,psix_rhs(lx1,ly1,lz1,lelv)
      $               ,psiy_rhs(lx1,ly1,lz1,lelv)
      $               ,psiz_rhs(lx1,ly1,lz1,lelv)
-     $               ,wsk(lx1,ly1,lz1,lelv)
-     $               ,wsomg(lx1,ly1,lz1,lelv)
-      common /rans_komg_i/ ifld_k, ifld_omega
 
-C       save psix, psiy, psiz
+      real wd
+      common /walldist/ wd(lx1,ly1,lz1,lelv)
+
+      real ypmin,ypmax,ypave,utmin,utmax,utave
+
+
 c---------------------------------------------------------------
-
       if (mod(istep,10).eq.0) then
         call print_limits !monitor the solution
         call y_p_limits(wd,ypmin,ypmax,ypave,utmin,utmax,utave)
@@ -489,7 +561,9 @@ c---------------------------------------------------------------
 
  256  format(a15,3es13.4)
 
+C       save psix, psiy, psiz
 c---------------------------------------------------------------
+
       n     = nx1*ny1*nz1*nelv
       nelx  = NUMBER_ELEMENTS_X
       nely  = NUMBER_ELEMENTS_Y
@@ -513,396 +587,478 @@ c---------------------------------------------------------------
       if(nid.eq.0) write(6,2) time,ubar,e2,tmn,tmx
    2               format(1p5e13.4,' monitor')
 
-
 c     WALL ENRICHMENT...START
 
       !if(nid.eq.0) write(6,*) "Perform wall enrichment"
       
 c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
-      ! Start enrichment at time 50
-C       if (time.lt.50) then
-      if (time.lt.0) then
-        call oprzero(psix,psiy,psiz)
-        call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
-        call oprzero(wsx,wsy,wsz)
-        call oprzero(wintx,winty,wintz)
-        call oprzero(wrhsx,wrhsy,wrhsz)
-        call rzero(wsk,n)
-        call rzero(wsomg,n)
+      use_default = 0
 
-      else
-
-        if (comp_psi .ne. 1) then
-          comp_psi = 0
-
-          ! compute enrichment function psi
+      if (istep.eq.0) then
           call oprzero(psix,psiy,psiz)
           call oprzero(gpsix_x,gpsix_y,gpsix_z)
           call oprzero(gpsiy_x,gpsiy_y,gpsiy_z)
           call oprzero(gpsiz_x,gpsiz_y,gpsiz_z)
-
-          ! TODO: Add computing grad psi
-          Re_tau = 550
-          ypb = 11.062299784340414
-          
-          do iel = 1, nelv
-            if (flag(iel) .eq. 1) then  ! boundary element is above y=0
-                do ix = 1,lx1
-                  do iz = 1,lz1
-                    do iy = 1,ly1
-                      yw = (1-ym1(ix,iy,iz,iel))*Re_tau
-                      if (yw .gt. ypb) then
-                         psix(ix,iy,iz,iel) = utau_ref*
-     $                    (1.0/0.41*log(yw)+5.2)
-                         gpsix_y(ix,iy,iz,iel) = -1.0*Re_tau*utau_ref*
-     $                    (1.0/(0.41*yw))
-                      elseif (yw .le. ypb) then
-                         psix(ix,iy,iz,iel) = utau_ref*yw
-                         gpsix_y(ix,iy,iz,iel) = -1.0*Re_tau*utau_ref
-                      endif
-                    enddo
-                  enddo
-                enddo
-
-             else if (flag(iel) .eq. -1) then ! boundary element below y=0
-                 do ix = 1,lx1
-                  do iz = 1,lz1
-                    do iy = 1,ly1
-                      yw = (1+ym1(ix,iy,iz,iel))*Re_tau
-                      if (yw .gt. ypb) then
-                         psix(ix,iy,iz,iel) = utau_ref*
-     $                   (1.0/0.41*log(yw)+5.2)
-                         gpsix_y(ix,iy,iz,iel) = Re_tau*utau_ref*
-     $                    (1.0/(0.41*yw))
-                      elseif (yw .le. ypb) then
-                         psix(ix,iy,iz,iel) = utau_ref*yw
-                         gpsix_y(ix,iy,iz,iel) = Re_tau*utau_ref
-                      endif
-                    enddo
-                  enddo
-                 enddo
-             endif
-          enddo
-
-          call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
-          do iel = 1, nelv
-            if (flag(iel) .eq. 2) then  ! boundary element is above y=0
-                do ix = 1,lx1
-                  do iz = 1,lz1
-C                     do iy = 1,ly1
-                      iy = ly1
-                      yw = (1-ym1(ix,iy,iz,iel))*Re_tau
-                      if (yw .gt. ypb) then
-                         psix_rhs(ix,iy,iz,iel) = utau_ref*
-     $                    (1.0/0.41*log(yw)+5.2)
-                      elseif (yw .le. ypb) then
-                         psix_rhs(ix,iy,iz,iel) = utau_ref*yw
-                      endif
-C                     enddo
-                  enddo
-                enddo
-
-             else if (flag(iel) .eq. -2) then ! boundary element below y=0
-                 do ix = 1,lx1
-                  do iz = 1,lz1
-C                     do iy = 1,ly1
-                      iy = 1
-                      yw = (1+ym1(ix,iy,iz,iel))*Re_tau
-                      if (yw .gt. ypb) then
-                         psix_rhs(ix,iy,iz,iel) = utau_ref*
-     $                   (1.0/0.41*log(yw)+5.2)
-                      elseif (yw .le. ypb) then
-                         psix_rhs(ix,iy,iz,iel) = utau_ref*yw
-                      endif
-C                     enddo
-                  enddo
-                 enddo
-             endif
-          enddo
-
-        endif
-
-        if (secondcall .ne. 1) then
-          secondcall = 1
-          call projenrich
-        endif
-
-        if (comp_en_F.ne. 1) then
-          comp_en_F = 1
-          ! compute forcing terms in 3 directions
-          call oprzero(wsx,wsy,wsz)
-
-          ! ----------------------------------------------------------------
-          ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
-          ! + Term 4: -rho*dot(psi,gradient(psi))     Should be zero
-
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! M and T2 for x
-          ! M^psi,2 * u or dot(gpsi, u)
-          ! Should be zero in the simple case
-          call copy (tx,gpsix_x,n)
-          call copy (ty,gpsix_y,n)
-          call copy (tz,gpsix_z,n)
-
-          if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
-          if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
-          call copy   (tr2x,w1,n)
-          call cmult  (tr2x,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsx,w1,n)
-
-          ! T^psi,2 or dot(psi,gpsi_x)
-          ! Should be zero in the simple case
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
-          call copy   (tr4x,w1,n)
-          call cmult  (tr4x,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsx,w1,n)
-
-          ! store gpsi_x
-          call copy   (txx,tx,n)
-          call copy   (txy,ty,n)
-          call copy   (txz,tz,n)
-
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! M and T2 for y
-          ! M^psi,2 * v or dot(gpsi, v)
-          call copy (tx,gpsiy_x,n)
-          call copy (ty,gpsiy_y,n)
-          call copy (tz,gpsiy_z,n)
-
-          if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
-          if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
-          call copy   (tr2y,w1,n)
-          call cmult  (tr2y,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsy,w1,n)
-
-          ! T^psi,2 or dot(psi,gpsi_y)
-          ! Should be zero in the simple case
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
-          call copy   (tr4y,w1,n)
-          call cmult  (tr4y,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsy,w1,n)
-
-          ! store gpsi_y
-          call add2   (txy,tx,n)
-          call copy   (tyy,ty,n)
-          call copy   (tyz,tz,n)
-
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! M and T2 for z
-          ! M^psi,3 * w or dot(gpsi, w)
-          ! Should be zero in the simple case
-          call copy (tx,gpsiz_x,n)
-          call copy (ty,gpsiz_y,n)
-          call copy (tz,gpsiz_z,n)
-
-          if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
-          if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
-          call copy   (tr2z,w1,n)
-          call cmult  (tr2z,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsz,w1,n)
-
-          ! T^psi,2 or dot(psi,gpsi_z)
-          ! Should be zero in the simple case
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
-          call copy   (tr4z,w1,n)
-          call cmult  (tr4z,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsz,w1,n)
-
-          ! store gpsi_z
-          call add2   (txz,tx,n)
-          call add2   (tyz,ty,n)
-          call copy   (tzz,tz,n)
-
-
-          ! ----------------------------------------------------------------
-          ! Term 3: -rho*dot(psi,gradient(u0))   S^psi
-
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! S for x
-          ! S^psi * u
-          ! Compute grad of u
-          call gradm1 (tx,ty,tz,vx)
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
-          call copy   (tr3x,w1,n)
-          call cmult  (tr3x,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsx,w1,n)
-
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! S for y
-          ! S^psi * v
-          ! Compute grad of v
-          call gradm1 (tx,ty,tz,vy)
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
-          call copy   (tr3y,w1,n)
-          call cmult  (tr3y,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsy,w1,n)
-
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! S for z
-          ! S^psi * w
-          ! Compute grad of w
-          call gradm1 (tx,ty,tz,vz)
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
-          call copy   (tr3z,w1,n)
-          call cmult  (tr3z,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsz,w1,n)
-
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! multiply wsx,wsy,wsz by -rho
-          call opcmult(wsx,wsy,wsz,-1.0)
-          call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
-
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          call rzero(wsk,n)
-          call rzero(wsomg,n)
-
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! S for x
-          ! S^psi * u
-          ! Compute grad of u
-          call gradm1 (tx,ty,tz,t(1,1,1,1,ifld_k    -1))
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
-          call copy   (tr3x,w1,n)
-          call cmult  (tr3x,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsk,w1,n)
-
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! S for y
-          ! S^psi * v
-          ! Compute grad of v
-          call gradm1 (tx,ty,tz,t(1,1,1,1,ifld_omega-1))
-          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
-          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
-          call copy   (tr3y,w1,n)
-          call cmult  (tr3y,-1.0,n)
-          ! Add to total forcing
-          call add2   (wsomg,w1,n)
-
-        endif
-
-        ! ----------------------------------------------------------------
-        call oprzero(wintx,winty,wintz)
-        ! Compute T1
-        if (comp_T1 .ne. 1) then
-C           comp_T1 = 1
-          call rzero  (T1_rhs_x,n)
-          call rzero  (T1_rhs_y,n)
-          call rzero  (T1_rhs_z,n)
-          call rzero  (phi_temp,n)
-          do ix = 1,lx1
-            do iz = 1,lz1
-              do iy = 1,ly1
-                ! Iterate over each element and set coefficient = 1
-                do iel = 1, nelv
-                  if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-                    phi_temp(ix,iy,iz,iel) = 1.0;
-                  endif
-                enddo
-                ! Compute gradient of basis function
-                call gradm1 (tx,ty,tz,phi_temp)
-                ! Reset to zero
-                do iel = 1, nelv
-                  if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-                    phi_temp(ix,iy,iz,iel) = 0.0;
-                  endif
-                enddo
-                ! Compute dot product of gphi and gpsi
-                if (ldim == 2) then
-                  call vdot2(w1,tx,ty,gpsix_x,gpsix_y,n)
-                  call vdot2(w2,tx,ty,gpsiy_x,gpsiy_y,n)
-                  call vdot2(w3,tx,ty,gpsiz_x,gpsiz_y,n)
-                endif
-                if (ldim == 3) then
-                  call vdot3(w1,tx,ty,tz,gpsix_x,gpsix_y,gpsix_z,n)
-                  call vdot3(w2,tx,ty,tz,gpsiy_x,gpsiy_y,gpsiy_z,n)
-                  call vdot3(w3,tx,ty,tz,gpsiz_x,gpsiz_y,gpsiz_z,n)
-                endif
-                ! Multiply by Re
-                call col2(w1,vdiff(1,1,1,1,1),n)
-                call col2(w2,vdiff(1,1,1,1,1),n)
-                call col2(w3,vdiff(1,1,1,1,1),n)
-                ! Multiply by quadrature weights and Jacobian
-                call col2(w1,bm1,n)
-                call col2(w2,bm1,n)
-                call col2(w3,bm1,n)
-                ! Iterate over each element and add result to final sum
-                do iel = 1, nelv
-                  if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-                    do ix2 = 1,lx1
-                      do iz2 = 1,lz1
-                        do iy2 = 1,ly1
-                         T1_rhs_x(ix,iy,iz,iel) = T1_rhs_x(ix,iy,iz,iel) 
-     $                     + w1(ix2,iy2,iz2,iel)
-                         T1_rhs_y(ix,iy,iz,iel) = T1_rhs_y(ix,iy,iz,iel) 
-     $                     + w2(ix2,iy2,iz2,iel)
-                         T1_rhs_z(ix,iy,iz,iel) = T1_rhs_z(ix,iy,iz,iel) 
-     $                     + w3(ix2,iy2,iz2,iel)
-                        enddo
-                      enddo
-                    enddo
-                  endif
-                enddo
-              enddo
+         do iel = 1, nelv
+          do ix = 1, lx1
+           do iy = 1, ly1
+            do iz = 1, lz1
+               uti(ix,iy,iz,iel) = 0.08 ! Guess value for N-R solver
             enddo
+           enddo
           enddo
-          ! Add to rhs term
-          call cmult (T1_rhs_x,-1.,n)
-          call cmult (T1_rhs_y,-1.,n)
-          call cmult (T1_rhs_z,-1.,n)
-        endif
-        call add2 (wintx,T1_rhs_x,n)
-        call add2 (wintx,T1_rhs_y,n)
-        call add2 (wintx,T1_rhs_z,n)
-
-      ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
-C       call oprzero(psix,psiy,psiz)
-C       call oprzero(wsx,wsy,wsz)
-C       call oprzero(wintx,winty,wintz)
-
+         enddo
       endif
 
-c     WALL ENRICHMENT...END
-      print *, "print vx"
-      call srbprint(vx)
-      print *, "print vy"
-      call srbprint(vy)
-      print *, "print pr"
-      call srbprint(pr)
-      print *, "print k"
-      call srbprint(t(1,1,1,1,ifld_k-1))
-      print *, "print omega"
-      call srbprint(t(1,1,1,1,ifld_omega-1))
-      print *, "print"
+      ! Start enrichment at time 50
+C       if (time.lt.50) then
+C       if (time.lt.500000000) then
+C         call oprzero(psix,psiy,psiz)
+C         call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
+C         call oprzero(wsx,wsy,wsz)
+C         call oprzero(wintx,winty,wintz)
+C         call oprzero(wrhsx,wrhsy,wrhsz)
 
-      if (istep.eq.0) call outpost(vx,vy,vz,pr,t,'   ')
+C       else
+
+C         if (comp_psi .ne. 1) then
+C C           if (use_default .eq. 1) then
+C C             comp_psi = 1 ! comment for adaptation
+C C           endif
+
+C           ! compute enrichment function psi
+C           if (secondcall .eq. 1) then
+C             call unprojenrich
+C           endif
+
+C           do iel = 1, nelv
+C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
+C                 do ix = 1,lx1
+C                   do iz = 1,lz1
+C C                     do iy = 1,ly1
+C                     ! Get wall distance and y index
+C                     if (flag(iel) .eq. 1) then
+C                       iy = 1
+C                       yp = 1-ym1(ix,iy,iz,iel)
+C                       iy_ut = ly1
+C                     else
+C                       iy = ly1
+C                       yp = 1+ym1(ix,iy,iz,iel)
+C                       iy_ut = 1
+C                     endif
+C                     srbtest = uti(ix,iy_ut,iz,iel)
+C                     avg_ind = ix+(iy-1)*lx1+(iz-1)*lx1*ly1+
+C      $                 (iel-1)*lx1*ly1*lz1
+C                     ! Use average value for matching point
+C                     utau = newton(flg,ravg(avg_ind,1),yp,param(1),
+C      $                 param(2),uti(ix,iy_ut,iz,iel),rtol,
+C      $                 maxiter)
+C                     if (utau .eq. 0.0) then
+C                       count = count + 1 ! count unconverged solutions
+C                       taunew(ix,iy,iz,iel) = -param(1)
+C      $                                        *uti(ix,iy_ut,iz,iel)**2
+C                     else
+C                       uti(ix,iy_ut,iz,iel) = utau ! update guess value                  ! for next time step
+C                       taunew(ix,iy_ut,iz,iel) = -param(1)*utau**2 ! shear stress
+C                     endif
+C                   enddo
+C                 enddo
+C              endif
+C           enddo
+
+C           count = iglsum(count,1)
+
+C           if(nid.eq.0) then
+C             write(6,*) 'Solutions not converged: ', count
+C           endif
+
+C           count = 0
+
+
+C           ! Compute psix and grad_psi at nodes
+C           do iel = 1, nelv
+C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
+C               if (flag(iel) .eq. 1) then
+C                 iy_ut = ly1
+C               else
+C                 iy_ut = 1
+C               endif
+C                 do ix = 1,lx1
+C                   do iz = 1,lz1
+C                     do iy = 1,ly1
+C                       ut_param = uti(ix,iy_ut,iz,iel)
+C                       if (use_default .eq. 1) then
+C                         ut_param = utau_ref
+C                       endif
+C                       psix(ix,iy,iz,iel) = calc_psi(xm1(ix,iy,iz,iel),
+C      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+C      $                   ut_param,param(2))
+C                       gpsix_y(ix,iy,iz,iel) = 
+C      $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
+C      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+C      $                   ut_param,param(2))
+C                     enddo
+C                   enddo
+C                 enddo
+C              endif
+C           enddo
+
+C           ! Assume SEM basis in X and Z. Use analytical grad in y
+C           call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
+
+C           ! Get enrichment values on boundary of enriched region
+C           ! Not currently used
+C           call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
+C           do iel = 1, nelv
+C             if (flag(iel) .eq. 2) then  ! boundary element is above y=0
+C                 do ix = 1,lx1
+C                   do iz = 1,lz1
+C C                     do iy = 1,ly1
+C                       iy = ly1
+C                       ut_param = uti(ix,iy,iz,iel)
+C                       if (use_default .eq. 1) then
+C                         ut_param = utau_ref
+C                       endif
+C                       psix_rhs(ix,iy,iz,iel) = 
+C      $                   calc_psi(xm1(ix,iy,iz,iel),
+C      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+C      $                   ut_param,param(2))
+C C                     enddo
+C                   enddo
+C                 enddo
+
+C              else if (flag(iel) .eq. -2) then ! boundary element below y=0
+C                  do ix = 1,lx1
+C                   do iz = 1,lz1
+C C                     do iy = 1,ly1
+C                       iy = 1
+C                       ut_param = uti(ix,iy,iz,iel)
+C                       if (use_default .eq. 1) then
+C                         ut_param = utau_ref
+C                       endif
+C                       psix_rhs(ix,iy,iz,iel) = 
+C      $                   calc_psi(xm1(ix,iy,iz,iel),
+C      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+C      $                   ut_param,param(2))
+C C                     enddo
+C                   enddo
+C                  enddo
+C              endif
+C           enddo
+
+C C           call rzero  (tau_w,n)
+C C           do iel = 1, nelv
+C C             if (flag(iel) .eq. 1) then  ! boundary element is above y=0
+C C                 do ix = 1,lx1
+C C                   do iz = 1,lz1
+C C C                     do iy = 1,ly1
+C C                       iy = ly1
+C C                       ut_param = uti(ix,iy_ut,iz,iel)
+C C                       if (use_default .eq. 1) then
+C C                         ut_param = utau_ref
+C C                       endif
+C C                       tau_w(ix,iy,iz,iel) = -param(1)*ut_param*ut_param
+C C C                     enddo
+C C                   enddo
+C C                 enddo
+
+C C              else if (flag(iel) .eq. -1) then ! boundary element below y=0
+C C                  do ix = 1,lx1
+C C                   do iz = 1,lz1
+C C C                     do iy = 1,ly1
+C C                       iy = 1
+C C                       ut_param = uti(ix,iy_ut,iz,iel)
+C C                       if (use_default .eq. 1) then
+C C                         ut_param = utau_ref
+C C                       endif
+C C                       tau_w(ix,iy,iz,iel) = -param(1)*ut_param*ut_param
+C C C                     enddo
+C C                   enddo
+C C                  enddo
+C C              endif
+C C           enddo
+C         endif
+
+C         call projenrich
+C         if (secondcall .ne. 1) then
+C           secondcall = 1
+C           do ILAG = 2,NBD
+C             CALL COPY(VXLAG(1,1,1,1,ILAG-1),VX,n)
+C             CALL COPY(VYLAG(1,1,1,1,ILAG-1),VY,n)
+C             CALL COPY(VZLAG(1,1,1,1,ILAG-1),VZ,n)
+C           enddo
+C         endif
+
+C         if (comp_en_F.ne. 1) then
+C           ! comp_en_F = 1 ! This loop shouldn't be here. you always need it
+C           ! compute forcing terms in 3 directions
+C           call oprzero(wsx,wsy,wsz)
+
+C C           call add2   (wsx,tau_w,n)
+
+C           ! ----------------------------------------------------------------
+C           ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
+C           ! + Term 4: -rho*dot(psi,gradient(psi))     Should be zero
+
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! M and T2 for x
+C           ! M^psi,2 * u or dot(gpsi, u)
+C           ! Should be zero in the simple case
+C           call copy (tx,gpsix_x,n)
+C           call copy (ty,gpsix_y,n)
+C           call copy (tz,gpsix_z,n)
+
+C           if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
+C           if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
+C           call copy   (tr2x,w1,n)
+C           call cmult  (tr2x,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsx,w1,n)
+
+C           ! T^psi,2 or dot(psi,gpsi_x)
+C           ! Should be zero in the simple case
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
+C           call copy   (tr4x,w1,n)
+C           call cmult  (tr4x,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsx,w1,n)
+
+C           ! store gpsi_x
+C           call copy   (txx,tx,n)
+C           call copy   (txy,ty,n)
+C           call copy   (txz,tz,n)
+
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! M and T2 for y
+C           ! M^psi,2 * v or dot(gpsi, v)
+C           call copy (tx,gpsiy_x,n)
+C           call copy (ty,gpsiy_y,n)
+C           call copy (tz,gpsiy_z,n)
+
+C           if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
+C           if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
+C           call copy   (tr2y,w1,n)
+C           call cmult  (tr2y,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsy,w1,n)
+
+C           ! T^psi,2 or dot(psi,gpsi_y)
+C           ! Should be zero in the simple case
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
+C           call copy   (tr4y,w1,n)
+C           call cmult  (tr4y,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsy,w1,n)
+
+C           ! store gpsi_y
+C           call add2   (txy,tx,n)
+C           call copy   (tyy,ty,n)
+C           call copy   (tyz,tz,n)
+
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! M and T2 for z
+C           ! M^psi,3 * w or dot(gpsi, w)
+C           ! Should be zero in the simple case
+C           call copy (tx,gpsiz_x,n)
+C           call copy (ty,gpsiz_y,n)
+C           call copy (tz,gpsiz_z,n)
+
+C           if (ldim == 2) call vdot2  (w1,vx,vy,tx,ty,n) !Term 2
+C           if (ldim == 3) call vdot3  (w1,vx,vy,vz,tx,ty,tz,n) !Term 2
+C           call copy   (tr2z,w1,n)
+C           call cmult  (tr2z,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsz,w1,n)
+
+C           ! T^psi,2 or dot(psi,gpsi_z)
+C           ! Should be zero in the simple case
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) !Term 4
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) !Term 4
+C           call copy   (tr4z,w1,n)
+C           call cmult  (tr4z,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsz,w1,n)
+
+C           ! store gpsi_z
+C           call add2   (txz,tx,n)
+C           call add2   (tyz,ty,n)
+C           call copy   (tzz,tz,n)
+
+
+C           ! ----------------------------------------------------------------
+C           ! Term 3: -rho*dot(psi,gradient(u0))   S^psi
+
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! S for x
+C           ! S^psi * u
+C           ! Compute grad of u
+C           call gradm1 (tx,ty,tz,vx)
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
+C           call copy   (tr3x,w1,n)
+C           call cmult  (tr3x,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsx,w1,n)
+
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! S for y
+C           ! S^psi * v
+C           ! Compute grad of v
+C           call gradm1 (tx,ty,tz,vy)
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
+C           call copy   (tr3y,w1,n)
+C           call cmult  (tr3y,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsy,w1,n)
+
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! S for z
+C           ! S^psi * w
+C           ! Compute grad of w
+C           call gradm1 (tx,ty,tz,vz)
+C           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+C           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
+C           call copy   (tr3z,w1,n)
+C           call cmult  (tr3z,-1.0,n)
+C           ! Add to total forcing
+C           call add2   (wsz,w1,n)
+
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! multiply wsx,wsy,wsz by -rho
+C           call opcmult(wsx,wsy,wsz,-1.0)
+C           call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
+
+C         endif
+
+C         ! Compute T1 (viscous enrichment term)
+C         ! (nu*dot(grad phi, grad psi))
+C         if (comp_T1 .ne. 1) then
+C           if (use_default .eq. 1) then
+C             comp_T1 = 1 ! Comment for adaptation
+C           endif
+
+C           call oprzero(wintx,winty,wintz)
+C           call rzero  (T1_rhs_x,n)
+C           call rzero  (T1_rhs_y,n)
+C           call rzero  (T1_rhs_z,n)
+C           call rzero  (tx,n)
+C           call rzero  (ty,n)
+C           call rzero  (tz,n)
+C           call rzero  (w1,n)
+C           call rzero  (w2,n)
+C           call rzero  (w3,n)
+C           call rzero  (phi_temp,n)
+
+C           ! Compute phi grads of reference elements
+C           if (comp_phi_grad .ne. 1) then
+C             iz_end = lz1
+C             if (ldim .eq. 2) then
+C               iz_end = 1
+C             endif
+C             do iz = 1,lz1
+C               do iy = 1,ly1
+C                 do ix = 1,lx1
+C                   ib = (iz-1)*lx1*ly1 + (iy-1)*(lx1) + ix
+C                   call rzero(srb_temp,lx1*ly1*lz1*nelev)
+C                   srb_temp(ix,iy,iz,1) = 1
+C                   if (ldim .eq. 2) then           
+C                     call local_grad2(dpdr(1,ib),
+C      $                   dpds(1,ib),srb_temp,lx1-1,1,dxm1,dxtm1)
+C                   elseif (ldim .eq. 3) then
+C                     call local_grad3(dpdr(1,ib),
+C      $                   dpds(1,ib),dpdt(1,ib),
+C      $                   srb_temp,lx1-1,1,dxm1,dxtm1)
+C                   endif
+C                   srb_temp(ix,iy,iz,1) = 0   
+C                 enddo
+C               enddo
+C             enddo
+C           endif   
+
+C           nb = lx1*ly1
+C           if (ldim .eq. 3) then
+C             nb = nb*lz1
+C           endif
+C           do iel = 1,nelv 
+C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C               ! Compute phi grad
+C               if (comp_phi_grad .ne. 1) then
+C                 do j=1,nb ! actually nb
+C                   do i=1,nb ! actually nq
+C                    dpdx(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rxm1(i,1,1,iel)
+C      $                                     + dpds(i,j)*sxm1(i,1,1,iel)
+C      $                                     + dpdt(i,j)*txm1(i,1,1,iel) )
+C                    dpdy(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rym1(i,1,1,iel)
+C      $                                     + dpds(i,j)*sym1(i,1,1,iel)
+C      $                                     + dpdt(i,j)*tym1(i,1,1,iel) )
+C                    dpdz(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rzm1(i,1,1,iel)
+C      $                                     + dpds(i,j)*szm1(i,1,1,iel)
+C      $                                     + dpdt(i,j)*tzm1(i,1,1,iel) )
+C                   enddo
+C                 enddo
+C               endif
+C               ! Compute other parts of T1
+C               call col3(srb_temp,bm1(1,1,1,iel),vdiff(1,1,1,iel,1),nb)
+C               call col3(tx,srb_temp,gpsix_x(1,1,1,iel),nb)
+C               call col3(ty,srb_temp,gpsix_y(1,1,1,iel),nb)
+C               call col3(tz,srb_temp,gpsix_z(1,1,1,iel),nb)
+C               ! TODO: Add psiy and psiz parts
+
+C               call mxm(dpdx(1,1,iel) ,nb,tx,nb,w1,1)
+C               call mxm(dpdy(1,1,iel) ,nb,ty,nb,w2,1)
+C               call mxm(dpdz(1,1,iel) ,nb,tz,nb,w3,1)
+
+C               call cmult (w1,-1.,nb)
+C               call cmult (w2,-1.,nb)
+C               call cmult (w3,-1.,nb)
+
+C               call cmult (w1,2.0,nb)
+
+C               call add2(T1_rhs_x(1,1,1,iel),w1,nb)
+C               call add2(T1_rhs_x(1,1,1,iel),w2,nb)
+C               call add2(T1_rhs_x(1,1,1,iel),w3,nb)
+
+C               ! Cross terms
+C               call mxm(dpdx(1,1,iel) ,nb,ty,nb,w1,1)
+C               call mxm(dpdx(1,1,iel) ,nb,tz,nb,w2,1)
+
+C               call cmult (w1,-1.,nb)
+C               call cmult (w2,-1.,nb)
+
+C               call add2(T1_rhs_y(1,1,1,iel),w1,nb)
+C               call add2(T1_rhs_z(1,1,1,iel),w2,nb)
+C             endif
+C           enddo
+C           call add2 (wintx,T1_rhs_x,n)
+C           call add2 (winty,T1_rhs_y,n)
+C           call add2 (wintz,T1_rhs_z,n)
+
+C           ! only compute phi grads once
+C           if (comp_phi_grad .ne. 1) then
+C             comp_phi_grad = 1
+C           endif
+C         endif
+
+C       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
+C C       call oprzero(psix,psiy,psiz)
+C C       call oprzero(wsx,wsy,wsz)
+C C       call oprzero(wintx,winty,wintz)
+
+C       endif
+
+c     WALL ENRICHMENT...END
+
+      ifxyo = .true.
+      if (istep.eq.0) call outfld('   ')
       if (istep.eq.0 .or. ifoutfld) then
          ! reconstruct velocity field
          call add3 (vx_,vx,psix,n) !calculate actual velocity
          call outpost(psix,psiy,psiz,vx_,t,'enr')
-         call outpost(vx,vy,vz,
-     $       t(1,1,1,1,ifld_k-1),t,'k')
-         call outpost(vx,vy,vz,
-     $       t(1,1,1,1,ifld_omega-1),t,'omg')
+C          call outpost(psix,gpsix_y,psiz,vx_,t,'enr')
 C          call outpost(tr1x,tr1y,tr1z,vx_,t,'Tr1')
 C          call outpost(tr2x,tr2y,tr2z,vx_,t,'Tr2')
 C          call outpost(tr3x,tr3y,tr3z,vx_,t,'Tr3')
@@ -919,10 +1075,10 @@ C          ifto = .false.
 c     What follows computes some statistics ...
 c
 
-      if(ifoutfld) then
-        if (ldimt.ge.2) call lambda2(t(1,1,1,1,2))
-        if (ldimt.ge.3) call comp_vort3(t(1,1,1,1,3),wo1,wo2,vx,vy,vz)
-      endif
+C       if(ifoutfld) then
+C         if (ldimt.ge.2) call lambda2(t(1,1,1,1,2))
+C         if (ldimt.ge.3) call comp_vort3(t(1,1,1,1,3),wo1,wo2,vx,vy,vz)
+C       endif
 
       if(icalld.eq.0) then
         if(nid.eq.0) write(6,*) 'Start collecting statistics ...'
@@ -938,6 +1094,18 @@ c
              yint(i) = tanh(BETAM*(2*yi-1))/tanh(BETAM)
           enddo
           call cfill(zint,ZCINT,size(zint))
+
+          do i = 1,INTP_NMAX 
+            if (yint(i) < ym1(1,ly1,1,1)) then
+              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1,
+     $                               utau_ref,param(2))
+            elseif (yint(i) > ym1(1,1,1,nelv)) then
+              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),1,
+     $                               utau_ref,param(2))
+            else
+              psix_int(i) = 0
+            endif
+          enddo
         endif
         iffpts = .true. ! dummy call to find points
         call interp_nfld(stat_y,ravg,1,xint,yint,zint,nint,
@@ -950,6 +1118,7 @@ c
 
         call rzero(ravg,size(ravg))
         dragx_avg = 0
+        dragx_avg_poly = 0
         atime     = 0
         timel     = time
         ntdump    = int(time/tSTATFREQ)
@@ -961,30 +1130,37 @@ c
       atime = atime + dtime
 
       ! averaging over time
-      if (atime.ne.0. .and. dtime.ne.0.) then
-        beta      = dtime / atime
-        alpha     = 1. - beta
+C       if (atime.ne.0. .and. dtime.ne.0.) then
+C         beta      = dtime / atime
+C         alpha     = 1. - beta
 
-        call unprojenrich
-        ifverbose = .false.
-        call avg1(ravg(1,1),vx   ,alpha,beta,n,'uavg',ifverbose)
-        call avg2(ravg(1,2),vx   ,alpha,beta,n,'urms',ifverbose)
-        call avg2(ravg(1,3),vy   ,alpha,beta,n,'vrms',ifverbose)
-        call avg2(ravg(1,4),vz   ,alpha,beta,n,'wrms',ifverbose)
-        call avg3(ravg(1,5),vx,vy,alpha,beta,n,'uvmm',ifverbose)
+C         call unprojenrich
+C         ifverbose = .false.
+C         call avg1(ravg(1,1),vx   ,alpha,beta,n,'uavg',ifverbose)
+C         call avg2(ravg(1,2),vx   ,alpha,beta,n,'urms',ifverbose)
+C         call avg2(ravg(1,3),vy   ,alpha,beta,n,'vrms',ifverbose)
+C         call avg2(ravg(1,4),vz   ,alpha,beta,n,'wrms',ifverbose)
+C         call avg3(ravg(1,5),vx,vy,alpha,beta,n,'uvmm',ifverbose)
 
-        call avg1(ravg(1,6),t    ,alpha,beta,n,'tavg',ifverbose)
-        call avg2(ravg(1,7),t    ,alpha,beta,n,'trms',ifverbose)
-        call avg3(ravg(1,8),vx,t ,alpha,beta,n,'utmm',ifverbose)
-        call avg3(ravg(1,9),vy,t ,alpha,beta,n,'vtmm',ifverbose)
+C         call avg1(ravg(1,6),t    ,alpha,beta,n,'tavg',ifverbose)
+C         call avg2(ravg(1,7),t    ,alpha,beta,n,'trms',ifverbose)
+C         call avg3(ravg(1,8),vx,t ,alpha,beta,n,'utmm',ifverbose)
+C         call avg3(ravg(1,9),vy,t ,alpha,beta,n,'vtmm',ifverbose)
 
-        call avg1(ravg(1,10),psix ,alpha,beta,n,'psix',ifverbose)
+C         call avg1(ravg(1,10),psix ,alpha,beta,n,'psix',ifverbose)
+C         call avg1(ravg(1,12),uti ,alpha,beta,n,'utia',ifverbose)
+C         call avg1(ravg(1,13),taunew ,alpha,beta,n,'taua',ifverbose)
 
-        call torque_calc(1.0,x0,.false.,.false.) ! compute wall shear
-        dragx_avg = alpha*dragx_avg + beta*dragx(iobj_wall)
-c        write(6,*) 'dragx(iobj_wall) = ', dragx(iobj_wall)
-        call projenrich
-      endif
+C         call torque_calc(1.0,x0,.false.,.false.) ! compute wall shear
+C         dragx_avg = alpha*dragx_avg + beta*dragx(iobj_wall)
+
+C         call projenrich
+C         call torque_calc(1.0,x0,.false.,.false.) ! compute wall shear
+C         dragx_avg_poly = alpha*dragx_avg_poly + beta*dragx(iobj_wall)
+        
+C c        write(6,*) 'dragx(iobj_wall) = ', dragx(iobj_wall)
+C         call avg1(ravg(1,11),vx   ,alpha,beta,n,'upol',ifverbose)
+C       endif
       
 c      write(6,*) 'dragx_avg = ', dragx_avg
 
@@ -1017,48 +1193,77 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          ntdump = ntdump + 1
          if (nid.ne.0) goto 998 
 
+         ! Interpolate psi at all points
+         ut_param = (stat_y(11*nint+1) + stat_y(11*nint+nint))/2.0
+         tau_param = (stat_y(12*nint+1) + stat_y(12*nint+nint))/2.0
+         if (use_default .eq. 1) then
+               ut_param = utau_ref
+         endif
+         do i = 1,INTP_NMAX 
+           if (yint(i) < bot_y) then
+             psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1,
+     $                              ut_param,param(2))
+           elseif (yint(i) > top_y) then
+             psix_int(i) = calc_psi(xint(i),yint(i),zint(i),1,
+     $                              ut_param,param(2))
+           else
+             psix_int(i) = 0
+           endif
+         enddo 
+
          rho    = param(1)
          dnu    = param(2)
          A_w    = 2 * XLEN 
          if (ldim == 3) A_w = A_w*ZLEN
          tw     = dragx_avg / A_w
          u_tau  = sqrt(tw / rho)
+         tw_poly     = dragx_avg_poly / A_w
+         u_tau_poly  = sqrt(tw_poly / rho)
          qw     = -param(8) * dTdy_w
          t_tau  = 1/u_tau * qw
          Re_tau = u_tau / dnu
          tplus  = time * u_tau**2 / dnu
 
+         write(6,*) 'u_taus ...', ut_param, u_tau, u_tau_poly
+     $    u_tau, tw, tw_poly, tau_param, A_w
+
          write(6,*) 'Dumping statistics ...', Re_tau, t_tau, dragx_avg,
      $    u_tau
  
          open(unit=56,file='vel_fluc_prof.dat')
-         write(56,'(A,1pe14.7)') '%time = ', time
+         write(56,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', ut_param 
          write(56,'(A)') 
-     $    '%  y    y+    uu    vv    ww    uv    tt    ut    -vt'
+     $    '%  y    y+    uu    vv    ww    uv    u_tau'
 
          open(unit=57,file='mean_prof.dat')
-         write(57,'(A,1pe14.7)') '%time = ', time
+         write(57,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', ut_param, 
+     $     '%u_tau_poly = ', u_tau_poly
          write(57,'(A)') 
-     $    '%  y    y+    Umean    Psimean'
+     $    '%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau'
 
          do i = 1,nint
             yy = 1+yint(i)
             write(56,3) 
      &           yy,
      &           yy*Re_tau,
-     &           (stat_y(1*nint+i)-(stat_y(0*nint+i))**2)/u_tau**2,
-     &           stat_y(2*nint+i)/u_tau**2,
-     &           stat_y(3*nint+i)/u_tau**2,
-     &           stat_y(4*nint+i)/u_tau**2,
-     &           (stat_y(6*nint+i)-(stat_y(5*nint+i))**2)/t_tau**2,
-     &           stat_y(7*nint+i)/qw,
-     &           -stat_y(8*nint+i)/qw
+     &           (stat_y(1*nint+i)-(stat_y(0*nint+i))**2),
+     &           stat_y(2*nint+i),
+     &           stat_y(3*nint+i),
+     &           stat_y(4*nint+i),
+     &           u_tau
 
             write(57,3) 
      &           yy,
      &           yy*Re_tau, 
-     &           stat_y(0*nint+i)/u_tau,
-     &           stat_y(10*nint+i)/t_tau
+     &           stat_y(0*nint+i),
+     &           stat_y(9*nint+i),
+     &           stat_y(10*nint+i),
+     &           psix_int(i),
+     &           u_tau
 
   3         format(1p15e17.9)
          enddo
@@ -1071,7 +1276,17 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
       end
 
 c-----------------------------------------------------------------------
+      subroutine userqtl ! Set thermal divergence
+
+      call userqtl_scig 
+
+      return
+
+      end
+c-----------------------------------------------------------------------
       subroutine srbrhs ()
+      ! Compute forcing term added directly to RHS for continuity
+      ! Not currently needed for continuity
       include 'SIZE'
       include 'TOTAL'
 
@@ -1083,7 +1298,7 @@ c     VARIABLES DECLARED FOR ENRICHMENT METHOD
       real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
       real myH1_rhs(lx1,ly1,lz1,lelv), myH2_rhs(lx1,ly1,lz1,lelv) 
       real phi_temp(lx1,ly1,lz1,lelv), T1_rhs(lx1,ly1,lz1,lelv)
-      common /scrns/ w1(lx1,ly1,lz1,lelv)
+      real w1(lx1,ly1,lz1,lelv)
      $              ,w2(lx1,ly1,lz1,lelv)
      $              ,w3(lx1,ly1,lz1,lelv)
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
@@ -1140,9 +1355,9 @@ C       call rzero  (w3,n)
             do ix = 1,lx1
               do iz = 1,lz1
 C                 do iy = 1,ly1
-                  iy = ly1
-                  iy_psi = 1
-                  w1(ix,iy,iz,iel) = -psix_rhs(ix,iy_psi,iz,iel)
+C                   iy = ly1
+C                   iy_psi = 1
+C                   w1(ix,iy,iz,iel) = -psix_rhs(ix,iy_psi,iz,iel)
 C                   w2(ix,iy,iz,iel) = -psiy_rhs(ix,iy_psi,iz,iel)
 C                   w3(ix,iy,iz,iel) = -psiz_rhs(ix,iy_psi,iz,iel)
 C                 enddo
@@ -1177,123 +1392,166 @@ c     WALL ENRICHMENT...END
       return
       end
 c-----------------------------------------------------------------------
-      subroutine userqtl ! Set thermal divergence
+      subroutine userbc (ix,iy,iz,iside,ieg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
 
-      call userqtl_scig 
+      real taunew(lx1,ly1,lz1,lelv)
+      common /wallshear/ taunew
 
+C       if (y.lt.0) temp = 1.0
+C       if (y.gt.0) temp = 0.0
+
+      e = gllel(ieg)
+
+      if((cbc(iside,e,1).eq.'v  ') .or. (cbc(iside,e,1).eq.'V  ')) then
+        UX=0.0
+        UY=0.0
+        UZ=0.0
+        temp=0.0
+        ! This isn't actually used
+        TRX=-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
+        TRY=0.0
+        TRZ=0.0
+      endif
+
+c     Imposing shear stress B.C.s
+      if(cbc(iside,e,1).eq.'sh ') then
+        TRX=taunew(ix,iy,iz,e) !-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
+        TRY=0.0
+        TRZ=0.0
+        temp=0.0
+      endif
+      
       return
       end
 c-----------------------------------------------------------------------
-      subroutine usrdat()   ! This routine to modify element vertices
+      subroutine useric (ix,iy,iz,eg)
       implicit none
       include 'SIZE'
       include 'TOTAL'
-
-C     enforce constant average velocity
-      param(54) = -1
-      param(55) = 1.0
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine usrdat2()  ! This routine to modify mesh coordinates
-      implicit none
-      include 'SIZE'
-      include 'TOTAL'
+      include 'NEKUSE'
 
       real wd
       common /walldist/ wd(lx1,ly1,lz1,lelv)
 
-      integer i,n,ix,iy,iz,iel
-      real xmin,xmax,ymin,ymax,scaley,scalex
-      real glmin,glmax
+      integer ix,iy,iz,e,eg
+      real darcy,utau,sigm,kmax,omax,yplus,fact,Re
 
-      n=nx1*ny1*nz1*nelv
+      e = gllel(eg)
 
-      xmin=glmin(xm1,n)
-      xmax=glmax(xm1,n)
-      ymin=glmin(ym1,n)
-      ymax=glmax(ym1,n)
+      Re    = 1.0/param(2)
+      darcy = 0.316/(Re**0.25)
+      utau  = sqrt(darcy/8.0)
+      sigm  = 0.6
+      kmax  = 4.5*utau*utau
+      omax  = 0.5*utau*utau*Re
+      yplus = max(wd(ix,iy,iz,e)*utau*Re,1.0e-3)
 
-      scalex=3.0/8.0/(xmax-xmin) !make the elements square on average
-      scaley=2.0/(ymax-ymin)
+      ux   = 3.0/2.0*(1.0-y*y)
+      uy   = 0.0
+      uz   = 0.0
+      temp = 0.0
 
-      call cmult(xm1,scalex,n)
-      call cmult(ym1,scaley,n)
-C       call cadd(ym1,-1.,n)
+      fact = exp(-(log10(yplus)-1.0)**2/(2.0*sigm**2))
+      if(ifield.eq.3) temp = kmax*fact
+      if(ifield.eq.4) temp = omax*fact
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat ()   ! This routine to modify element vertices
+      include 'SIZE'      ! _before_ mesh is generated, which 
+      include 'TOTAL'     ! guarantees GLL mapping of mesh.
+
+      real wd
+      common /walldist/ wd(lx1,ly1,lz1,lelv)
+c      param(84) = 1e-6    ! setting initial time step
+
+      n = nelv * 8 !2**ldim
+      xmin = glmin(xc,n)
+      xmax = glmax(xc,n)
+      ymin = glmin(yc,n)
+      ymax = glmax(yc,n)
+      zmin = glmin(zc,n)
+      zmax = glmax(zc,n)
+
+      xscale = XLEN/(xmax-xmin)
+      yscale = 1./(ymax-ymin)
+      zscale = ZLEN/(zmax-zmin)
+
+      do i=1,n
+         xc(i,1) = xscale*xc(i,1)
+         yc(i,1) = 2*yscale*yc(i,1)-1.  ! No stretching 
+         !yc(i,1) = tanh(BETAM*(2*yscale*yc(i,1)-1))/tanh(BETAM) ! Stretching
+        if (ldim == 3) then
+         zc(i,1) = zscale*zc(i,1)
+        endif
+      enddo
+C       do i=1,n
+C          xc(i,1) = xscale*xc(i,1)
+C          yc(i,1) = 2*yscale*yc(i,1)-1  ! No stretching 
+C          !yc(i,1) = tanh(BETAM*(2*yscale*yc(i,1)-1))/tanh(BETAM) ! Stretching
+C         if (ldim == 3) then
+C          zc(i,1) = zscale*zc(i,1)
+C         endif
+C       enddo
 
 c     calculate wall distance for regularized k-omega
 C       call rone(wd,n)
-C       call sub2(wd,ym1,n)
-      do iel = 1, nelv
-        do ix = 1,lx1
-          do iy = 1,ly1
-            do iz = 1,lz1
-              wd(ix,iy,iz,iel) = 1.0 - abs(ym1(ix,iy,iz,iel))
-            enddo
-          enddo
-        enddo
-      enddo
-
+C       call abssub2(wd,ym1,n)
+ 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine usrdat3()
+      subroutine usrdat2 () ! This routine to modify mesh coordinates
       include 'SIZE'
       include 'TOTAL'
-
-      real wd
-      common /walldist/ wd(lx1,ly1,lz1,lelv)
-
-      integer ifld_k,ifld_omg,m_id,w_id
-      real coeffs(21) !array for passing your own coeffs
-      logical ifcoeffs
-
-      integer flag(lelv), counterp, countern, counterp2, countern2
-      real top_y, bot_y
-      common /beflag/ flag
       
-      ifld_k = 3 !address of tke equation in t array
-      ifld_omg = 4 !address of omega equation in t array
-      ifcoeffs=.false. !set to true to pass your own coeffs
-
-C     Supported models:
-c     m_id = 0 !regularized high-Re k-omega (no wall functions)
-      m_id = 1 !regularized low-Re k-omega
-c     m_id = 2 !regularized high-Re k-omega SST (no wall functions)
-c     m_id = 3 !regularized low-Re k-omega SST
-
-C     Wall distance function:
-      w_id = 0 ! user specified
-c     w_id = 1 ! cheap_dist (path to wall, may work better for periodic boundaries)
-c     w_id = 2 ! distf (coordinate difference, provides smoother function)
-
-      call rans_komg_init(ifld_k,ifld_omg,ifcoeffs,coeffs,w_id,wd,m_id)
-
+      integer flag(lelv), counterp, countern, counterp2, countern2
+      common /beflag/ flag
+      common /y_ends/ bot_y, top_y
+      
       counterp = 0
       countern = 0
       counterp2 = 0
       countern2 = 0
 
+      ! Label boundary elements
       do iel=1,nelt
       do ifc=1,2*ndim
-         if (cbc(ifc,iel,1) .eq. 'W  ') boundaryID(ifc,iel) = 1 
+         if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $       (cbc(ifc,iel,1) .eq. 'W  ') .or. 
+     $       (cbc(ifc,iel,1) .eq. 'V  ')) then 
+           boundaryID(ifc,iel) = 1
+         endif 
          cbc(ifc,iel,2) = cbc(ifc,iel,1) 
-         if (cbc(ifc,iel,1) .eq. 'W  ') cbc(ifc,iel,2) = 't  '
+         if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $       (cbc(ifc,iel,1) .eq. 'W  ') .or.
+     $       (cbc(ifc,iel,1) .eq. 'V  ')) then 
+           cbc(ifc,iel,2) = 't  '
+         endif
       enddo
       enddo
 
+      ! Label boundary elements 
       ! Flag boundary elements above and below centerline (y = 0)
       nelx  = NUMBER_ELEMENTS_X
       nely  = NUMBER_ELEMENTS_Y
       nelz  = NUMBER_ELEMENTS_Z
       do iel=1,nelv
          do ifc=1,2*ldim
-           if ((cbc(ifc,iel,1).eq.'W  ').AND.(ym1(1,1,1,iel).gt.0)) then
+           if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $          (cbc(ifc,iel,1) .eq. 'W  ') .or.
+     $          (cbc(ifc,iel,1) .eq. 'V  ')).AND.(ym1(1,1,1,iel).gt.0)) 
+     $          then
               flag(iel) = 1
               top_y = ym1(1,1,1,iel)
-           else if ((cbc(ifc,iel,1).eq.'W  ').AND.
-     $             (ym1(1,1,1,iel).lt.0)) then
+           else if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $               (cbc(ifc,iel,1) .eq. 'W  ') .or.
+     $               (cbc(ifc,iel,1) .eq. 'V  ')).AND.
+     $               (ym1(1,1,1,iel).lt.0)) then
               flag(iel) = -1
               bot_y = ym1(1,ly1,1,iel)
            endif
@@ -1303,6 +1561,8 @@ c     w_id = 2 ! distf (coordinate difference, provides smoother function)
       top_y = glmax(top_y,1)
       bot_y = glmin(bot_y,1)
 
+      ! Flag elements neighboring near wall to for continuity enforcement
+      ! that isn't used
       do iel=1,nelv
         if (ym1(1,ly1,1,iel) .eq. top_y) then
           flag(iel) = 2
@@ -1338,10 +1598,142 @@ c     w_id = 2 ! distf (coordinate difference, provides smoother function)
           write(6,*) 'yen bot:', bot_y
       endif
 
+      param(54) = -1  ! use >0 for const flowrate or <0 bulk vel
+                      ! flow direction is given by (1=x, 2=y, 3=z) 
+      param(55) = 1.0 ! flowrate/bulk-velocity   
 
       return
       end
-C-----------------------------------------------------------------------
+c-----------------------------------------------------------------------
+      subroutine usrdat3 ()
+      implicit none
+      include 'SIZE'
+      include 'TOTAL'
+
+      real wd
+      common /walldist/ wd(lx1,ly1,lz1,lelv)
+
+      integer ifld_k,ifld_omg,m_id,w_id
+      real coeffs(21) !array for passing your own coeffs
+      logical ifcoeffs
+      integer n
+
+      n=nx1*ny1*nz1*nelv
+c     calculate wall distance for regularized k-omega
+      call rone(wd,n)
+      call abssub2(wd,ym1,n)
+      
+
+      ifld_k = 3 !address of tke equation in t array
+      ifld_omg = 4 !address of omega equation in t array
+      ifcoeffs=.false. !set to true to pass your own coeffs
+
+C     Supported models:
+c     m_id = 0 !regularized high-Re k-omega (no wall functions)
+      m_id = 1 !regularized low-Re k-omega
+c     m_id = 2 !regularized high-Re k-omega SST (no wall functions)
+c     m_id = 3 !regularized low-Re k-omega SST
+
+C     Wall distance function:
+      w_id = 0 ! user specified
+c     w_id = 1 ! cheap_dist (path to wall, may work better for periodic boundaries)
+c     w_id = 2 ! distf (coordinate difference, provides smoother function)
+
+      call rans_komg_init(ifld_k,ifld_omg,ifcoeffs,coeffs,w_id,wd,m_id)
+
+      return
+      end
+c-----------------------------------------------------------------------
+c     WALL FUNCTIONS DEFINED HERE 
+      real function f(x,flag,up,yp,rho,mu)
+      real x,up,yp,rho,mu   !yp,up,rho,and mu are the location,velocity
+                            !,density and dyn.viscosity for the matching 
+                            !point; x is the unknown (utau at the wall)
+      integer flag
+      real lotw
+
+      f = up - lotw (yp,x,mu/rho)
+
+      return
+      end
+c----------------------------------------------------------------------
+c     WALL FUNCTION DERIVATIVES DEFINED HERE (used in N-R solver)
+      real function fprime(x,flag,up,yp,rho,mu)
+      real x,up,yp,rho,mu   !yp,up,rho,and mu are the location,velocity
+                            !,density and dyn.viscosity for the matching
+                            !point; x is the unknown (utau at the wall)
+      integer flag
+      real dlotwdy
+
+      fprime = up - dlotwdy(yp,x,mu/rho)
+
+      return
+      end
+c----------------------------------------------------------------------
+c     NEWTON-RAPHSON SOLVER     
+      real function newton(flag,up,yp,rho,mu,xi,rtol,maxiter)  
+      implicit none
+      integer flag,maxiter,i
+      real up,yp,rho,mu,xi,rtol,eps,x,fx,fx1,fx2,xnew,fprime,f,fpr,fnew
+      real atol 
+
+      eps = 1.0e-14
+      atol = 1.0e-14 
+      newton = 0.0 ! assigned if the solution does not converge 
+      x = xi
+      fx = f(x,flag,up,yp,rho,mu)
+      do i = 1,max(1,maxiter)
+c        fx=f(x,flag,up,yp,rho,mu)
+        fx1=f(x-eps,flag,up,yp,rho,mu)
+        fx2=f(x+eps,flag,up,yp,rho,mu)
+        fpr=(fx2-fx1)/(2*eps) ! calculate numerical derivative
+c        fpr=fprime(x,flag,up,yp,rho,mu)!calculate analytical derivative
+        xnew=x-fx/fpr
+        fnew=f(xnew,flag,up,yp,rho,mu)
+        if(abs((xnew-x)/xnew).le.rtol .AND. abs(fnew).le.atol) then
+c        if(abs((xnew-x)/xnew).le.rtol) then
+c        if(abs(fnew).le.atol) then
+          newton=xnew
+          exit
+        endif
+        x=xnew
+        fx=fnew
+      enddo
+      
+c      write(6,*) 'i, newton, xnew, f = ', i, newton, xnew,
+c     $ f(newton,flag,up,yp,rho,mu)      
+
+      return
+      end
+c---------------------------------------------------------------------
+c     SECANT SOLVER 
+      real function secant(flag,up,yp,rho,mu,xi1,xi2,rtol,maxiter)
+      implicit none
+      integer flag,maxiter,i
+      real up,yp,rho,mu,xi1,xi2,rtol,x,fx,xprev,fxprev,xnew,f
+
+      secant = 0.0  ! assigned if the solution does not converge
+      x = xi2
+      xprev = xi1
+      fxprev=f(xprev,flag,up,yp,rho,mu)
+      do i = 1,max(1,maxiter)
+        fx=f(x,flag,up,yp,rho,mu)
+        xnew=x-fx*(xprev-x)/(fxprev-fx)
+        if(abs((xnew-x)/xnew).le.rtol) then
+          secant=xnew
+          exit
+        endif
+        fxprev=fx
+        xprev=x
+        x=xnew
+      enddo
+
+c      write(6,*) 'i, secant, f = ', i, secant, 
+c     $ f(secant,flag,up,yp,rho,mu)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine get_limits(phi,phimin,phimax,phiave,dphi,phip,rmsphi,n)
       implicit none
       include 'SIZE'
@@ -1634,3 +2026,67 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+
+c---------------------------------------------------------------------
+c     BISECTION SOLVER (not tested)
+c      implicit none
+c      real function bisection(flag,up,yp,rho,mu,a,b,atol,maxiter)
+c      integer flag,maxiter,i
+c      real up,yp,rho,mu,a,b,c,atol,fa,fc,f
+c
+c      bisection = 0.0
+c      do i = 1,max(1,maxiter)
+c        c=(a+b)/2
+c        fc=f(c,flag,up,yp,rho,mu)
+c        fa=f(a,flag,up,yp,rho,mu)
+c        if((b-a)/2.le.atol .OR. fc.eq.0) then
+c          bisection=c
+c          exit
+c        endif
+c      if(fc/abs(fc) .eq. fa/abs(fa)) then
+c        a=c
+c      else b=c
+c      endif 
+c      enddo
+
+c      write(6,*) 'i, bisection, f = ', i, bisection, 
+c     $ f(bisection,flag,up,yp,rho,mu)
+
+c      return
+c      end
+c-------------------------------------------------------------------
+
+C c-----------------------------------------------------------------------
+C       real function lotw (yw,utau,nu)
+C       implicit none
+C       real x, y, z, utau, nu ! Wall distance
+C       integer flag
+C       real Re_tau, ypb, yw, yp
+      
+C       yp = yw*utau/nu
+
+C       lotw = utau*((1/0.41)*log(1+0.41*yp)+7.8*(1-exp(-yp/(11.0))-
+C      $      yp/(11)*exp(-yp/3.)))
+
+
+C       return
+C       end
+
+C c-----------------------------------------------------------------------
+C       real function dlotwdy (yw,utau,nu)
+C       implicit none
+C       real x, y, z, utau, nu 
+C       integer flag
+C       real Re_tau, ypb, yw, yp
+C       integer sign
+
+C       Re_tau = utau/nu
+C       yp = yw*utau/nu
+
+C       dlotwdy = Re_tau*utau*((1/0.41)*(0.41)/(1+0.41*yp)
+C      $   +7.8*(1.0/11.0*exp(-yp/(11.0))+
+C      $      (yp-3.0)/(33)*exp(-yp/3.)))
+
+
+C       return
+C       end
