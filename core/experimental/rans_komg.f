@@ -105,6 +105,56 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      real function srb_rans_komg_kSrc(ix,iy,iz,iel)
+      include 'SIZE'
+      include 'TSTEP'
+      include 'RANS_KOMG'
+
+      logical ifevalsrc
+      data ifevalsrc /.true./
+      common /komgifsrc/ ifevalsrc
+
+      if(ix*iy*iz*iel.eq.1 .and. ifevalsrc) then
+         if(nid.eq.0 .and. loglevel.gt.2) write(6,*) 'updating komg_src'
+         if(ifrans_komg_stndrd)      call rans_komg_stndrd_compute
+         if(ifrans_komg_lowRe)       call srb_rans_komg_lowRe_compute
+         if(ifrans_komgSST_stndrd)   call rans_komgSST_stndrd_compute
+         if(ifrans_komgSST_lowRe)    call rans_komgSST_lowRe_compute
+         if(ifrans_komg_stndrd_noreg)call rans_komg_stndrd_compute_noreg
+         ifevalsrc = .false.
+      endif
+
+      if(ifld_k.gt.ifld_omega) ifevalsrc = .true.
+      srb_rans_komg_kSrc = kSrc(ix,iy,iz,iel)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      real function srb_rans_komg_omgSrc(ix,iy,iz,iel)
+      include 'SIZE'
+      include 'TSTEP'
+      include 'RANS_KOMG'
+
+      logical ifevalsrc
+      data ifevalsrc /.true./
+      common /komgifsrc/ ifevalsrc
+
+      if(ix*iy*iz*iel.eq.1 .and. ifevalsrc) then
+         if(nid.eq.0 .and. loglevel.gt.2) write(6,*) 'updating komg_src'
+         if(ifrans_komg_stndrd)      call rans_komg_stndrd_compute
+         if(ifrans_komg_lowRe)       call srb_rans_komg_lowRe_compute
+         if(ifrans_komgSST_stndrd)   call rans_komgSST_stndrd_compute
+         if(ifrans_komgSST_lowRe)    call rans_komgSST_lowRe_compute
+         if(ifrans_komg_stndrd_noreg)call rans_komg_stndrd_compute_noreg
+         ifevalsrc = .false.
+      endif
+
+      if(ifld_omega.gt.ifld_k) ifevalsrc = .true.
+      srb_rans_komg_omgSrc = omgSrc(ix,iy,iz,iel)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine rans_komg_stndrd_compute
 c
 c     Compute RANS source terms and diffusivities on an 
@@ -651,6 +701,324 @@ c add rho v * del_omw
         call addcol3(tempv,dfdy_omegb(1,1,1,e),VY(1,1,1,e),lxyz)
         if(if3d)
      $  call addcol3(tempv,dfdz_omegb(1,1,1,e),VZ(1,1,1,e),lxyz)
+        call col2   (tempv,vtrans(1,1,1,e,1),lxyz)
+        call admcol3(extra_src_omega,tempv,f_omegb(1,1,1,e),expm,lxyz)
+
+        call add2   (omgSrc(1,1,1,e), extra_src_omega           ,lxyz)
+
+      enddo
+
+      if(loglevel.gt.2) then
+        nome_neg =iglsum(nome_neg,1)
+        nkey_neg =iglsum(nkey_neg,1)
+        xome_neg = glmin(xome_neg,1)
+        xkey_neg = glmin(xkey_neg,1)
+
+        if(nid.eq.0 .and. nome_neg.gt.0)
+     $    write(*,*) 'Neg Omega ', nome_neg, xome_neg
+        if(nid.eq.0 .and. nkey_neg.gt.0)
+     $    write(*,*) 'Neg TKE   ', nkey_neg, xkey_neg
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine srb_rans_komg_lowRe_compute
+c
+c     Compute RANS source terms and diffusivities on an 
+c     element-by-element basis
+c
+      include 'SIZE'
+      include 'TOTAL'
+      include 'RANS_KOMG'
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,gpsix_x(lx1,ly1,lz1,lelv)
+     $               ,gpsix_y(lx1,ly1,lz1,lelv)
+     $               ,gpsix_z(lx1,ly1,lz1,lelv)
+     $               ,gpsiy_x(lx1,ly1,lz1,lelv)
+     $               ,gpsiy_y(lx1,ly1,lz1,lelv)
+     $               ,gpsiy_z(lx1,ly1,lz1,lelv)
+     $               ,gpsiz_x(lx1,ly1,lz1,lelv)
+     $               ,gpsiz_y(lx1,ly1,lz1,lelv)
+     $               ,gpsiz_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+
+      parameter (lxyz=lx1*ly1*lz1)
+
+      real           k_x(lxyz),k_y(lxyz),k_z(lxyz)
+     $             , o_x(lxyz),o_y(lxyz),o_z(lxyz)
+     $              ,omp_x(lxyz), omp_y(lxyz), omp_z(lxyz)
+
+      real           tempv(lxyz), rhoalpk (lxyz)
+     $              ,omwom(lxyz), rhoalpfr(lxyz)
+
+      real           term1(lxyz), term2   (lxyz)
+     $              ,term3(lxyz), term4   (lxyz)
+     $              ,g    (lxyz), div     (lxyz)
+
+      common /storesom/ St_mag2(lx1*ly1*lz1,lelv)
+     $                , Om_mag2(lx1*ly1*lz1,lelv)
+     $                , OiOjSk (lx1*ly1*lz1,lelv)
+     $                , DivQ   (lx1*ly1*lz1,lelv)
+
+      integer e
+      real k,mu_t,nu_t,mu,nu, kv_min,omeg_max
+
+      real mu_omeg(lxyz), mu_omegx(lxyz), mu_omegy(lxyz), mu_omegz(lxyz)
+      real extra_src_omega(lxyz)
+
+c Turbulent viscosity constants
+        Pr_t         = coeffs( 1)
+        sigma_k      = coeffs( 2)
+        sigma_omega  = coeffs( 3)
+
+c Low Reynolds number correction constants
+        alpinf_str   = coeffs( 4)
+        r_k          = coeffs( 5)
+        beta_0       = coeffs( 6)
+        alp0_str     = coeffs( 7)
+
+c Dissipation of K constants
+        betainf_str  = coeffs( 8)
+        alp_inf      = coeffs( 9)
+        r_b          = coeffs(10)
+        akk          = coeffs(11)
+
+c Production of omega constants
+        alpha_0      = coeffs(12)
+        r_w          = coeffs(13)
+
+c Dissipation of omega constants
+c         beta_0 = defined earlier       
+
+        kv_min       = coeffs(14)
+        omeg_max     = coeffs(15)
+        tiny         = coeffs(16)
+c================================
+
+      call srb_comp_StOm (St_mag2, Om_mag2, OiOjSk, DivQ) !SRB
+
+      nome_neg = 0
+      nkey_neg = 0
+      xome_neg = 0.
+      xkey_neg = 0.
+
+      do e=1,nelv
+
+        call copy   (g,   St_mag2(1,e),       lxyz)
+        call copy   (div, DivQ   (1,e),       lxyz)
+
+        call gradm11(k_x,  k_y,  k_z,  t(1,1,1,1,ifld_k    -1),e)
+        call gradm11(omp_x,omp_y,omp_z,t(1,1,1,1,ifld_omega-1),e)
+
+c solve for omega_pert
+
+c ---------------------
+c        call check_omwall_behavior
+c ---------------------
+        do i=1,lxyz
+
+          rho = param(1) ! vtrans(i,1,1,e,1)
+          mu  = param(2) ! vdiff (i,1,1,e,1)
+          nu  = mu/rho
+
+c limits for k, omega
+
+c solve for omega_pert
+          omega   = t(i,1,1,e,ifld_omega-1) + f_omegb(i,1,1,e) ! Current k & omega values
+          k       = t(i,1,1,e,ifld_k  -1)   ! from previous timestep
+
+          iflim_omeg = 0 ! limit omega^{prime} 1 limit omega_total
+
+          if    (iflim_omeg.eq.0) then
+            if(t(i,1,1,e,ifld_omega-1).lt.0.0) then
+c             write(*,*) 'Zero OMEG ', t(i,1,1,e,ifld_omega-1)
+              xome_neg = min(xome_neg,t(i,1,1,e,ifld_omega-1))
+              nome_neg = nome_neg + 1
+c             write(*,*) 'Neg  OMEG ', nome_neg, xome_neg
+              t(i,1,1,e,ifld_omega-1) =0.01*abs(t(i,1,1,e,ifld_omega-1))
+              omega = t(i,1,1,e,ifld_omega-1) + f_omegb(i,1,1,e) ! Current k & omega values
+            endif
+
+            if(t(i,1,1,e,ifld_k-1).lt.0.0) then
+c             write(*,*) 'Zero K    ', t(i,1,1,e,ifld_k-1)
+              xkey_neg = min(xkey_neg,t(i,1,1,e,ifld_k-1))
+              nkey_neg = nkey_neg + 1
+c             write(*,*) 'Neg  KEY  ', nkey_neg, xkey_neg
+              t(i,1,1,e,ifld_k-1) = 0.01*abs(t(i,1,1,e,ifld_k-1))
+              k     = t(i,1,1,e,ifld_k  -1)   ! from previous timestep
+            endif
+
+          elseif(iflim_omeg.eq.1) then
+
+            if(omega.lt.0.0) then
+              write(*,*) 'OMEG tot is neg', omega
+              omega = 0.01*abs(omega)
+            endif
+
+            if(k.lt.0.0) then
+               write(*,*) 'K  is neg', k
+               k = 0.01*abs(k)
+            endif
+
+          endif
+
+          expn = -2.0 
+          o_x(i)= omp_x(i)+expn * dfdx_omegb(i,1,1,e) *f_omegb(i,1,1,e)
+          o_y(i)= omp_y(i)+expn * dfdy_omegb(i,1,1,e) *f_omegb(i,1,1,e)
+          if(if3d) 
+     $    o_z(i)= omp_z(i)+expn * dfdz_omegb(i,1,1,e) *f_omegb(i,1,1,e)
+          omwom (i)= 1.0/(1.0+t(i,1,1,e,ifld_omega-1)/f_omegb(i,1,1,e))
+
+c See equations from eqns_k_omega1.pdf from Eq. (3) onwards
+c Eq.(1) and (2) in eqns_k_omega1.pdf are the governing equations
+c no source terms Sk or S_w are added
+
+          St_magn = sqrt(St_mag2(i,e))
+          Om_magn = sqrt(Om_mag2(i,e))
+          sum_xx  =      OiOjSk (i,e)
+
+! calculate del k * del omega / omega
+
+          if(if3d)then
+            xk3= (k_x(i)*o_x(i) + k_y(i)*o_y(i) + k_z(i)*o_z(i))
+     $                                         / (omega**3+tiny)
+          else
+            xk3= (k_x(i)*o_x(i) + k_y(i)*o_y(i))
+     $                                         / (omega**3+tiny)
+          endif
+
+          re_t    = rho * k /(mu * omega + tiny) 
+          alp_str = alpinf_str * (alp0_str + (re_t/r_k))
+     $                                         / (1.+(re_t/r_k)) 
+          mu_t    = rho * alp_str*k/(omega + tiny) ! should multiply these by rho!!!
+          rhoalpk(i)= rho*alp_str*k
+
+          rtld = re_t / r_k
+          funcr = (1.0 - alp0_str) / (alp0_str + rtld)/(1.0 + rtld)
+          factr = (1.0 + rtld * funcr)
+          sigma_omega1 = 1.0/sigma_omega
+          rhoalpfr(i) = expn * rho * alp_str * factr * omwom(i)
+     $                                           * sigma_omega1
+
+c nu_t is kinematic turbulent viscosity
+c units of k = m2/s2, units of omega = 1/s, nu units = m2/s
+c set limit for nu_t
+c           nu_t    = max(tiny,nu_t)
+c       if(nu_t.gt.5000*mu)nu_t = 5000*mu
+
+          betai_str = betainf_str * (akk + (re_t/r_b)**4)
+     $              / (1.0 + (re_t/r_b)**4)
+
+
+          if (xk3.le.0)then
+            f_beta_str = 1.0
+          else
+            f_beta_str = (1.0 + 680.0*xk3*xk3)/(1.0 + 400.0*xk3*xk3)
+          endif
+          Y_k = rho * betai_str * f_beta_str * k * omega
+
+c betai_str = beta_star in 12.5.15 for incompressible flow
+ 
+          extra_prod = 0.
+          if(iflomach) extra_prod = twothird*div(i)
+          G_k0= mu_t*g(i) - ( rho*k + mu_t*div(i) )*extra_prod
+          G_k = min(G_k0, 10.*Y_k)
+
+c g(i) is S**2 in equation sheet
+
+          kSrc  (i,1,1,e) = G_k - Y_k
+
+c Compute production of omega
+          alpha = (alp_inf/alp_str) * 
+     $          ((alpha_0 + (re_t/r_w))/(1.0 + (re_t/r_w)))
+
+c          G_w = alpha*alp_str*rho*G_k/mu_t !g(i)
+          G_w0 = alpha*alp_str*rho*(g(i)-(omega+div(i))*extra_prod)
+
+c Compute dissipation of omega
+          beta = beta_0
+c no compressibility correction M < 0.25
+
+          x_w = abs((sum_xx)/(betainf_str*omega + tiny)**3)
+          f_b = 1.0
+          if(if3d) f_b = (1.0 + 70.0*x_w)/(1.0 + 80.0*x_w)
+
+          Y_w = rho*beta*f_b * omega * omega
+
+          G_w = min(G_w0, 10.0*Y_w)
+          omgSrc(i,1,1,e) = G_w - Y_w
+
+          mut  (i,1,1,e)   = mu_t
+          mutsk(i,1,1,e)   = mu_t / sigma_k
+          mutso(i,1,1,e)   = mu_t / sigma_omega
+        enddo
+
+c solve for omega_pert
+
+c add mut*delsqf
+        sigma_omega1 = 1.0/sigma_omega
+        call copy   (mu_omeg,rhoalpk,lxyz)
+        call cmult  (mu_omeg,sigma_omega1,lxyz)
+        call col4   (extra_src_omega,mu_omeg ,omwom
+     $                                ,delsqf_omegb(1,1,1,e),lxyz)
+
+c add mu*delsqf
+        call copy   (tempv,delsqf_omegb(1,1,1,e),lxyz)
+        call cmult  (tempv,mu,lxyz)
+        call col2   (tempv,f_omegb(1,1,1,e),lxyz)
+        call add2   (extra_src_omega, tempv,lxyz)
+
+c Form (1/sigma_w) del_mut * del_omw
+c  form 1: (del_yw/yw) del_k
+        call col3   (term1,dfdx_omegb(1,1,1,e),k_x,lxyz)
+        call addcol3(term1,dfdy_omegb(1,1,1,e),k_y,lxyz)
+        if(if3d)
+     $  call addcol3(term1,dfdz_omegb(1,1,1,e),k_z,lxyz)
+
+c  form 2: 2(omw/om) (del_omw/yw)^2
+        expm = -expn
+        call col3   (term2,omwom,delfsq_omegb(1,1,1,e),   lxyz)
+        call col2   (term2           ,t(1,1,1,e,ifld_k-1),lxyz)
+        call cmult  (term2,expm,lxyz)
+        call add3   (tempv, term1, term2, lxyz)
+
+c  form 3: -(omw/om) k (del_yw/yw) \del_omp/omw
+        call col3   (term3     ,omwom,t(1,1,1,e,ifld_k-1),lxyz)
+        call invcol2(term3     ,f_omegb(1,1,1,e)         ,lxyz)
+        call col3   (term4,  dfdx_omegb(1,1,1,e),omp_x,   lxyz)
+        call addcol3(term4,  dfdy_omegb(1,1,1,e),omp_y,   lxyz)
+        if(if3d)
+     $  call addcol3(term4,  dfdz_omegb(1,1,1,e),omp_z,   lxyz)
+        call subcol3(tempv, term3, term4, lxyz)
+
+        call addcol3(extra_src_omega, rhoalpfr, tempv,    lxyz)
+
+c add rho v * del_omw
+        call col3   (tempv,dfdx_omegb(1,1,1,e),VX(1,1,1,e),lxyz)
+        call addcol3(tempv,dfdx_omegb(1,1,1,e),psix(1,1,1,e),lxyz)
+        call addcol3(tempv,dfdy_omegb(1,1,1,e),VY(1,1,1,e),lxyz)
+        call addcol3(tempv,dfdy_omegb(1,1,1,e),psiy(1,1,1,e),lxyz)
+        if(if3d)
+     $  call addcol3(tempv,dfdz_omegb(1,1,1,e),VZ(1,1,1,e),lxyz)
+        if(if3d)
+     $  call addcol3(tempv,dfdz_omegb(1,1,1,e),psiz(1,1,1,e),lxyz)
         call col2   (tempv,vtrans(1,1,1,e,1),lxyz)
         call admcol3(extra_src_omega,tempv,f_omegb(1,1,1,e),expm,lxyz)
 
@@ -2679,6 +3047,51 @@ c                                                                     ! Om_mag2=
       return
       end
 c-----------------------------------------------------------------------
+      subroutine srb_comp_StOm(St_mag2,Om_mag2,OiOjSk,DivQ)
+c
+c     Compute the square of the magnitude of the stress and rotation tensors
+c     St_mag2=2Sij*Sij=S'ij*S'ij/2, S'ij=2Sij, Sij=(dui/dxj+duj/dxi)/2
+c     Om_mag2=2Oij*Oij=O'ij*O'ij/2, O'ij=OSij, Oij=(dui/dxj-duj/dxi)/2
+c
+      include 'SIZE'
+      include 'TOTAL'
+c
+      integer e
+
+      parameter(lt  =lx1*ly1*lz1*lelv)
+      parameter(lxyz=lx1*ly1*lz1)
+
+      common /scruz/    sij  (lx1*ly1*lz1,6,lelv)
+     $                , oij  (lx1*ly1*lz1,lelv,3)
+
+      real              St_mag2(lx1*ly1*lz1,lelv)
+     $                , Om_mag2(lx1*ly1*lz1,lelv)
+     $                , OiOjSk (lx1*ly1*lz1,lelv)
+     $                , DivQ   (lx1*ly1*lz1,lelv)
+
+      logical iflmc, ifdss
+c
+      thqrt    = 0.75
+
+      iflmc = .false.! to add lowmach correction to 2Sij (2Sij - 2Q/3*delta_ij) 
+      ifdss = .true. ! to dssum sij and oij
+      nij = 3
+      if (if3d.or.ifaxis) nij=6
+
+      if(nid.eq.0 .and. loglevel.gt.2) write(*,*) 'updating StOm '
+      call srb_comp_sij_oij (sij, oij, nij, vx, vy, vz, iflmc, ifdss) ! S'ij=2Sij, O'ij=2Oij
+      call comp_sij_oij_mag2(sij, oij, nij, St_mag2, Om_mag2, OiOjSk) ! St_mag2=2S^2=S'^2/2
+c                                                                     ! Om_mag2=2O^2=O'^2/2
+      do e = 1, nelv
+         call add3   (DivQ(1,e), sij(1,1,e), sij(1,2,e), lxyz)
+         if(if3d.or.ifaxis)
+     $   call add2   (DivQ(1,e), sij(1,3,e),             lxyz)
+         if(iflmc)     call cmult(DivQ(1,e), thqrt,      lxyz)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine comp_sij_oij(sij,oij,nij,u,v,w,iflmc,ifdss)
 c                                       du_i       du_j
 c     Compute the stress tensor S_ij := ----   +   ----
@@ -2870,6 +3283,7 @@ c
 
       return
       end
+
 c-----------------------------------------------------------------------
       subroutine dssum_sij_oij(sij,oij,nij)
 c
@@ -3023,3 +3437,234 @@ c
       return
       end
 c-----------------------------------------------------------------------
+      subroutine srb_comp_sij_oij(sij,oij,nij,u,v,w,iflmc,ifdss)
+c                                       du_i       du_j
+c     Compute the stress tensor S_ij := ----   +   ----
+c                                       du_j       du_i
+c
+      include 'SIZE'
+      include 'TOTAL'
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,gpsix_x(lx1,ly1,lz1,lelv)
+     $               ,gpsix_y(lx1,ly1,lz1,lelv)
+     $               ,gpsix_z(lx1,ly1,lz1,lelv)
+     $               ,gpsiy_x(lx1,ly1,lz1,lelv)
+     $               ,gpsiy_y(lx1,ly1,lz1,lelv)
+     $               ,gpsiy_z(lx1,ly1,lz1,lelv)
+     $               ,gpsiz_x(lx1,ly1,lz1,lelv)
+     $               ,gpsiz_y(lx1,ly1,lz1,lelv)
+     $               ,gpsiz_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+c
+      integer e
+      logical iflmc, ifdss
+      integer ix, iy, iz
+c
+      parameter(lt  =lx1*ly1*lz1*lelv)
+      parameter(lxyz=lx1*ly1*lz1)
+
+      real sij(lx1*ly1*lz1,nij,lelv), oij(lx1*ly1*lz1,lelv,3)
+      real u  (lx1*ly1*lz1,lelv)
+      real v  (lx1*ly1*lz1,lelv)
+      real w  (lx1*ly1*lz1,lelv)
+
+      real ur(lxyz),us(lxyz),ut(lxyz)
+     $    ,vr(lxyz),vs(lxyz),vt(lxyz)
+     $    ,wr(lxyz),ws(lxyz),wt(lxyz)
+
+      real j ! Inverse Jacobian
+
+      n    = lx1-1      ! Polynomial degree
+      nxyz = lx1*ly1*lz1
+
+      if (if3d) then     ! 3D CASE
+       do e=1,nelv
+        call local_grad3(ur,us,ut,u,N,e,dxm1,dxtm1)
+        call local_grad3(vr,vs,vt,v,N,e,dxm1,dxtm1)
+        call local_grad3(wr,ws,wt,w,N,e,dxm1,dxtm1)
+
+        do i=1,nxyz
+
+         j = jacmi(i,e)
+
+         sij(i,1,e) = j*  ! du/dx + du/dx
+     $   2*(ur(i)*rxm1(i,1,1,e)+us(i)*sxm1(i,1,1,e)+ut(i)*txm1(i,1,1,e))
+     $   + gpsix_x(i,1,1,e) + gpsix_x(i,1,1,e)
+
+         sij(i,2,e) = j*  ! dv/dy + dv/dy
+     $   2*(vr(i)*rym1(i,1,1,e)+vs(i)*sym1(i,1,1,e)+vt(i)*tym1(i,1,1,e))\
+     $   + gpsiy_y(i,1,1,e) + gpsiy_y(i,1,1,e)
+
+         sij(i,3,e) = j*  ! dw/dz + dw/dz
+     $   2*(wr(i)*rzm1(i,1,1,e)+ws(i)*szm1(i,1,1,e)+wt(i)*tzm1(i,1,1,e))
+     $   + gpsiz_z(i,1,1,e) + gpsiz_z(i,1,1,e)
+
+         sij(i,4,e) = j*  ! du/dy + dv/dx
+     $   (ur(i)*rym1(i,1,1,e)+us(i)*sym1(i,1,1,e)+ut(i)*tym1(i,1,1,e) +
+     $    vr(i)*rxm1(i,1,1,e)+vs(i)*sxm1(i,1,1,e)+vt(i)*txm1(i,1,1,e) )
+     $   + gpsix_y(i,1,1,e) + gpsiy_x(i,1,1,e)
+         oij(i,e,3) = j*  ! dv/dx - du/dy
+     $   (vr(i)*rxm1(i,1,1,e)+vs(i)*sxm1(i,1,1,e)+vt(i)*txm1(i,1,1,e) -
+     $    ur(i)*rym1(i,1,1,e)+us(i)*sym1(i,1,1,e)+ut(i)*tym1(i,1,1,e) )
+     $   + gpsiy_x(i,1,1,e) - gpsix_y(i,1,1,e)
+
+         sij(i,5,e) = j*  ! dv/dz + dw/dy
+     $   (wr(i)*rym1(i,1,1,e)+ws(i)*sym1(i,1,1,e)+wt(i)*tym1(i,1,1,e) +
+     $    vr(i)*rzm1(i,1,1,e)+vs(i)*szm1(i,1,1,e)+vt(i)*tzm1(i,1,1,e) )
+     $   + gpsiy_z(i,1,1,e) + gpsiz_y(i,1,1,e)
+         oij(i,e,1) = j*  ! dw/dy - dv/dz
+     $   (wr(i)*rym1(i,1,1,e)+ws(i)*sym1(i,1,1,e)+wt(i)*tym1(i,1,1,e) -
+     $    vr(i)*rzm1(i,1,1,e)+vs(i)*szm1(i,1,1,e)+vt(i)*tzm1(i,1,1,e) )
+     $   + gpsiz_y(i,1,1,e) - gpsiy_z(i,1,1,e)
+
+         sij(i,6,e) = j*  ! du/dz + dw/dx
+     $   (ur(i)*rzm1(i,1,1,e)+us(i)*szm1(i,1,1,e)+ut(i)*tzm1(i,1,1,e) +
+     $    wr(i)*rxm1(i,1,1,e)+ws(i)*sxm1(i,1,1,e)+wt(i)*txm1(i,1,1,e) )
+     $   + gpsix_z(i,1,1,e) + gpsiz_x(i,1,1,e)
+         oij(i,e,2) = j*  ! du/dz - dw/dx
+     $   (ur(i)*rzm1(i,1,1,e)+us(i)*szm1(i,1,1,e)+ut(i)*tzm1(i,1,1,e) -
+     $    wr(i)*rxm1(i,1,1,e)+ws(i)*sxm1(i,1,1,e)+wt(i)*txm1(i,1,1,e) )
+     $   + gpsix_z(i,1,1,e) - gpsiz_x(i,1,1,e)
+
+        enddo
+       enddo
+
+      elseif (ifaxis) then  ! AXISYMMETRIC CASE  
+
+c
+c        Notation:                       ( 2  x  Acheson, p. 353)
+c                     Cylindrical
+c            Nek5k    Coordinates
+c
+c              x          z
+c              y          r
+c              z          theta
+c
+
+         do e=1,nelv
+            call setaxdy ( ifrzer(e) )  ! change dytm1 if on-axis
+            call local_grad2(ur,us,u,N,e,dxm1,dytm1)
+            call local_grad2(vr,vs,v,N,e,dxm1,dytm1)
+            call local_grad2(wr,ws,w,N,e,dxm1,dytm1)
+
+            do i=1,nxyz
+               j = jacmi(i,e)
+               r = ym1(i,1,1,e)                              ! Cyl. Coord:
+
+               sij(i,1,e) = j*  ! du/dx + du/dx              ! e_zz
+     $           2*(ur(i)*rxm1(i,1,1,e)+us(i)*sxm1(i,1,1,e))
+
+               sij(i,2,e) = j*  ! dv/dy + dv/dy              ! e_rr
+     $           2*(vr(i)*rym1(i,1,1,e)+vs(i)*sym1(i,1,1,e))
+
+               if (r.gt.0) then                              ! e_@@
+                  sij(i,3,e) = 2.*v(i,e)/r  ! v / r  ! corrected AT: factor of 2, 10/30/18
+               else
+                  sij(i,3,e) = j*  ! L'Hopital's rule: e_@@ = 2dv/dr
+     $            2*(vr(i)*rym1(i,1,1,e)+vs(i)*sym1(i,1,1,e))
+               endif
+
+               sij(i,4,e) = j*  ! du/dy + dv/dx             ! e_zr
+     $            ( ur(i)*rym1(i,1,1,e)+us(i)*sym1(i,1,1,e) +
+     $              vr(i)*rxm1(i,1,1,e)+vs(i)*sxm1(i,1,1,e) )
+               oij(i,e,3) = j*  ! dv/dx - du/dy
+     $            ( vr(i)*rxm1(i,1,1,e)+vs(i)*sxm1(i,1,1,e) -
+     $              ur(i)*rym1(i,1,1,e)+us(i)*sym1(i,1,1,e) )
+
+               if (r.gt.0) then                             ! e_r@
+                  sij(i,5,e) = j*  ! dw/dy 
+     $              ( wr(i)*rym1(i,1,1,e)+ws(i)*sym1(i,1,1,e) )
+     $              - w(i,e) / r
+                  oij(i,e,1) = j*  ! dw/dy 
+     $              ( wr(i)*rym1(i,1,1,e)+ws(i)*sym1(i,1,1,e) )
+     $              + w(i,e) / r
+               else
+                  sij(i,5,e) = 0
+                  oij(i,e,2) = j*  ! L'Hopital's rule: e_r@ = 2dw/dr
+     $            2*(wr(i)*rym1(i,1,1,e)+ws(i)*sym1(i,1,1,e))
+               endif
+
+               sij(i,6,e) = j*  ! dw/dx                     ! e_@z
+     $            ( wr(i)*rxm1(i,1,1,e)+ws(i)*sxm1(i,1,1,e) )
+               oij(i,e,2) = j*  !-dw/dx
+     $            (-wr(i)*rxm1(i,1,1,e)-ws(i)*sxm1(i,1,1,e) )
+
+            enddo
+         enddo
+
+      else              ! 2D CASE
+
+         do e=1,nelv
+            call local_grad2(ur,us,u,N,e,dxm1,dxtm1)
+            call local_grad2(vr,vs,v,N,e,dxm1,dxtm1)
+
+            do i=1,nxyz
+               j = jacmi(i,e)
+
+               sij(i,1,e) = j*  ! du/dx + du/dx
+     $           2*(ur(i)*rxm1(i,1,1,e)+us(i)*sxm1(i,1,1,e))
+     $           + gpsix_x(i,1,1,e) + gpsix_x(i,1,1,e)
+               oij(i,e,2) = 0.
+
+               sij(i,2,e) = j*  ! dv/dy + dv/dy
+     $           2*(vr(i)*rym1(i,1,1,e)+vs(i)*sym1(i,1,1,e))
+     $           + gpsiy_y(i,1,1,e) + gpsiy_y(i,1,1,e)
+               oij(i,e,3) = 0.
+
+               sij(i,3,e) = j*  ! du/dy + dv/dx
+     $           (ur(i)*rym1(i,1,1,e)+us(i)*sym1(i,1,1,e) +
+     $            vr(i)*rxm1(i,1,1,e)+vs(i)*sxm1(i,1,1,e) )
+     $           + gpsix_y(i,1,1,e) + gpsiy_x(i,1,1,e)
+               oij(i,e,1) = j*  ! dv/dx - du/dy
+     $           (vr(i)*rxm1(i,1,1,e)+vs(i)*sxm1(i,1,1,e) -
+     $            ur(i)*rym1(i,1,1,e)+us(i)*sym1(i,1,1,e) )
+     $           + gpsiy_x(i,1,1,e) - gpsix_y(i,1,1,e)
+
+            enddo
+         enddo
+      endif
+
+      if(iflomach .and. iflmc) then
+
+        onethird = 1./3.
+        if(if3d .or. ifaxis) then
+          do e=1,nelv
+            do i=1,nxyz
+             trS = sij(i,1,e) + sij(i,2,e) + sij(i,3,e) ! 2(du/dx + dv/dy + dw/dz or v/r) in axisym
+             sij(i,1,e) = sij(i,1,e) - onethird*trS     ! 2S - (2/3)Q = S'-(1/3)tr(S')
+            enddo
+          enddo
+        else
+          do e=1,nelv
+            do i=1,nxyz
+             trS = sij(i,1,e) + sij(i,2,e)              ! 2(du/dx + dv/dy)
+             sij(i,1,e) = sij(i,1,e) - onethird*trS     ! 2S - (2/3)Q = S'-(1/3)tr(S')
+            enddo
+           enddo
+        endif
+
+      endif
+
+      ifielt = ifield
+      ifield = 1
+      if(ifdss) call dssum_sij_oij(sij, oij, nij)
+      ifield = ifielt
+
+      return
+      end
