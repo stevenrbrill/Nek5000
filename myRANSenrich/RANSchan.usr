@@ -679,6 +679,8 @@ C       if (time.lt.50) then
         call oprzero(wsx,wsy,wsz)
         call oprzero(wintx,winty,wintz)
         call oprzero(wrhsx,wrhsy,wrhsz)
+        call rzero(wsk, n)
+        call rzero(wsomg,n)
 
       else
 
@@ -994,6 +996,8 @@ C           call add2   (wsx,tau_w,n)
 
           ! ----------------------------------------------------------------
           ! Term 3: -rho*dot(psi,gradient(u0))   S^psi for RANS
+          call rzero(wsk, n)
+          call rzero(wsomg,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for x
