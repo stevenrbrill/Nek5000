@@ -69,14 +69,6 @@ c
          call srb_nekuintf (BFINTX,BFINTY,BFINTZ)
          ! Steven - Add preintegrated values into the forcing terms
          CALL OPADD2 (BFX,BFY,BFZ,BFINTX,BFINTY,BFINTZ)
-         print *, "Print BFIntx"
-         call srbprint(BFINTX)
-         print *, "Print BFinty"
-         call srbprint(BFINTY)  
-         print *, "Print BFX Int"
-         call srbprint(BFX)
-         print *, "Print BFY Int"
-         call srbprint(BFY)  
 
          ! add user defined divergence to qtl 
          call add2 (qtl,usrdiv,ntot1)
