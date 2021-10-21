@@ -284,7 +284,7 @@ c-----------------------------------------------------------------------
             call setprop
             call rzero(qtl,ntot)
             if (iflomach) call qthermal
-            ! call userchk
+            call userchk2 !srb
          endif
 
          if (ifflow)          call fluid    (igeom)

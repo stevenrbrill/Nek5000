@@ -1476,8 +1476,16 @@ C
       CALL SRB_NEKUF   (BFX,BFY,BFZ,BFINTX,BFINTY,BFINTZ,
      $  BRHSX,BRHSY,BRHSZ)
       CALL OPCOLV  (BFX,BFY,BFZ,BM1)
-      ! Steven - Add preintegrated values into the forcing terms
-      CALL OPADD2 (BFX,BFY,BFZ,BFINTX,BFINTY,BFINTZ)
+      ! ! Steven - Add preintegrated values into the forcing terms
+      ! CALL OPADD2 (BFX,BFY,BFZ,BFINTX,BFINTY,BFINTZ)
+      ! print *, "Print BFIntx"
+      ! call srbprint(BFINTX)
+      ! print *, "Print BFinty"
+      ! call srbprint(BFINTY)  
+      ! print *, "Print BFX Int"
+      ! call srbprint(BFX)
+      ! print *, "Print BFY Int"
+      ! call srbprint(BFY)  
       TIME = TIME+DT
 C
       return
@@ -1557,6 +1565,41 @@ C     Steven - same as nekuf but gets pre-integrated values and rhs values
             RHS1(I,J,K,IEL) = RHSX
             RHS2(I,J,K,IEL) = RHSY
             RHS3(I,J,K,IEL) = RHSZ
+ 100  CONTINUE
+
+#ifdef TIMER
+      tusfq=tusfq+(dnekclock()-etime1)
+#endif
+
+      return
+      END
+C
+      subroutine srb_nekuintf (fint1,fint2,fint3)
+C     Steven - same as nekuf but gets pre-integrated values and rhs values
+      include 'SIZE'
+      include 'PARALLEL'
+      include 'NEKUSE'
+      include 'CTIMER'
+
+      REAL FINT1 (LX1,LY1,LZ1,LELV)
+      REAL FINT2 (LX1,LY1,LZ1,LELV)
+      REAL FINT3 (LX1,LY1,LZ1,LELV)
+
+#ifdef TIMER
+      etime1=dnekclock_sync()
+#endif
+
+      CALL OPRZERO (FINT1,FINT2,FINT3)
+      DO 100 IEL=1,NELV
+         ielg = lglel(iel)
+         DO 100 K=1,lz1
+         DO 100 J=1,ly1
+         DO 100 I=1,lx1
+            if (optlevel.le.2) CALL NEKASGN (I,J,K,IEL)
+            CALL USERFINT   (I,J,K,IELG)
+            FINT1(I,J,K,IEL) = FFINTX
+            FINT2(I,J,K,IEL) = FFINTY
+            FINT3(I,J,K,IEL) = FFINTZ
  100  CONTINUE
 
 #ifdef TIMER
