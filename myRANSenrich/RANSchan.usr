@@ -1276,6 +1276,47 @@ C       write(6,*) 'dragx_avg = ', dragx_avg
             call planar_avg(stat(1,i),wo1      ,igs_z)
          enddo
 
+         ! Correct stat 9
+         do iel = 1, nelv
+            if (flag(iel) .eq. -1) then
+              iy =  ly1
+              do iz = 1, lz1
+                do ix = 1, lx1
+             j = (iel-1)*lx1*ly1*lz1 + (iz-1)*lx1*ly1 + (iy-1)*lx1 + ix
+                  stat(j,10) = 2.0*stat(j,10)
+                  stat(j,11) = stat(j,11) - stat(j,10)/2.0
+                enddo
+              enddo
+            elseif (flag(iel) .eq. -2) then
+              iy =  1
+              do iz = 1, lz1
+                do ix = 1, lx1
+             j = (iel-1)*lx1*ly1*lz1 + (iz-1)*lx1*ly1 + (iy-1)*lx1 + ix
+                  stat(j,11) = stat(j,11) + stat(j,10)
+                  stat(j,10) = 0.0
+                enddo
+              enddo
+            elseif (flag(iel) .eq. 2) then
+              iy = ly1
+              do iz = 1, lz1
+                do ix = 1, lx1
+             j = (iel-1)*lx1*ly1*lz1 + (iz-1)*lx1*ly1 + (iy-1)*lx1 + ix
+                  stat(j,11) = stat(j,11) + stat(j,10)
+                  stat(j,10) = 0.0
+                enddo
+              enddo  
+            elseif (flag(iel) .eq. 1) then
+              iy =  1
+              do iz = 1, lz1
+                do ix = 1, lx1
+             j = (iel-1)*lx1*ly1*lz1 + (iz-1)*lx1*ly1 + (iy-1)*lx1 + ix
+                  stat(j,10) = 2.0*stat(j,10)
+                  stat(j,11) = stat(j,11) - stat(j,10)/2.0
+                enddo
+              enddo  
+            endif 
+          enddo
+
          if (nfield.gt.1) then
             ! evaluate d<T>/dy at the lower wall
 C             call opgrad(wo1,wo2,wo3,stat(1,6))
