@@ -1388,7 +1388,7 @@ C             dTdy_w = stat_y(1)
      $     '%ut = ', u_tau, '%ut_param = ', ut_param, 
      $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot
          write(57,'(A)') 
-     $    '%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau'
+     $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   Ucomb'
 
          do i = 1,nint
             yy = 1+yint(i)
@@ -1408,7 +1408,8 @@ C             dTdy_w = stat_y(1)
      &           stat_y(9*nint+i),
      &           stat_y(10*nint+i),
      &           psix_int(i),
-     &           u_tau
+     &           u_tau,
+     &           stat_y(10*nint+i)+psix_int(i)
 
   3         format(1p15e17.9)
          enddo
