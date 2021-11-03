@@ -121,13 +121,6 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
 
       real u(lx1, ly1, lz1, nelv)
-      integer mystep
-
-      mystep = 100000
-
-      if ((istep .eq. mystep+1) .or. (istep .eq. mystep) .or. 
-     $       (istep .eq. mystep -1)) then
-      print *, "In srbprint", istep
 
       do iel = 1, nelv
         do ix = 1,lx1
@@ -138,7 +131,6 @@ c-----------------------------------------------------------------------
           enddo
         enddo
       enddo
-      endif
 
       return
       end
@@ -661,7 +653,6 @@ c     WALL ENRICHMENT...START
       
 c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
-      print *, "Call userchk"
       use_default = 1
 
       if (istep.eq.0) then
@@ -680,22 +671,9 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
          enddo
       endif
 
-      print *, "Print xm1"
-      call srbprint(xm1)
-      print *, "Print ym1"
-      call srbprint(ym1)  
-      print *, "Print vx"
-      call srbprint(vx)
-      print *, "Print vy"
-      call srbprint(vy)
-      print *, "Print k"
-      call srbprint(t(1,1,1,1,3-1))
-      print *, "Print omg"
-      call srbprint(t(1,1,1,1,4-1))
-
       ! Start enrichment at time 50
 C       if (time.lt.50) then
-      if (time.lt.0.0) then
+      if (time.lt.50.0) then
         call oprzero(psix,psiy,psiz)
         call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
         call oprzero(wsx,wsy,wsz)
@@ -864,18 +842,7 @@ C              endif
 C           enddo
         endif
 
-        print *, "Print psix"
-        call srbprint(psix)
-        print *, "Print psiy"
-        call srbprint(psiy)
-        print *, "Print gpsix_y"
-        call srbprint(gpsix_y)
-
         call projenrich
-        print *, "Print vx_en"
-        call srbprint(vx)
-        print *, "Print vy_en"
-        call srbprint(vy)
         if (secondcall .ne. 1) then
           secondcall = 1
           do ILAG = 2,NBD
@@ -1058,16 +1025,6 @@ C           call cmult  (tr3x,-1.0,n)
           call add2   (wsomg,w1,omg)
           call cmult(wsomg,-1.0,n)
           call cmult(wsomg, vtrans(1,1,1,1,ifld_omg-1),n)
-
-
-          print *, "Print wsx"
-          call srbprint(wsx)
-          print *, "Print wsy"
-          call srbprint(wsy)  
-          print *, "Print wsk"
-          call srbprint(wsk)
-          print *, "Print wsomg"
-          call srbprint(wsomg)
         endif
 
         ! Compute T1 (viscous enrichment term)
@@ -1360,21 +1317,6 @@ C       write(6,*) 'dragx_avg = ', dragx_avg
             endif 
           enddo
 
-
-         print *, "Print avg0"
-          call srbprint(ravg(1,1))
-          print *, "Print avg9"
-          call srbprint(ravg(1,10))
-          print *, "Print avg10"
-          call srbprint(ravg(1,11))
-          print *, "Print stat0"
-          call srbprint(stat(1,1))
-          print *, "Print stat9"
-          call srbprint(stat(1,10))
-          print *, "Print avg10"
-          call srbprint(stat(1,11))
-
-
          if (nfield.gt.1) then
             ! evaluate d<T>/dy at the lower wall
 C             call opgrad(wo1,wo2,wo3,stat(1,6))
@@ -1390,24 +1332,6 @@ C             dTdy_w = stat_y(1)
          ! extract data along wall normal direction (1D profile)
          call interp_nfld(stat_y,stat,nstat,xint,yint,zint,nint,
      $                    iwk,rwk,INTP_NMAX,iffpts,intp_h)
-
-         mystep = 100000
-
-      if ((istep .eq. mystep+1) .or. (istep .eq. mystep) .or. 
-     $       (istep .eq. mystep -1)) then
-         print *, "srb myprint stat0"
-         do i = 1, INTP_NMAX
-            print *, i, xint(i),yint(i),zint(i), stat_y(i)
-         enddo
-         print *, "srb myprint stat9"
-         do i = 1, INTP_NMAX
-            print *, i, xint(i),yint(i),zint(i), stat_y(9*nint+i)
-         enddo
-         print *, "srb myprint stat10"
-         do i = 1, INTP_NMAX
-            print *, i, xint(i),yint(i),zint(i), stat_y(10*nint+i)
-         enddo
-       endif
 
          ntdump = ntdump + 1
          if (nid.ne.0) goto 998 
@@ -1429,20 +1353,6 @@ C             dTdy_w = stat_y(1)
              psix_int(i) = 0
            endif
          enddo 
-         mystep = 1000000
-
-      if ((istep .eq. mystep+1) .or. (istep .eq. mystep) .or. 
-     $       (istep .eq. mystep -1)) then
-         print *, "srb myprint psix"
-         do i = 1, INTP_NMAX
-            print *, i, xint(i),yint(i),zint(i), psix_int(i)
-         enddo
-      endif
-
-            print *, "Print flag"
-          do iel = 1, nelv
-            print *, iel,flag(iel)
-          enddo
 
          rho    = param(1)
          dnu    = param(2)
@@ -1866,15 +1776,6 @@ C           endif
           call add2 (winty,T1_rhs_y,n)
           call add2 (wintz,T1_rhs_z,n)
 
-          print *, "Print mu_t"
-          call srbprint(mut(1,1,1,1))
-          print *, "Print vdiff"
-          call srbprint(vdiff(1,1,1,1,1))
-          print *, "Print wintx"
-          call srbprint(wintx)
-          print *, "Print winty"
-          call srbprint(winty)  
-
           ! only compute phi grads once
           if (comp_phi_grad .ne. 1) then
             comp_phi_grad = 1
@@ -2075,7 +1976,6 @@ c-----------------------------------------------------------------------
       kmax  = 4.5*utau*utau
       omax  = 0.5*utau*utau*Re
       yplus = max(wd(ix,iy,iz,e)*utau*Re,1.0e-3)
-
 
       ux   = 3.0/2.0*(1.0-y*y)
       uy   = 0.0

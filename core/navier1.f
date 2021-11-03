@@ -1444,41 +1444,13 @@ C----------------------------------------------------------------------
       etime1 = dnekclock()
                                                 call makeuf
       if (filterType.eq.2)                      call make_hpf
-      print *, "Print BFX hpf"
-      call srbprint(BFX)
-      print *, "Print BFY hpf"
-      call srbprint(BFY)  
       if (ifexplvis.and.ifsplit)                call makevis
-      print *, "Print BFX vis"
-      call srbprint(BFX)
-      print *, "Print BFY vis"
-      call srbprint(BFY)  
       if (ifnav .and..not.ifchar)               call advab
-      print *, "Print BFX advab"
-      call srbprint(BFX)
-      print *, "Print BFY advab"
-      call srbprint(BFY)  
       if (ifmvbd.and..not.ifchar)               call admeshv
-      print *, "Print BFX admeshv"
-      call srbprint(BFX)
-      print *, "Print BFY admeshv"
-      call srbprint(BFY)  
       if (iftran)                               call makeabf
-      print *, "Print BFX abf"
-      call srbprint(BFX)
-      print *, "Print BFY abf"
-      call srbprint(BFY)  
       if ((iftran.and..not.ifchar).or.
      $    (iftran.and..not.ifnav.and.ifchar))   call makebdf
-      print *, "Print BFX bdf"
-      call srbprint(BFX)
-      print *, "Print BFY bdf"
-      call srbprint(BFY)  
       if (ifnav.and.ifchar)                     call advchar
-      print *, "Print BFX advchar"
-      call srbprint(BFX)
-      print *, "Print BFY advchar"
-      call srbprint(BFY)  
 
 c     Adding this call allows prescribed pressure bc for PnPn-2
 c     if (.not.ifsplit.and..not.ifstrs)         call bcneutr
@@ -1504,12 +1476,6 @@ C
       CALL SRB_NEKUF   (BFX,BFY,BFZ,BFINTX,BFINTY,BFINTZ,
      $  BRHSX,BRHSY,BRHSZ)
       CALL OPCOLV  (BFX,BFY,BFZ,BM1)
-      print *, "Print BM1"
-      call srbprint(BM1)
-      print *, "Print BFX"
-      call srbprint(BFX)
-      print *, "Print BFY"
-      call srbprint(BFY)  
       ! ! Steven - Add preintegrated values into the forcing terms
       ! CALL OPADD2 (BFX,BFY,BFZ,BFINTX,BFINTY,BFINTZ)
       ! print *, "Print BFIntx"
@@ -1600,10 +1566,6 @@ C     Steven - same as nekuf but gets pre-integrated values and rhs values
             RHS2(I,J,K,IEL) = RHSY
             RHS3(I,J,K,IEL) = RHSZ
  100  CONTINUE
-          print *, "Print F1"
-          call srbprint(F1)
-          print *, "Print F2"
-          call srbprint(F2)  
 
 #ifdef TIMER
       tusfq=tusfq+(dnekclock()-etime1)
@@ -1722,8 +1684,6 @@ C
      $                                BM1                   ,bd(ilag+1))
          ENDIF
          CALL OPADD2  (TB1,TB2,TB3,TA1,TA2,TA3)
-         print *, "Print VX Lag", ILAG, bd(ilag+1)
-         call srbprint(VXLAG (1,1,1,1,ILAG-1))
  100  CONTINUE
       CALL OPADD2col (BFX,BFY,BFZ,TB1,TB2,TB3,h2)
 C

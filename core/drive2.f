@@ -681,8 +681,6 @@ C-----------------------------------------------------------------------
 
       ts = dnekclock() 
 
-      print *, "Call fluid"
-
       if(nio.eq.0 .and. igeom.eq.2) 
      &   write(*,'(13x,a)') 'Solving for fluid'
 
@@ -763,8 +761,6 @@ C
       real*8 ts, dnekclock
 
       ts = dnekclock()
-      print *, "Call heat"
-      print*, "igome = ", igeom
 
       if (nio.eq.0 .and. igeom.eq.2) 
      &    write(*,'(13x,a)') 'Solving for Hmholtz scalars'

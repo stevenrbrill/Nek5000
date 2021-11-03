@@ -10,7 +10,6 @@ C
       include 'SOLN'
       include 'MASS'
       include 'TSTEP'
-      include 'RANS_KOMG'
       COMMON  /CPRINT/ IFPRINT
       LOGICAL          IFPRINT
       LOGICAL          IFCONV
@@ -37,9 +36,6 @@ C
       if (igeom.eq.1) then   ! geometry at t^{n-1}
 
          call makeq
-         print *, "Print mut, rans"
-         call srbprint(mut)
-
          call lagscal
 
       else                   ! geometry at t^n
@@ -124,11 +120,7 @@ c     mass matrix on the Gauss-Lobatto mesh.
       if (nio.eq.0.and.loglevel.gt.2) 
      $   write(6,*) 'makeuq', ifield, time
       call setqvol(bq(1,1,1,1,ifield-1))
-      print *, "Print bq ", ifield-1
-      call srbprint(bq(1,1,1,1,ifield-1))
       call col2   (bq(1,1,1,1,ifield-1) ,bm1,n)
-      print *, "Print bq*bm1", ifield-1
-      call srbprint(bq(1,1,1,1,ifield-1))
 
       if (.not.ifcvfld(ifield)) time = time+dt ! Restore time
 
