@@ -23,6 +23,9 @@ C     !! NOTE: Do not change the content of the array BQ until the current
       if (ifmhd.and.ifaxis) if_conv_std = .false. ! conv. treated in induct.f
 
       call makeq_aux ! nekuq, etc.
+      
+      print *, "Print bq makeq_aux ", ifield
+      call srbprint(bq(1,1,1,1,ifield-1))
 
       if (ifadvc(ifield) .and. if_conv_std) then
 
@@ -46,6 +49,9 @@ C     !! NOTE: Do not change the content of the array BQ until the current
 
       endif
 
+      print *, "Print bq convab ", ifield
+      call srbprint(bq(1,1,1,1,ifield-1))
+
       if (iftran) then
 
          if (ifcvfld(ifield)) then
@@ -62,12 +68,18 @@ C     !! NOTE: Do not change the content of the array BQ until the current
            if (ifmvbd.and..not.ifchar) call admesht
 
            call makeabq
+           print *, "Print bq abq ", ifield
+            call srbprint(bq(1,1,1,1,ifield-1))
 
            if (ifchar.and.ifadvc(ifield)) then
               call convch
               call makebdq_solid
+              print *, "Print bq bdq_solid ", ifield
+               call srbprint(bq(1,1,1,1,ifield-1))
            else
               call makebdq
+              print *, "Print bq bdq ", ifield
+               call srbprint(bq(1,1,1,1,ifield-1))
            endif
 
          endif

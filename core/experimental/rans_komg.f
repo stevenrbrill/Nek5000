@@ -764,6 +764,8 @@ c
       real           k_x(lxyz),k_y(lxyz),k_z(lxyz)
      $             , o_x(lxyz),o_y(lxyz),o_z(lxyz)
      $              ,omp_x(lxyz), omp_y(lxyz), omp_z(lxyz)
+      real  t1(lx1,ly1,lz1,lelv), t2(lx1,ly1,lz1,lelv), 
+     $ t3(lx1,ly1,lz1,lelv), t4(lx1,ly1,lz1,lelv)  
 
       real           tempv(lxyz), rhoalpk (lxyz)
      $              ,omwom(lxyz), rhoalpfr(lxyz)
@@ -811,7 +813,6 @@ c         beta_0 = defined earlier
         omeg_max     = coeffs(15)
         tiny         = coeffs(16)
 c================================
-
       call srb_comp_StOm (St_mag2, Om_mag2, OiOjSk, DivQ) !SRB
 
       nome_neg = 0
@@ -819,6 +820,7 @@ c================================
       xome_neg = 0.
       xkey_neg = 0.
 
+       print  *, "Print RANS"
       do e=1,nelv
 
         call copy   (g,   St_mag2(1,e),       lxyz)
@@ -968,22 +970,34 @@ c no compressibility correction M < 0.25
           mut  (i,1,1,e)   = mu_t
           mutsk(i,1,1,e)   = mu_t / sigma_k
           mutso(i,1,1,e)   = mu_t / sigma_omega
+
+          ! if (e .eq. 1) then
+          !   if (i .eq. 1) then
+          !       print  *, "Print RANS"
+          !   endif
+C            print *, e, i, G_k, Y_k, S_k, G_w, Y_w, S_w, g(i), 
+C     $       alpha, alp_str, rho, betai_str, f_beta_str, xk3,
+C     $       k_x(i), o_x(i), k_y(i), o_y(i), dfdy_omegb(i,1,1,e),
+C     $       f_omegb(i,1,1,e), omp_y(i)
+          ! endif
         enddo
 
 c solve for omega_pert
 
-c add mut*delsqf
+c add mut*delsqf  -- R2
         sigma_omega1 = 1.0/sigma_omega
         call copy   (mu_omeg,rhoalpk,lxyz)
         call cmult  (mu_omeg,sigma_omega1,lxyz)
         call col4   (extra_src_omega,mu_omeg ,omwom
      $                                ,delsqf_omegb(1,1,1,e),lxyz)
+        call copy(t2(1,1,1,e),extra_src_omega,lxyz)
 
-c add mu*delsqf
+c add mu*delsqf -- R1
         call copy   (tempv,delsqf_omegb(1,1,1,e),lxyz)
         call cmult  (tempv,mu,lxyz)
         call col2   (tempv,f_omegb(1,1,1,e),lxyz)
         call add2   (extra_src_omega, tempv,lxyz)
+        call copy(t1(1,1,1,e),tempv,lxyz)
 
 c Form (1/sigma_w) del_mut * del_omw
 c  form 1: (del_yw/yw) del_k
@@ -999,7 +1013,7 @@ c  form 2: 2(omw/om) (del_omw/yw)^2
         call cmult  (term2,expm,lxyz)
         call add3   (tempv, term1, term2, lxyz)
 
-c  form 3: -(omw/om) k (del_yw/yw) \del_omp/omw
+c  form 3: -(omw/om) k (del_yw/yw) \del_omp/omw -- R3
         call col3   (term3     ,omwom,t(1,1,1,e,ifld_k-1),lxyz)
         call invcol2(term3     ,f_omegb(1,1,1,e)         ,lxyz)
         call col3   (term4,  dfdx_omegb(1,1,1,e),omp_x,   lxyz)
@@ -1009,8 +1023,9 @@ c  form 3: -(omw/om) k (del_yw/yw) \del_omp/omw
         call subcol3(tempv, term3, term4, lxyz)
 
         call addcol3(extra_src_omega, rhoalpfr, tempv,    lxyz)
+        call col3(t3(1,1,1,e),rhoalpfr,tempv,lxyz)
 
-c add rho v * del_omw
+c add rho v * del_omw -- R4
         call col3   (tempv,dfdx_omegb(1,1,1,e),VX(1,1,1,e),lxyz)
         call addcol3(tempv,dfdx_omegb(1,1,1,e),psix(1,1,1,e),lxyz)
         call addcol3(tempv,dfdy_omegb(1,1,1,e),VY(1,1,1,e),lxyz)
@@ -1024,7 +1039,19 @@ c add rho v * del_omw
 
         call add2   (omgSrc(1,1,1,e), extra_src_omega           ,lxyz)
 
+        call col3(t4(1,1,1,e),tempv,f_omegb(1,1,1,e),lxyz)
+        call cmult(t4(1,1,1,e),expm,lxyz)
+
       enddo
+
+      print *, "Print R1"
+          call srbprint(t1)
+          print *, "Print R2"
+          call srbprint(t2)
+          print *, "Print R3"
+          call srbprint(t3)
+          print *, "Print R4"
+          call srbprint(t4)
 
       if(loglevel.gt.2) then
         nome_neg =iglsum(nome_neg,1)

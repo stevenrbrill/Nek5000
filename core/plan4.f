@@ -53,6 +53,8 @@ c
       INTYPE = -1
       NTOT1  = lx1*ly1*lz1*NELV
 
+      print*, "igeom = ", igeom
+
       if (igeom.eq.1) then
 
          ! compute explicit contributions bfx,bfy,bfz 
@@ -69,6 +71,14 @@ c
          call srb_nekuintf (BFINTX,BFINTY,BFINTZ)
          ! Steven - Add preintegrated values into the forcing terms
          CALL OPADD2 (BFX,BFY,BFZ,BFINTX,BFINTY,BFINTZ)
+         print *, "Print BFIntx"
+         call srbprint(BFINTX)
+         print *, "Print BFinty"
+         call srbprint(BFINTY)  
+         print *, "Print BFX Int"
+         call srbprint(BFX)
+         print *, "Print BFY Int"
+         call srbprint(BFY)  
 
          ! add user defined divergence to qtl 
          call add2 (qtl,usrdiv,ntot1)
@@ -105,12 +115,22 @@ c
             ! Call steven's functions when hacking BCs
             ! call srbbcneutr
             ! call srbbcdirvc  (vx,vy,vz,v1mask,v2mask,v3mask) 
+            print *, "cresvsp_weak"
             call cresvsp_weak(res1,res2,res3,h1,h2)
          else
+            print *, "cresvsp_strong"
             call cresvsp     (res1,res2,res3,h1,h2)
          endif
          call ophinv       (dv1,dv2,dv3,res1,res2,res3,h1,h2,tolhv,nmxv)
+         print *, "Print dv1"
+         call srbprint(dv1)
+         print *, "Print dv2"
+         call srbprint(dv2)
          call opadd2       (vx,vy,vz,dv1,dv2,dv3)
+         print *, "Print vx"
+         call srbprint(vx)
+         print *, "Print vy"
+         call srbprint(vy)
 
       endif
 
@@ -360,6 +380,10 @@ C     Compute the residual for the velocity
 
       CALL OPHX    (RESV1,RESV2,RESV3,VX,VY,VZ,H1,H2)
       CALL OPCHSGN (RESV1,RESV2,RESV3)
+      print *, "Print resv1 ophx"
+      call srbprint(resv1)
+      print *, "Print resv2 ophx"
+      call srbprint(resv2)
 
       scale = -1./3.
       if (ifstrs) scale =  2./3.
@@ -382,8 +406,20 @@ C     Compute the residual for the velocity
       endif
 c
       call opsub2  (resv1,resv2,resv3,ta1,ta2,ta3)
+      print *, "Print resv1 ta"
+      call srbprint(resv1)
+      print *, "Print resv2 ta"
+      call srbprint(resv2)
       call opadd2  (resv1,resv2,resv3,bfx,bfy,bfz)
+      print *, "Print resv1 bfx"
+      call srbprint(resv1)
+      print *, "Print resv2 bfy"
+      call srbprint(resv2)
       call opadd2  (resv1,resv2,resv3,brhsx,brhsy,brhsz) ! SRB - Add terms directly to RHS
+      print *, "Print resv1 brhs"
+      call srbprint(resv1)
+      print *, "Print resv2 brhs"
+      call srbprint(resv2)
 
       return
       end
