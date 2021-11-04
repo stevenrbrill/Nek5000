@@ -1022,7 +1022,7 @@ C           call cmult  (tr3x,-1.0,n)
 C           call copy   (tr3x,w1,n)
 C           call cmult  (tr3x,-1.0,n)
           ! Add to total forcing
-          call add2   (wsomg,w1,omg)
+          call add2   (wsomg,w1,n)
           call cmult(wsomg,-1.0,n)
           call cmult(wsomg, vtrans(1,1,1,1,ifld_omg-1),n)
         endif
