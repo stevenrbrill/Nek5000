@@ -1361,7 +1361,7 @@ C             dTdy_w = stat_y(1)
          tw     = dragx_avg / A_w
          u_tau  = sqrt(tw / rho)
          tw_poly     = dragx_avg_poly / A_w
-         tw_tot = tw_poly + param(1)*utau_ref*utau_ref
+         tw_tot = tw_poly - tau_param
          u_tau_poly  = sqrt(tw_poly / rho)
          u_tau_tot  = sqrt(tw_tot / rho)
          qw     = -param(8) * dTdy_w
@@ -1386,7 +1386,9 @@ C             dTdy_w = stat_y(1)
          write(57,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
      $     '%time = ', time, '%Re_tau = ', Re_tau, 
      $     '%ut = ', u_tau, '%ut_param = ', ut_param, 
-     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
          write(57,'(A)') 
      $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   Ucomb'
 
