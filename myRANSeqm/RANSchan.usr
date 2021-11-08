@@ -114,7 +114,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine userbc(ix,iy,iz,iside,eg) ! set up boundary conditions
+      subroutine userbc(ix,iy,iz,iside,ieg) ! set up boundary conditions
 C       implicit none
       include 'SIZE'
       include 'TOTAL'
@@ -125,7 +125,8 @@ C       implicit none
 c
 c     NOTE ::: This subroutine MAY NOT be called by every process
 c
-      integer ix,iy,iz,iside,e,eg
+C       integer ix,iy,iz,iside,e,eg
+      e = gllel(ieg)
     
 C     U, TKE, and Omg are all zero on the wall 
       ux   = 0.0
@@ -165,7 +166,7 @@ c-----------------------------------------------------------------------
       omax  = 0.5*utau*utau*Re
       yplus = max(wd(ix,iy,iz,e)*utau*Re,1.0e-3)
 
-      print *, Re, darcy, utau, sigm, kmax, omax
+C       print *, Re, darcy, utau, sigm, kmax, omax
 
 
 
@@ -868,7 +869,7 @@ C     first build the mask
         call rone(msk,nx1*ny1*nz1*nelv)
         do e=1,nelv
           do isd=1,2*ndim
-            if(cbc(isd,e,1).eq.'W  ') then
+            if((cbc(isd,e,1).eq.'W  ') .or. (cbc(isd,e,1).eq.'sh '))then
               call backpts(i0,i1,j0,j1,k0,k1,isd)
               do k=k0,k1
               do j=j0,j1
@@ -880,7 +881,7 @@ C     first build the mask
             endif
           enddo
           do isd=1,2*ndim
-            if(cbc(isd,e,1).eq.'W  ') then
+            if((cbc(isd,e,1).eq.'W  ') .or. (cbc(isd,e,1).eq.'sh '))then
               call facind(i0,i1,j0,j1,k0,k1,lx1,ly1,lz1,isd)
               do k=k0,k1
               do j=j0,j1
@@ -898,7 +899,7 @@ C     first build the mask
       do e=1,nelv
         ifgrad=.true.
         do isd=1,2*ndim
-          if(cbc(isd,e,1).eq.'W  ')then
+          if((cbc(isd,e,1).eq.'W  ') .or. (cbc(isd,e,1).eq.'sh '))then
             estrd=(e-1)*nx1*ny1*nz1
             if(ifgrad)then
               call gradm11(gradu(1,1,1),gradu(1,1,2),gradu(1,1,3),vx,e)
