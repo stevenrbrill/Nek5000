@@ -7,7 +7,7 @@ writeInterval = 1.0e0
 timeStepper = BDF3
 dealiasing = no
 
-userParam01 = 0.1    # start time collecting statistics
+userParam01 = 100.0    # start time collecting statistics
 userParam02 = 1.0     # writeInterval 1D statistics 
 
 [PROBLEMTYPE]
