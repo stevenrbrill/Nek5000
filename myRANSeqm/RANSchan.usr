@@ -533,15 +533,15 @@ C             dTdy_w = stat_y(1)
          write(6,*) 'Dumping statistics ...', Re_tau, u_tau, dragx_avg
  
          open(unit=56,file='vel_fluc_prof.dat')
-         write(56,'(A,1pe14.7)') '#time = ', time
+         write(56,'(A,1pe14.7)') '%time = ', time
          write(56,'(A)') 
-     $    '#  y    y+    uu    vv    ww    uv'
+     $    '%  y    y+    uu    vv    ww    uv'
 
          open(unit=57,file='mean_prof.dat')
-         write(57,'(A,1pe14.7)') '#time = ', time, '%ut = ', u_tau, 
+         write(57,'(A,1pe14.7)') '%time = ', time, '%ut = ', u_tau, 
      $   '%tw = ', tw 
          write(57,'(A)') 
-     $    '#  y    y+    Umean     U+mean'
+     $    '%  y    y+    Umean     U+mean'
 
          do i = 1,nint
             yy = 1+yint(i)
