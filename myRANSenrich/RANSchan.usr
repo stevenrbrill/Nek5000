@@ -514,6 +514,7 @@ c---------------------------------------------------------------
 c     VARIABLES DECLARED FOR ENRICHMENT METHOD
       integer secondcall
       save secondcall
+      integer en_on
       real utau_ref, Re_tau
 C       real psix(lx1,ly1,lz1,lelv)
 C       real gpsix_x(lx1,ly1,lz1,lelv), gpsix_y(lx1,ly1,lz1,lelv)
@@ -681,8 +682,10 @@ C       if (time.lt.50) then
         call oprzero(wrhsx,wrhsy,wrhsz)
         call rzero(wsk, n)
         call rzero(wsomg,n)
+        en_on = 0
 
       else
+        en_on = 1
 
         if (comp_psi .ne. 1) then
 C           if (use_default .eq. 1) then
@@ -694,40 +697,42 @@ C           endif
             call unprojenrich
           endif
 
-C           do iel = 1, nelv
-C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
-C                 do ix = 1,lx1
-C                   do iz = 1,lz1
-C C                     do iy = 1,ly1
-C                     ! Get wall distance and y index
-C                     if (flag(iel) .eq. 1) then
-C                       iy = 1
-C                       yp = 1-ym1(ix,iy,iz,iel)
-C                       iy_ut = ly1
-C                     else
-C                       iy = ly1
-C                       yp = 1+ym1(ix,iy,iz,iel)
-C                       iy_ut = 1
-C                     endif
-C                     srbtest = uti(ix,iy_ut,iz,iel)
-C                     avg_ind = ix+(iy-1)*lx1+(iz-1)*lx1*ly1+
-C      $                 (iel-1)*lx1*ly1*lz1
-C                     ! Use average value for matching point
-C                     utau = newton(flg,ravg(avg_ind,1),yp,param(1),
-C      $                 param(2),uti(ix,iy_ut,iz,iel),rtol,
-C      $                 maxiter)
-C                     if (utau .eq. 0.0) then
-C                       count = count + 1 ! count unconverged solutions
-C                       taunew(ix,iy,iz,iel) = -param(1)
-C      $                                        *uti(ix,iy_ut,iz,iel)**2
-C                     else
-C                       uti(ix,iy_ut,iz,iel) = utau ! update guess value                  ! for next time step
-C                       taunew(ix,iy_ut,iz,iel) = -param(1)*utau**2 ! shear stress
-C                     endif
-C                   enddo
-C                 enddo
-C              endif
-C           enddo
+          if (use_default .ne. 1) then
+          do iel = 1, nelv
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
+                do ix = 1,lx1
+                  do iz = 1,lz1
+C                     do iy = 1,ly1
+                    ! Get wall distance and y index
+                    if (flag(iel) .eq. 1) then
+                      iy = 1
+                      yp = 1-ym1(ix,iy,iz,iel)
+                      iy_ut = ly1
+                    else
+                      iy = ly1
+                      yp = 1+ym1(ix,iy,iz,iel)
+                      iy_ut = 1
+                    endif
+                    srbtest = uti(ix,iy_ut,iz,iel)
+                    avg_ind = ix+(iy-1)*lx1+(iz-1)*lx1*ly1+
+     $                 (iel-1)*lx1*ly1*lz1
+                    ! Use average value for matching point
+                    utau = newton(flg,ravg(avg_ind,1),yp,param(1),
+     $                 param(2),uti(ix,iy_ut,iz,iel),rtol,
+     $                 maxiter)
+                    if (utau .eq. 0.0) then
+                      count = count + 1 ! count unconverged solutions
+                      taunew(ix,iy,iz,iel) = -param(1)
+     $                                        *uti(ix,iy_ut,iz,iel)**2
+                    else
+                      uti(ix,iy_ut,iz,iel) = utau ! update guess value                  ! for next time step
+                      taunew(ix,iy_ut,iz,iel) = -param(1)*utau**2 ! shear stress
+                    endif
+                  enddo
+                enddo
+             endif
+          enddo
+          endif
 
           count = iglsum(count,1)
 
@@ -752,6 +757,7 @@ C           enddo
                       ut_param = uti(ix,iy_ut,iz,iel)
                       if (use_default .eq. 1) then
                         ut_param = utau_ref
+                        taunew(ix,iy_ut,iz,iel) = -param(1)*ut_param**2
                       endif
                       psix(ix,iy,iz,iel) = calc_psi(xm1(ix,iy,iz,iel),
      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
@@ -1197,6 +1203,7 @@ C       endif
           enddo
           call cfill(zint,ZCINT,size(zint))
 
+          if (en_on .eq. 1) then
           do i = 1,INTP_NMAX 
             if (yint(i) < ym1(1,ly1,1,1)) then
               psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1,
@@ -1208,6 +1215,9 @@ C       endif
               psix_int(i) = 0
             endif
           enddo
+          else
+            call rzero(psi_int,nint)
+          endif
         endif
         iffpts = .true. ! dummy call to find points
         call interp_nfld(stat_y,ravg,1,xint,yint,zint,nint,
@@ -1387,7 +1397,7 @@ C             dTdy_w = stat_y(1)
      $     '%time = ', time, '%Re_tau = ', Re_tau, 
      $     '%ut = ', u_tau, '%ut_param = ', ut_param, 
      $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
-     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', -1.0*tau_param, 
      $     '%tau_tot = ', tw_tot
          write(57,'(A)') 
      $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   Ucomb'
