@@ -1286,8 +1286,9 @@ C       write(6,*) 'dragx_avg = ', dragx_avg
             call planar_avg(stat(1,i),wo1      ,igs_z)
          enddo
 
+         if (ldim .eq. 2) then
          ! Correct stat 9
-         do iel = 1, nelv
+           do iel = 1, nelv
             if (flag(iel) .eq. -1) then
               iy =  ly1
               do iz = 1, lz1
@@ -1325,7 +1326,8 @@ C       write(6,*) 'dragx_avg = ', dragx_avg
                 enddo
               enddo  
             endif 
-          enddo
+           enddo
+         endif
 
          if (nfield.gt.1) then
             ! evaluate d<T>/dy at the lower wall
