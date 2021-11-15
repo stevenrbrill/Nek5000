@@ -449,9 +449,17 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real tau_w(lx1,ly1,lz1,lelv)
       real srb_temp(lx1,ly1,lz1,lelv)
       integer ib, ib2, iz_end
-      real srbtest, ut_param, tau_param, ut_avg_fit
+      real srbtest, ut_param, tau_param
+      real ut_avg_fit_bot, ut_avg_fit_top, u_match(2)
       real psix_int(INTP_NMAX)
       save psix_int
+      real xint_match(2),yint_match(2),zint_match(2)
+      save xint_match, yint_match, zint_match
+      real    rwk2(2,ldim+1) ! r, s, t, dist2
+      integer iwk2(2,3)      ! code, proc, el 
+      save    rwk2, iwk2
+      integer intp_h2
+      save intp_h2
       integer comp_phi_grad
       save comp_phi_grad
       integer nb
@@ -1031,6 +1039,7 @@ c
 
         nxm = 1 ! mesh is linear
         call interp_setup(intp_h,0.0,nxm,nelt)
+        call interp_setup(intp_h2,0.0,nxm,nelt)
         nint = 0
         if (nid.eq.0) then
           nint = INTP_NMAX
@@ -1040,6 +1049,11 @@ c
              yint(i) = tanh(BETAM*(2*yi-1))/tanh(BETAM)
           enddo
           call cfill(zint,ZCINT,size(zint))
+
+          call cfill(xint_match,XCINT,2)
+          yint_match(1) = bot_y
+          yint_match(2) = top_y
+          call cfill(zint_match,ZCINT,2)
 
           do i = 1,INTP_NMAX 
             if (yint(i) < ym1(1,ly1,1,1)) then
@@ -1056,6 +1070,9 @@ c
         iffpts = .true. ! dummy call to find points
         call interp_nfld(stat_y,ravg,1,xint,yint,zint,nint,
      $                   iwk,rwk,INTP_NMAX,iffpts,intp_h)
+        call interp_nfld(u_match,stat,1,xint_match,yint_match,
+     $                  zint_match,2,iwk2,rwk2,2,iffpts,intp_h2)
+
         iffpts = .false.
         call gtpp_gs_setup(igs_x,nelx     ,nely,nelz,1) ! x-avg
         if (ldim == 3) then
@@ -1179,6 +1196,10 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          call interp_nfld(stat_y,stat,nstat,xint,yint,zint,nint,
      $                    iwk,rwk,INTP_NMAX,iffpts,intp_h)
 
+         ! extract u at avg matching ponit
+         call interp_nfld(u_match,stat,1,xint_match,yint_match,
+     $                  zint_match,2,iwk2,rwk2,2,iffpts,intp_h2)
+
          ntdump = ntdump + 1
          if (nid.ne.0) goto 998 
 
@@ -1188,17 +1209,17 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
 
          if (use_default .eq. 1) then
                ut_param = utau_ref
-               ut_avg_fit = utau_ref
+               ut_avg_fit_top = utau_ref
+               ut_avg_fit_bot = utau_ref
          else
-            avg_ind = 0*ly1*lx1 + (ly1-1)*lx1 + 1
-            print *, "Avg_ind ", avg_ind, stat(avg_ind,1)
-            ut_avg_fit = newton(flg,stat(avg_ind,1),1.0-top_y,param(1),
+            print *, "Avg_ind ", u_match(1), u_match(2)
+            ut_avg_fit_bot = newton(flg,u_match(1),1.0+bot_y,param(1),
+     $                 param(2),ut_param,rtol,
+     $                 maxiter)
+            ut_avg_fit_top = newton(flg,u_match(2),1.0-top_y,param(1),
      $                 param(2),ut_param,rtol,
      $                 maxiter)
          endif
-
-C          print *, "Print stat"
-C          call srbprint(stat(1,1))
          
          do i = 1,INTP_NMAX 
            if (yint(i) < bot_y) then
