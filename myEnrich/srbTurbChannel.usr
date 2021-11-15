@@ -449,7 +449,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real tau_w(lx1,ly1,lz1,lelv)
       real srb_temp(lx1,ly1,lz1,lelv)
       integer ib, ib2, iz_end
-      real srbtest, ut_param, tau_param
+      real srbtest, ut_param, tau_param, ut_avg_fit
       real psix_int(INTP_NMAX)
       save psix_int
       integer comp_phi_grad
@@ -1188,14 +1188,25 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
 
          if (use_default .eq. 1) then
                ut_param = utau_ref
+               ut_avg_fit = utau_ref
+         else
+            avg_ind = 0*ly1*lx1 + (ly1-1)*lx1 + 1
+            print *, "Avg_ind ", avg_ind, stat(avg_ind,1)
+            ut_avg_fit = newton(flg,stat(avg_ind,1),1.0-top_y,param(1),
+     $                 param(2),ut_param,rtol,
+     $                 maxiter)
          endif
+
+C          print *, "Print stat"
+C          call srbprint(stat(1,1))
+         
          do i = 1,INTP_NMAX 
            if (yint(i) < bot_y) then
              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1,
-     $                              ut_param,param(2))
+     $                              ut_avg_fit,param(2))
            elseif (yint(i) > top_y) then
              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),1,
-     $                              ut_param,param(2))
+     $                              ut_avg_fit,param(2))
            else
              psix_int(i) = 0
            endif
@@ -1225,7 +1236,8 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          open(unit=56,file='vel_fluc_prof.dat')
          write(56,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
      $     '%time = ', time, '%Re_tau = ', Re_tau, 
-     $     '%ut = ', u_tau, '%ut_param = ', ut_param 
+     $     '%ut = ', u_tau, '%ut_param = ', ut_param, 
+     $     '%ut_avg_fit  = ', ut_avg_fit 
          write(56,'(A)') 
      $    '%  y    y+    uu    vv    ww    uv    u_tau'
 
