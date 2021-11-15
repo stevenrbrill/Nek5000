@@ -1258,7 +1258,7 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
      $     '%time = ', time, '%Re_tau = ', Re_tau, 
      $     '%ut = ', u_tau, '%ut_param = ', ut_param, 
      $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
-     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot
          write(56,'(A)') 
      $    '%  y    y+    uu    vv    ww    uv    u_tau'
 
