@@ -1223,10 +1223,10 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          do i = 1,INTP_NMAX 
            if (yint(i) < bot_y) then
              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1,
-     $                              ut_avg_fit,param(2))
+     $                              ut_avg_fit_bot,param(2))
            elseif (yint(i) > top_y) then
              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),1,
-     $                              ut_avg_fit,param(2))
+     $                              ut_avg_fit_top,param(2))
            else
              psix_int(i) = 0
            endif
@@ -1257,7 +1257,8 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          write(56,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
      $     '%time = ', time, '%Re_tau = ', Re_tau, 
      $     '%ut = ', u_tau, '%ut_param = ', ut_param, 
-     $     '%ut_avg_fit  = ', ut_avg_fit 
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
          write(56,'(A)') 
      $    '%  y    y+    uu    vv    ww    uv    u_tau'
 
