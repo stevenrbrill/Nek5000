@@ -1212,7 +1212,6 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
                ut_avg_fit_top = utau_ref
                ut_avg_fit_bot = utau_ref
          else
-            print *, "Avg_ind ", u_match(1), u_match(2)
             ut_avg_fit_bot = newton(flg,u_match(1),1.0+bot_y,param(1),
      $                 param(2),ut_param,rtol,
      $                 maxiter)
