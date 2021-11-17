@@ -1216,7 +1216,7 @@ C       endif
             endif
           enddo
           else
-            call rzero(psi_int,nint)
+            call rzero(psix_int,nint)
           endif
         endif
         iffpts = .true. ! dummy call to find points
@@ -1273,7 +1273,7 @@ C         call avg3(ravg(1,9),vy,t ,alpha,beta,n,'vtmm',ifverbose)
 c        write(6,*) 'dragx(iobj_wall) = ', dragx(iobj_wall)
         call avg1(ravg(1,11),vx   ,alpha,beta,n,'upol',ifverbose)
       endif
-      
+
 C       write(6,*) 'dragx_avg = ', dragx_avg
 
       timel = time
@@ -1424,7 +1424,7 @@ C             dTdy_w = stat_y(1)
      &           psix_int(i),
      &           u_tau,
      &           stat_y(10*nint+i)+psix_int(i)
-
+     
   3         format(1p15e17.9)
          enddo
          close(56)
