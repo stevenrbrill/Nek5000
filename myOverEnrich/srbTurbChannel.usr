@@ -393,7 +393,8 @@ c-----------------------------------------------------------------------
       real stat_y(INTP_NMAX*nstat)
       save ravg, stat, stat_y
 
-      save dragx_avg
+      save dragx_avg, dragx_avg_poly
+      real tw_poly, u_tau_poly, tw_tot, u_tau_tot
 
       logical ifverbose
       common /gaaa/    wo1(lx1,ly1,lz1,lelv)
@@ -466,9 +467,17 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real uti_d(lxd,lyd,lzd,lelv)
       save uti_d
       integer ib, ib2, iz_end, iy_match, iy_ut_match
-      real srbtest, ut_param
+      real srbtest, ut_param, tau_param
+      real ut_avg_fit_bot, ut_avg_fit_top, u_match(2)
       real psix_int(INTP_NMAX)
       save psix_int
+      real xint_match(2),yint_match(2),zint_match(2)
+      save xint_match, yint_match, zint_match
+      real    rwk2(2,ldim+1) ! r, s, t, dist2
+      integer iwk2(2,3)      ! code, proc, el 
+      save    rwk2, iwk2
+      integer intp_h2
+      save intp_h2
       integer comp_phi_grad
       save comp_phi_grad
       integer nb, nq
@@ -1187,6 +1196,7 @@ c
 
         nxm = 1 ! mesh is linear
         call interp_setup(intp_h,0.0,nxm,nelt)
+        call interp_setup(intp_h2,0.0,nxm,nelt)
         nint = 0
         if (nid.eq.0) then
           nint = INTP_NMAX
@@ -1196,10 +1206,29 @@ c
              yint(i) = tanh(BETAM*(2*yi-1))/tanh(BETAM)
           enddo
           call cfill(zint,ZCINT,size(zint))
+
+          call cfill(xint_match,XCINT,2)
+          yint_match(1) = bot_y
+          yint_match(2) = top_y
+          call cfill(zint_match,ZCINT,2)
+
+          do i = 1,INTP_NMAX 
+            if (yint(i) < ym1(1,ly1,1,1)) then
+              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1,
+     $                               utau_ref,param(2))
+            elseif (yint(i) > ym1(1,1,1,nelv)) then
+              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),1,
+     $                               utau_ref,param(2))
+            else
+              psix_int(i) = 0
+            endif
+          enddo
         endif
         iffpts = .true. ! dummy call to find points
         call interp_nfld(stat_y,ravg,1,xint,yint,zint,nint,
      $                   iwk,rwk,INTP_NMAX,iffpts,intp_h)
+        call interp_nfld(u_match,stat,1,xint_match,yint_match,
+     $                  zint_match,2,iwk2,rwk2,2,iffpts,intp_h2)
         iffpts = .false.
         call gtpp_gs_setup(igs_x,nelx     ,nely,nelz,1) ! x-avg
         if (ldim == 3) then
@@ -1208,6 +1237,7 @@ c
 
         call rzero(ravg,size(ravg))
         dragx_avg = 0
+        dragx_avg_poly = 0
         atime     = 0
         timel     = time
         ntdump    = int(time/tSTATFREQ)
@@ -1238,11 +1268,16 @@ c
 
         call avg1(ravg(1,10),psix ,alpha,beta,n,'psix',ifverbose)
         call avg1(ravg(1,12),uti ,alpha,beta,n,'utia',ifverbose)
+        call avg1(ravg(1,13),taunew ,alpha,beta,n,'taua',ifverbose)
 
         call torque_calc(1.0,x0,.false.,.false.) ! compute wall shear
         dragx_avg = alpha*dragx_avg + beta*dragx(iobj_wall)
-c        write(6,*) 'dragx(iobj_wall) = ', dragx(iobj_wall)
+
         call projenrich
+        call torque_calc(1.0,x0,.false.,.false.) ! compute wall shear
+        dragx_avg_poly = alpha*dragx_avg_poly + beta*dragx(iobj_wall)
+
+c        write(6,*) 'dragx(iobj_wall) = ', dragx(iobj_wall)
         call avg1(ravg(1,11),vx   ,alpha,beta,n,'upol',ifverbose)
       endif
       
@@ -1317,21 +1352,36 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          call interp_nfld(stat_y,stat,nstat,xint,yint,zint,nint,
      $                    iwk,rwk,INTP_NMAX,iffpts,intp_h)
 
+         ! extract u at avg matching ponit
+         call interp_nfld(u_match,stat,1,xint_match,yint_match,
+     $                  zint_match,2,iwk2,rwk2,2,iffpts,intp_h2)
+
          ntdump = ntdump + 1
          if (nid.ne.0) goto 998 
 
          ! Interpolate psi at all points
          ut_param = (stat_y(11*nint+1) + stat_y(11*nint+nint))/2.0
+         tau_param = (stat_y(12*nint+1) + stat_y(12*nint+nint))/2.0
          if (use_default .eq. 1) then
                ut_param = utau_ref
+               ut_avg_fit_top = utau_ref
+               ut_avg_fit_bot = utau_ref
+         else
+            ut_avg_fit_bot = newton(flg,u_match(1),1.0+bot_y,param(1),
+     $                 param(2),ut_param,rtol,
+     $                 maxiter)
+            ut_avg_fit_top = newton(flg,u_match(2),1.0-top_y,param(1),
+     $                 param(2),ut_param,rtol,
+     $                 maxiter)
          endif
+
          do i = 1,INTP_NMAX 
            if (yint(i) < bot_y) then
              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1,
-     $                              ut_param,param(2))
+     $                              ut_avg_fit_bot,param(2))
            elseif (yint(i) > top_y) then
              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),1,
-     $                              ut_param,param(2))
+     $                              ut_avg_fit_top,param(2))
            else
              psix_int(i) = 0
            endif
@@ -1343,10 +1393,17 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          if (ldim == 3) A_w = A_w*ZLEN
          tw     = dragx_avg / A_w
          u_tau  = sqrt(tw / rho)
+         tw_poly     = dragx_avg_poly / A_w
+         tw_tot = tw_poly - tau_param
+         u_tau_poly  = sqrt(tw_poly / rho)
+         u_tau_tot  = sqrt(tw_tot / rho)
          qw     = -param(8) * dTdy_w
          t_tau  = 1/u_tau * qw
          Re_tau = u_tau / dnu
          tplus  = time * u_tau**2 / dnu
+
+         write(6,*) 'u_taus ...', ut_param, u_tau, u_tau_poly
+     $    u_tau, tw, tw_poly, tau_param, A_w
 
          write(6,*) 'Dumping statistics ...', Re_tau, t_tau, dragx_avg,
      $    u_tau
@@ -1354,16 +1411,21 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          open(unit=56,file='vel_fluc_prof.dat')
          write(56,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
      $     '%time = ', time, '%Re_tau = ', Re_tau, 
-     $     '%ut = ', u_tau, '%ut_param = ', ut_param 
+     $     '%ut = ', u_tau, '%ut_param = ', ut_param
          write(56,'(A)') 
      $    '%  y    y+    uu    vv    ww    uv    u_tau'
 
          open(unit=57,file='mean_prof.dat')
          write(57,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
      $     '%time = ', time, '%Re_tau = ', Re_tau, 
-     $     '%ut = ', u_tau, '%ut_param = ', ut_param 
+     $     '%ut = ', u_tau, '%ut_param = ', ut_param, 
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
          write(57,'(A)') 
-     $    '%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau'
+     $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   Ucomb'
 
          do i = 1,nint
             yy = 1+yint(i)
@@ -1383,7 +1445,8 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
      &           stat_y(9*nint+i),
      &           stat_y(10*nint+i),
      &           psix_int(i),
-     &           u_tau
+     &           u_tau,
+     &           stat_y(10*nint+i)+psix_int(i)
 
   3         format(1p15e17.9)
          enddo
