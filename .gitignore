@@ -10,6 +10,8 @@
 *.dat
 *.nek5000
 *.zip
+*.re2
+*.ma2
 
 # tool executables built by running maketools
 bin/cgns2nek
