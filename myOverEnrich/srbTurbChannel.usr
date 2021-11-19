@@ -1879,34 +1879,6 @@ c     $ f(secant,flag,up,yp,rho,mu)
 
       return
       end
-c---------------------------------------------------------------------
-c     BISECTION SOLVER (not tested)
-c      implicit none
-c      real function bisection(flag,up,yp,rho,mu,a,b,atol,maxiter)
-c      integer flag,maxiter,i
-c      real up,yp,rho,mu,a,b,c,atol,fa,fc,f
-c
-c      bisection = 0.0
-c      do i = 1,max(1,maxiter)
-c        c=(a+b)/2
-c        fc=f(c,flag,up,yp,rho,mu)
-c        fa=f(a,flag,up,yp,rho,mu)
-c        if((b-a)/2.le.atol .OR. fc.eq.0) then
-c          bisection=c
-c          exit
-c        endif
-c      if(fc/abs(fc) .eq. fa/abs(fa)) then
-c        a=c
-c      else b=c
-c      endif 
-c      enddo
-
-c      write(6,*) 'i, bisection, f = ', i, bisection, 
-c     $ f(bisection,flag,up,yp,rho,mu)
-
-c      return
-c      end
-c-------------------------------------------------------------------
 
 C c-----------------------------------------------------------------------
 C       real function lotw (yw,utau,nu)
