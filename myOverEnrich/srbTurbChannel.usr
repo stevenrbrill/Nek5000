@@ -394,7 +394,7 @@ c-----------------------------------------------------------------------
       save ravg, stat, stat_y
 
       save dragx_avg, dragx_avg_poly
-      real tw_poly, u_tau_poly, tw_tot, u_tau_tot
+      real tw_poly, u_tau_poly, tw_tot, u_tau_tot, u_tau_out
 
       logical ifverbose
       common /gaaa/    wo1(lx1,ly1,lz1,lelv)
@@ -1402,6 +1402,12 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          Re_tau = u_tau / dnu
          tplus  = time * u_tau**2 / dnu
 
+         if (isnan(u_tau_tot)) then
+            u_tau_out = u_tau
+         else
+            u_tau_out = u_tau_tot
+         endif
+
          write(6,*) 'u_taus ...', ut_param, u_tau, u_tau_poly
      $    u_tau, tw, tw_poly, tau_param, A_w
 
@@ -1436,7 +1442,7 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
      &           stat_y(2*nint+i),
      &           stat_y(3*nint+i),
      &           stat_y(4*nint+i),
-     &           u_tau
+     &           u_tau_out
 
             write(57,3) 
      &           yy,
@@ -1445,7 +1451,7 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
      &           stat_y(9*nint+i),
      &           stat_y(10*nint+i),
      &           psix_int(i),
-     &           u_tau,
+     &           u_tau_out,
      &           stat_y(10*nint+i)+psix_int(i)
 
   3         format(1p15e17.9)

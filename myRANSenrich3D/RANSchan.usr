@@ -474,7 +474,7 @@ c-----------------------------------------------------------------------
       save ravg, stat, stat_y
 
       save dragx_avg, dragx_avg_poly
-      real tw_poly, u_tau_poly, tw_tot, u_tau_tot
+      real tw_poly, u_tau_poly, tw_tot, u_tau_tot, u_tau_out
 
       logical ifverbose
       common /gaaa/    wo1(lx1,ly1,lz1,lelv)
@@ -719,7 +719,7 @@ C                     do iy = 1,ly1
      $                 maxiter)
                     if (utau .eq. 0.0) then
                       count = count + 1 ! count unconverged solutions
-                      taunew(ix,iy,iz,iel) = -param(1)
+                      taunew(ix,iy_ut,iz,iel) = -param(1)
      $                                        *uti(ix,iy_ut,iz,iel)**2
                     else
                       uti(ix,iy_ut,iz,iel) = utau ! update guess value                  ! for next time step
@@ -1372,6 +1372,12 @@ C             dTdy_w = stat_y(1)
          Re_tau = u_tau / dnu
          tplus  = time * u_tau**2 / dnu
 
+         if (isnan(u_tau_tot)) then
+            u_tau_out = u_tau
+         else
+            u_tau_out = u_tau_tot
+         endif
+
          write(6,*) 'u_taus ...', ut_param, u_tau, u_tau_poly
      $    u_tau, tw, tw_poly, tau_param, A_w
 
@@ -1404,7 +1410,7 @@ C             dTdy_w = stat_y(1)
      &           stat_y(2*nint+i),
      &           stat_y(3*nint+i),
      &           stat_y(4*nint+i),
-     &           u_tau
+     &           u_tau_tot
 
             write(57,3) 
      &           yy,
@@ -1413,7 +1419,7 @@ C             dTdy_w = stat_y(1)
      &           stat_y(9*nint+i),
      &           stat_y(10*nint+i),
      &           psix_int(i),
-     &           u_tau,
+     &           u_tau_tot,
      &           stat_y(10*nint+i)+psix_int(i)
 
   3         format(1p15e17.9)
