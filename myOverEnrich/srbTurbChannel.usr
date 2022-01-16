@@ -1114,10 +1114,10 @@ C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 -->
               ! Compute other parts of T1
               call intp_rstd(vdiff_d(1,1,1,iel),vdiff(1,1,1,iel,1),
      $             lx1,lxd,if3d,0)
-              call col3(srb_temp,bmd(1,1,1,iel),vdiff_d(1,1,1,iel),nq)
-              call col3(tx_d,srb_temp,gpsix_x(1,1,1,iel),nq)
-              call col3(ty_d,srb_temp,gpsix_y(1,1,1,iel),nq)
-              call col3(tz_d,srb_temp,gpsix_z(1,1,1,iel),nq)
+              call col3(srb_temp_d,bmd(1,1,1,iel),vdiff_d(1,1,1,iel),nq)
+              call col3(tx_d,srb_temp_d,gpsix_x(1,1,1,iel),nq)
+              call col3(ty_d,srb_temp_d,gpsix_y(1,1,1,iel),nq)
+              call col3(tz_d,srb_temp_d,gpsix_z(1,1,1,iel),nq)
 
               call mxm(dpdx(1,1,iel) ,nb,tx_d,nq,w1,1)
               call mxm(dpdy(1,1,iel) ,nb,ty_d,nq,w2,1)
