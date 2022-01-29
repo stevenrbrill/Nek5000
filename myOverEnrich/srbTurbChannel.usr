@@ -853,7 +853,10 @@ C           enddo
                 do iz = 1,lzd
                   ib = (iz-1)*lxd*lyd + (iy-1)*(lxd) + ix
                   bmd(ix,iy,iz,iel) = 
-     $               jacmd(ib,iel)*wd(ix)*wd(iy)*wd(iz)
+     $               jacmd(ib,iel)*wd(ix)*wd(iy)
+                  if (ldim == 3) then
+                        bmd(ix,iy,iz,iel) = bmd(ix,iy,iz,iel)*wd(iz)
+                  endif
                 enddo
               enddo
             enddo
@@ -1153,6 +1156,10 @@ C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 -->
             comp_phi_grad = 1
           endif
         endif
+
+        call add2 (wintx,T1_rhs_x,n)
+        call add2 (winty,T1_rhs_y,n)
+        call add2 (wintz,T1_rhs_z,n)
 
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
 C       call oprzero(psix,psiy,psiz)
