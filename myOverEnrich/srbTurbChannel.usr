@@ -594,14 +594,20 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
           call oprzero_d(gpsix_x,gpsix_y,gpsix_z)
           call oprzero_d(gpsiy_x,gpsiy_y,gpsiy_z)
           call oprzero_d(gpsiz_x,gpsiz_y,gpsiz_z)
+         call rzero(uti,n)
          do iel = 1, nelv
+          if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
           do ix = 1, lx1
-           do iy = 1, ly1
             do iz = 1, lz1
-               uti(ix,iy,iz,iel) = 0.05 ! Guess value for N-R solver
+               if (flag(iel) .eq. 1) then
+                 iy = ly1
+               else
+                 iy = 1
+               endif
+               uti(ix,iy,iz,iel) = utau_ref ! Guess value for N-R solver
             enddo
-           enddo
           enddo
+          endif
          enddo
       endif
 
@@ -658,9 +664,13 @@ C                     do iy = 1,ly1
                     avg_ind = ix+(iy-1)*lx1+(iz-1)*lx1*ly1+
      $                 (iel-1)*lx1*ly1*lz1
                     ! Use average value for matching point
-                    utau = newton(flg,ravg(avg_ind,1),yp,param(1),
-     $                 param(2),uti(ix,iy_ut,iz,iel),rtol,
-     $                 maxiter)
+                    if (use_default .eq. 1) then
+                        utau = utau_ref
+                    else
+                        utau = newton(flg,ravg(avg_ind,1),yp,param(1),
+     $                        param(2),uti(ix,iy_ut,iz,iel),rtol,
+     $                        maxiter)
+                    endif
                     if (utau .eq. 0.0) then
                       count = count + 1 ! count unconverged solutions
                       taunew(ix,iy_ut,iz,iel) = -param(1)
@@ -1142,10 +1152,7 @@ C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 -->
               call add2(T1_rhs_z(1,1,1,iel),w2,nb)
             endif
           enddo
-          call add2 (wintx,T1_rhs_x,n)
-          call add2 (winty,T1_rhs_y,n)
-          call add2 (wintz,T1_rhs_z,n)
-
+          
           ! only compute phi grads once
           if (comp_phi_grad .ne. 1) then
             comp_phi_grad = 1
