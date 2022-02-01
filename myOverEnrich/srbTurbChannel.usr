@@ -598,12 +598,7 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
           do ix = 1, lx1
            do iy = 1, ly1
             do iz = 1, lz1
-               uti(ix,iy,iz,iel) = 0.00 ! Guess value for N-R solver
-               if ((flag(iel) .eq. 1) .and. (iy .eq. ly1)) then
-                  uti(ix,iy,iz,iel) = 0.08
-               elseif ((flag(iel) .eq. -1) .and. (iy .eq. 1)) then
-                  uti(ix,iy,iz,iel) = 0.08
-               endif
+               uti(ix,iy,iz,iel) = 0.05 ! Guess value for N-R solver
             enddo
            enddo
           enddo
