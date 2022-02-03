@@ -554,6 +554,7 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
           call oprzero(gpsix_x,gpsix_y,gpsix_z)
           call oprzero(gpsiy_x,gpsiy_y,gpsiy_z)
           call oprzero(gpsiz_x,gpsiz_y,gpsiz_z)
+          call rzero(taunew,n)
           call rzero(uti,n)
          do iel = 1, nelv
           if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
