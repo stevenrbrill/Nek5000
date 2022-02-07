@@ -488,12 +488,12 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       integer comp_phi_grad
       save comp_phi_grad
       integer nb, nq
-      common /phigrad/ dpdr(lx1*ly1*lz1,lx1*ly1*lz1)
-     $                ,dpds(lx1*ly1*lz1,lx1*ly1*lz1)
-     $                ,dpdt(lx1*ly1*lz1,lx1*ly1*lz1)
-     $                ,dpdx(lx1*ly1*lz1,lx1*ly1*lz1,lelv)
-     $                ,dpdy(lx1*ly1*lz1,lx1*ly1*lz1,lelv)
-     $                ,dpdz(lx1*ly1*lz1,lx1*ly1*lz1,lelv)
+      common /phigrad/ dpdr(lxd*lyd*lzd,lx1*ly1*lz1)
+     $                ,dpds(lxd*lyd*lzd,lx1*ly1*lz1)
+     $                ,dpdt(lxd*lyd*lzd,lx1*ly1*lz1)
+     $                ,dpdx(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
+     $                ,dpdy(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
+     $                ,dpdz(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
                                !(nb,nq)
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /y_ends/ bot_y, top_y
