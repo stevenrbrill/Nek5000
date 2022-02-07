@@ -436,6 +436,7 @@ c---------------------------------------------------------------
       real gpsiy_y1(lx1,ly1,lz1,lelv), gpsiy_z1(lx1,ly1,lz1,lelv)
       real gpsiz_x1(lx1,ly1,lz1,lelv), gpsiz_y1(lx1,ly1,lz1,lelv)
       real gpsiz_z1(lx1,ly1,lz1,lelv)
+      real phi_temp1(lx1,ly1,lz1,lelv)
 
 c---------------------------------------------------------------
 c     VARIABLES DECLARED FOR ENRICHMENT METHOD
@@ -608,7 +609,10 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
           call oprzero_d(gpsiy_x,gpsiy_y,gpsiy_z)
           call oprzero_d(gpsiz_x,gpsiz_y,gpsiz_z)
           call rzero(taunew,n)
-         call rzero(uti,n)
+          call rzero(uti,n)
+          call oprzero(gpsix_x1,gpsix_y1,gpsix_z1)
+          call oprzero(gpsiy_x1,gpsiy_y1,gpsiy_z1)
+          call oprzero(gpsiz_x1,gpsiz_y1,gpsiz_z1)
          do iel = 1, nelv
           if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
           do ix = 1, lx1
@@ -790,7 +794,7 @@ C           call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
           enddo
 
           ! Assume SEM basis in X and Z. Use analytical grad in y
-          call gradm1(gpsix_x1,phi_temp,gpsix_z1,psix)
+          call gradm1(gpsix_x1,phi_temp1,gpsix_z1,psix)
 
           ! Get enrichment values on boundary of enriched region
           ! Not currently used
