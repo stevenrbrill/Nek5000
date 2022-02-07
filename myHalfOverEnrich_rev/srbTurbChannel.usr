@@ -986,56 +986,37 @@ C           call add2   (wsz,w1,n)
           ! S for x
           ! S^psi * u
           ! Compute grad of u
-C           call gradm1 (tx,ty,tz,vx)
-          do iel = 1, nelv
-            call grad_rst(tx_d(1,1,1,iel),ty_d(1,1,1,iel),
-     $                    tz_d(1,1,1,iel),vx_d(1,1,1,iel),lxd,if3d)
-          enddo
-          if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
-          if (ldim == 3) 
-     $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
-          call copy   (tr3x,w1_d,n_d)
-          call cmult  (tr3x,-1.0,n_d)
+          call gradm1 (tx,ty,tz,vx)
+          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
+          call copy   (tr3x,w1,n)
+          call cmult  (tr3x,-1.0,n)
           ! Add to total forcing
-          call add2   (wsx_d,w1_d,n_d)
-C           call add2   (wsx,w1,n)
+          call add2   (wsx,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for y
           ! S^psi * v
           ! Compute grad of v
-C           call gradm1 (tx,ty,tz,vy)
-          do iel = 1, nelv
-            call grad_rst(tx_d(1,1,1,iel),ty_d(1,1,1,iel),
-     $                    tz_d(1,1,1,iel),vy_d(1,1,1,iel),lxd,if3d)
-          enddo
-          if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
-          if (ldim == 3) 
-     $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
-          call copy   (tr3y,w1_d,n_d)
-          call cmult  (tr3y,-1.0,n_d)
+          call gradm1 (tx,ty,tz,vy)
+          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
+          call copy   (tr3y,w1,n)
+          call cmult  (tr3y,-1.0,n)
           ! Add to total forcing
-          call add2   (wsy_d,w1_d,n_d)
-C           call add2   (wsy,w1,n)
+          call add2   (wsy,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for z
           ! S^psi * w
           ! Compute grad of w
-C           call gradm1 (tx,ty,tz,vz)
-          do iel = 1, nelv
-            call grad_rst(tx_d(1,1,1,iel),ty_d(1,1,1,iel),
-     $                    tz_d(1,1,1,iel),vz_d(1,1,1,iel),lxd,if3d)
-          enddo
-          if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
-          if (ldim == 3) 
-     $     call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
-          call copy   (tr3z,w1_d,n_d)
-          call cmult  (tr3z,-1.0,n_d)
+          call gradm1 (tx,ty,tz,vz)
+          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
+          call copy   (tr3z,w1,n)
+          call cmult  (tr3z,-1.0,n)
           ! Add to total forcing
-          call add2   (wsz_d,w1_d,n_d)
-C           call add2   (wsz,w1,n)
-
+          call add2   (wsz,w1,n)
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! Multiply by mass matrix for integration  
           call col2(wsx_d,bmd,n_d)
@@ -1044,11 +1025,11 @@ C           call add2   (wsz,w1,n)
 
           ! Revert back to non-overintegrated
           do iel = 1,nelv
-            call intp_rstd(wsx(1,1,1,iel),wsx_d(1,1,1,iel),
+            call intp_rstd(wintx(1,1,1,iel),wsx_d(1,1,1,iel),
      $             lx1,lxd,if3d,1)
-            call intp_rstd(wsy(1,1,1,iel),wsy_d(1,1,1,iel),
+            call intp_rstd(winty(1,1,1,iel),wsy_d(1,1,1,iel),
      $             lx1,lxd,if3d,1)
-            call intp_rstd(wsz(1,1,1,iel),wsz_d(1,1,1,iel),
+            call intp_rstd(wintz(1,1,1,iel),wsz_d(1,1,1,iel),
      $             lx1,lxd,if3d,1)
           enddo
 
@@ -1058,8 +1039,11 @@ C           call add2   (wsz,w1,n)
           call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
 
           ! Since we already did the integration, add to preintegrated array
-          call opcopy(wintx,winty,wintz,wsx,wsy,wsz)
-          call opzero(wsx,wsy,wsz)
+C           call opcopy(wintx,winty,wintz,wsx,wsy,wsz)
+C           call opzero(wsx,wsy,wsz)
+          call opcmult(wintx,winty,wintz,-1.0)
+          call opcolv (wintx,winty,wintz,vtrans(1,1,1,1,1))
+
         endif
 
         ! Compute T1 (viscous enrichment term)
