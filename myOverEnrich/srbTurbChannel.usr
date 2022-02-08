@@ -450,6 +450,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save T1_rhs_x, T1_rhs_y, T1_rhs_z
       save T1_rhs
       integer comp_T1, comp_en_F, comp_psi, iy_ut, avg_ind, use_default
+      integer ind
       save comp_T1, comp_en_F, comp_psi
       real tau_w(lx1,ly1,lz1,lelv)
       real srb_temp(lx1,ly1,lz1,lelv)
@@ -625,6 +626,8 @@ C       if (time.lt.50) then
 
       else
 
+        call set_dealias_rx
+            
         if (comp_psi .ne. 1) then
 C           if (use_default .eq. 1) then
 C             comp_psi = 1 ! comment for adaptation
@@ -765,8 +768,27 @@ C                     do iy = 1,ly1
 C           call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
           do iel = 1, nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
-              call grad_rst(gpsix_x(1,1,1,iel),phi_temp(1,1,1,iel),
-     $                    gpsix_z(1,1,1,iel),psix_d(1,1,1,iel),lxd,if3d)
+            call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
+     $                    txz(1,1,1,iel),psix_d(1,1,1,iel),lxd,if3d)
+            do ix = 1,lxd
+              do iy = 1,lyd
+                do iz = 1,lzd
+                  ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
+                  if (if3d) then
+                 gpsix_x(ix,iy,iz,iel) = rx(ind,1,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
+     $                       +rx(ind,3,iel)*txz(ix,iy,iz,iel)
+                 gpsix_z(ix,iy,iz,iel) = rx(ind,7,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,8,iel)*txy(ix,iy,iz,iel)
+     $                       +rx(ind,9,iel)*txz(ix,iy,iz,iel)   
+                  else
+                 gpsix_x(ix,iy,iz,iel) = rx(ind,1,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
+                 gpsix_z(ix,iy,iz,iel) = 0.0
+                  endif
+                enddo
+              enddo
+            enddo
             endif
           enddo
 
@@ -850,7 +872,6 @@ C           enddo
 
         if (comp_en_F.ne. 1) then
           ! Compute the mass matrix for the overintegration points
-          call set_dealias_rx
           do iel = 1, nelv
             call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),
      $         lx1,lxd,if3d,0) ! 0 --> fwd
@@ -969,8 +990,32 @@ C           call add2   (wsz,w1,n)
           ! Compute grad of u
 C           call gradm1 (tx,ty,tz,vx)
           do iel = 1, nelv
-            call grad_rst(tx_d(1,1,1,iel),ty_d(1,1,1,iel),
-     $                    tz_d(1,1,1,iel),vx_d(1,1,1,iel),lxd,if3d)
+            call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
+     $                    txz(1,1,1,iel),vx_d(1,1,1,iel),lxd,if3d)
+            do ix = 1,lxd
+              do iy = 1,lyd
+                do iz = 1,lzd
+                  ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
+                  if (if3d) then
+                    tx_d(ix,iy,iz,iel) = rx(ind,1,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
+     $                       +rx(ind,3,iel)*txz(ix,iy,iz,iel)
+                    ty_d(ix,iy,iz,iel) = rx(ind,4,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
+     $                       +rx(ind,6,iel)*txz(ix,iy,iz,iel) 
+                    tz_d(ix,iy,iz,iel) = rx(ind,7,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,8,iel)*txy(ix,iy,iz,iel)
+     $                       +rx(ind,9,iel)*txz(ix,iy,iz,iel)   
+                  else
+                    tx_d(ix,iy,iz,iel) = rx(ind,1,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
+                    ty_d(ix,iy,iz,iel) = rx(ind,4,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
+                    tz_d(ix,iy,iz,iel) = 0.0
+                  endif
+                enddo
+              enddo
+            enddo
           enddo
           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
           if (ldim == 3) 
@@ -987,9 +1032,34 @@ C           call add2   (wsx,w1,n)
           ! Compute grad of v
 C           call gradm1 (tx,ty,tz,vy)
           do iel = 1, nelv
-            call grad_rst(tx_d(1,1,1,iel),ty_d(1,1,1,iel),
-     $                    tz_d(1,1,1,iel),vy_d(1,1,1,iel),lxd,if3d)
+            call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
+     $                    txz(1,1,1,iel),vy_d(1,1,1,iel),lxd,if3d)
+            do ix = 1,lxd
+              do iy = 1,lyd
+                do iz = 1,lzd
+                  ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
+                  if (if3d) then
+                    tx_d(ix,iy,iz,iel) = rx(ind,1,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
+     $                       +rx(ind,3,iel)*txz(ix,iy,iz,iel)
+                    ty_d(ix,iy,iz,iel) = rx(ind,4,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
+     $                       +rx(ind,6,iel)*txz(ix,iy,iz,iel) 
+                    tz_d(ix,iy,iz,iel) = rx(ind,7,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,8,iel)*txy(ix,iy,iz,iel)
+     $                       +rx(ind,9,iel)*txz(ix,iy,iz,iel)   
+                  else
+                    tx_d(ix,iy,iz,iel) = rx(ind,1,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
+                    ty_d(ix,iy,iz,iel) = rx(ind,4,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
+                    tz_d(ix,iy,iz,iel) = 0.0
+                  endif
+                enddo
+              enddo
+            enddo
           enddo
+
           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
           if (ldim == 3) 
      $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
@@ -1005,8 +1075,32 @@ C           call add2   (wsy,w1,n)
           ! Compute grad of w
 C           call gradm1 (tx,ty,tz,vz)
           do iel = 1, nelv
-            call grad_rst(tx_d(1,1,1,iel),ty_d(1,1,1,iel),
-     $                    tz_d(1,1,1,iel),vz_d(1,1,1,iel),lxd,if3d)
+            call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
+     $                    txz(1,1,1,iel),vz_d(1,1,1,iel),lxd,if3d)
+            do ix = 1,lxd
+              do iy = 1,lyd
+                do iz = 1,lzd
+                  ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
+                  if (if3d) then
+                    tx_d(ix,iy,iz,iel) = rx(ind,1,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
+     $                       +rx(ind,3,iel)*txz(ix,iy,iz,iel)
+                    ty_d(ix,iy,iz,iel) = rx(ind,4,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
+     $                       +rx(ind,6,iel)*txz(ix,iy,iz,iel) 
+                    tz_d(ix,iy,iz,iel) = rx(ind,7,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,8,iel)*txy(ix,iy,iz,iel)
+     $                       +rx(ind,9,iel)*txz(ix,iy,iz,iel)   
+                  else
+                    tx_d(ix,iy,iz,iel) = rx(ind,1,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
+                    ty_d(ix,iy,iz,iel) = rx(ind,4,iel)*txx(ix,iy,iz,iel)
+     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
+                    tz_d(ix,iy,iz,iel) = 0.0
+                  endif
+                enddo
+              enddo
+            enddo
           enddo
           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
           if (ldim == 3) 
@@ -1041,8 +1135,6 @@ C           call add2   (wsz,w1,n)
           ! Since we already did the integration, add to preintegrated array
           call opcopy(wintx,winty,wintz,wsx,wsy,wsz)
           call opzero(wsx,wsy,wsz)
-
-
         endif
 
         ! Compute T1 (viscous enrichment term)
