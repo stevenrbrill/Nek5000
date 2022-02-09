@@ -623,6 +623,9 @@ C       if (time.lt.50) then
         call oprzero_d(wsx_d,wsy_d,wsz_d)
         call oprzero(wintx,winty,wintz)
         call oprzero(wrhsx,wrhsy,wrhsz)
+        call oprzero_d(rxmd,rymd,rzmd)
+        call oprzero_d(sxmd,symd,szmd)
+        call oprzero_d(txmd,tymd,tzmd)
 
       else
 
@@ -639,11 +642,36 @@ C           endif
           endif
 
           do iel = 1, nelv
+            call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),
+     $         lx1,lxd,if3d,0) ! 0 --> fwd
+            do ix = 1,lxd
+              do iy = 1,lyd
+                do iz = 1,lzd
+                  ib = (iz-1)*lxd*lyd + (iy-1)*(lxd) + ix
+                  bmd(ix,iy,iz,iel) = 
+     $               jacmd(ib,iel)*wd(ix)*wd(iy)
+                  if (ldim == 3) then
+                        bmd(ix,iy,iz,iel) = bmd(ix,iy,iz,iel)*wd(iz)
+                  endif
+                enddo
+              enddo
+            enddo
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
             ! Interpolate to overtintegration points in enriched elements
             call intp_rstd(xmd(1,1,1,iel),xm1(1,1,1,iel),lx1,lxd,if3d,0)
             call intp_rstd(ymd(1,1,1,iel),ym1(1,1,1,iel),lx1,lxd,if3d,0)
             call intp_rstd(zmd(1,1,1,iel),zm1(1,1,1,iel),lx1,lxd,if3d,0)
+          call intp_rstd(rxmd(1,1,1,iel),rxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(rymd(1,1,1,iel),rym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(rzmd(1,1,1,iel),rzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(sxmd(1,1,1,iel),sxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(symd(1,1,1,iel),sym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(szmd(1,1,1,iel),szm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(txmd(1,1,1,iel),txm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(tymd(1,1,1,iel),tym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(tzmd(1,1,1,iel),tzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+
             call intp_rstd(vx_d(1,1,1,iel),vx(1,1,1,iel),lx1,lxd,if3d,0)
             call intp_rstd(vy_d(1,1,1,iel),vy(1,1,1,iel),lx1,lxd,if3d,0)
             call intp_rstd(vz_d(1,1,1,iel),vz(1,1,1,iel),lx1,lxd,if3d,0)
@@ -775,16 +803,19 @@ C           call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
                 do iz = 1,lzd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
                   if (if3d) then
-                 gpsix_x(ix,iy,iz,iel) = rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,3,iel)*txz(ix,iy,iz,iel)
-                 gpsix_z(ix,iy,iz,iel) = rx(ind,7,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,8,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,9,iel)*txz(ix,iy,iz,iel)   
+                    gpsix_x(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
+                    gpsix_z(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rzmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))   
                   else
-                 gpsix_x(ix,iy,iz,iel) = rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
-                 gpsix_z(ix,iy,iz,iel) = 0.0
+                    gpsix_x(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
+                    gpsix_z(ix,iy,iz,iel) = 0.0
                   endif
                 enddo
               enddo
@@ -872,22 +903,6 @@ C           enddo
 
         if (comp_en_F.ne. 1) then
           ! Compute the mass matrix for the overintegration points
-          do iel = 1, nelv
-            call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),
-     $         lx1,lxd,if3d,0) ! 0 --> fwd
-            do ix = 1,lxd
-              do iy = 1,lyd
-                do iz = 1,lzd
-                  ib = (iz-1)*lxd*lyd + (iy-1)*(lxd) + ix
-                  bmd(ix,iy,iz,iel) = 
-     $               jacmd(ib,iel)*wd(ix)*wd(iy)
-                  if (ldim == 3) then
-                        bmd(ix,iy,iz,iel) = bmd(ix,iy,iz,iel)*wd(iz)
-                  endif
-                enddo
-              enddo
-            enddo
-          enddo
 
           ! comp_en_F = 1 ! This loop shouldn't be here. you always need it
           ! compute forcing terms in 3 directions
@@ -997,20 +1012,25 @@ C           call gradm1 (tx,ty,tz,vx)
                 do iz = 1,lzd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
                   if (if3d) then
-                    tx_d(ix,iy,iz,iel) = rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,3,iel)*txz(ix,iy,iz,iel)
-                    ty_d(ix,iy,iz,iel) = rx(ind,4,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,6,iel)*txz(ix,iy,iz,iel) 
-                    tz_d(ix,iy,iz,iel) = rx(ind,7,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,8,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,9,iel)*txz(ix,iy,iz,iel)   
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tymd(ix,iy,iz,iel)*txz(ix,iy,iz,iel)) 
+                    tz_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rzmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))   
                   else
-                    tx_d(ix,iy,iz,iel) = rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
-                    ty_d(ix,iy,iz,iel) = rx(ind,4,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)) 
                     tz_d(ix,iy,iz,iel) = 0.0
                   endif
                 enddo
@@ -1039,20 +1059,25 @@ C           call gradm1 (tx,ty,tz,vy)
                 do iz = 1,lzd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
                   if (if3d) then
-                    tx_d(ix,iy,iz,iel) = rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,3,iel)*txz(ix,iy,iz,iel)
-                    ty_d(ix,iy,iz,iel) = rx(ind,4,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,6,iel)*txz(ix,iy,iz,iel) 
-                    tz_d(ix,iy,iz,iel) = rx(ind,7,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,8,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,9,iel)*txz(ix,iy,iz,iel)   
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tymd(ix,iy,iz,iel)*txz(ix,iy,iz,iel)) 
+                    tz_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rzmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))   
                   else
-                    tx_d(ix,iy,iz,iel) = rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
-                    ty_d(ix,iy,iz,iel) = rx(ind,4,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)) 
                     tz_d(ix,iy,iz,iel) = 0.0
                   endif
                 enddo
@@ -1082,20 +1107,25 @@ C           call gradm1 (tx,ty,tz,vz)
                 do iz = 1,lzd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
                   if (if3d) then
-                    tx_d(ix,iy,iz,iel) = rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,3,iel)*txz(ix,iy,iz,iel)
-                    ty_d(ix,iy,iz,iel) = rx(ind,4,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,6,iel)*txz(ix,iy,iz,iel) 
-                    tz_d(ix,iy,iz,iel) = rx(ind,7,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,8,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,9,iel)*txz(ix,iy,iz,iel)   
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tymd(ix,iy,iz,iel)*txz(ix,iy,iz,iel)) 
+                    tz_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rzmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))   
                   else
-                    tx_d(ix,iy,iz,iel) = rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
-                    ty_d(ix,iy,iz,iel) = rx(ind,4,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)) 
                     tz_d(ix,iy,iz,iel) = 0.0
                   endif
                 enddo
@@ -1188,25 +1218,25 @@ C           call oprzero(wintx,winty,wintz)
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
               ! Compute phi grad
               if (comp_phi_grad .ne. 1) then
-          call intp_rstd(rxmd(1,1,1,iel),rxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-          call intp_rstd(rymd(1,1,1,iel),rym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-          call intp_rstd(rzmd(1,1,1,iel),rzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-          call intp_rstd(sxmd(1,1,1,iel),sxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-          call intp_rstd(symd(1,1,1,iel),sym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-          call intp_rstd(szmd(1,1,1,iel),szm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-          call intp_rstd(txmd(1,1,1,iel),txm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-          call intp_rstd(tymd(1,1,1,iel),tym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-          call intp_rstd(tzmd(1,1,1,iel),tzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(rxmd(1,1,1,iel),rxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(rymd(1,1,1,iel),rym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(rzmd(1,1,1,iel),rzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(sxmd(1,1,1,iel),sxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(symd(1,1,1,iel),sym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(szmd(1,1,1,iel),szm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(txmd(1,1,1,iel),txm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(tymd(1,1,1,iel),tym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(tzmd(1,1,1,iel),tzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
                 do j=1,nb ! actually nb
                   do i=1,nq ! actually nq
-                 dpdx(j,i,iel)=1/jacmd(i,iel)*(dpdr(i,j)*rxmd(i,1,1,iel)
+                dpdx(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rxmd(i,1,1,iel)
      $                                     + dpds(i,j)*sxmd(i,1,1,iel)
      $                                     + dpdt(i,j)*txmd(i,1,1,iel) )
-                 dpdy(j,i,iel)=1/jacmd(i,iel)*(dpdr(i,j)*rymd(i,1,1,iel)
+                dpdy(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rymd(i,1,1,iel)
      $                                     + dpds(i,j)*symd(i,1,1,iel)
      $                                     + dpdt(i,j)*tymd(i,1,1,iel) )
-                 dpdz(j,i,iel)=1/jacmd(i,iel)*(dpdr(i,j)*rzmd(i,1,1,iel)
+                dpdz(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rzmd(i,1,1,iel)
      $                                     + dpds(i,j)*szmd(i,1,1,iel)
      $                                     + dpdt(i,j)*tzmd(i,1,1,iel) )
                   enddo
