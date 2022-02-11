@@ -436,8 +436,6 @@ c     VARIABLES DECLARED FOR ENRICHMENT METHOD
       save secondcall
       real utau_ref, Re_tau
 C       real psix(lx1,ly1,lz1,lelv)
-      real gpsix_x_1(lx1,ly1,lz1,lelv), gpsix_y_1(lx1,ly1,lz1,lelv) 
-      real gpsix_z_1(lx1,ly1,lz1,lelv)
       real gpsix_x(lxd,lyd,lzd,lelv), gpsix_y(lxd,lyd,lzd,lelv)
       real gpsix_z(lxd,lyd,lzd,lelv), gpsiy_x(lxd,lyd,lzd,lelv)
       real gpsiy_y(lxd,lyd,lzd,lelv), gpsiy_z(lxd,lyd,lzd,lelv)
@@ -597,7 +595,6 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
           call oprzero_d(gpsix_x,gpsix_y,gpsix_z)
           call oprzero_d(gpsiy_x,gpsiy_y,gpsiy_z)
           call oprzero_d(gpsiz_x,gpsiz_y,gpsiz_z)
-          call oprzero(gpsix_x_1,gpsix_y_1,gpsix_z_1)
           call rzero(taunew,n)
          call rzero(uti,n)
          do iel = 1, nelv
@@ -796,11 +793,33 @@ C                     do iy = 1,ly1
           enddo
 
           ! Assume SEM basis in X and Z. Use analytical grad in y
-          call gradm1(gpsix_x_1,gpsix_y_1,gpsix_z_1,psix)
+C           call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
           do iel = 1, nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
-            call intp_rstd(gpsix_x,gpsix_x_1,lx1,lxd,if3d,0)
-            call intp_rstd(gpsix_z,gpsix_z_1,lx1,lxd,if3d,0)
+            call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
+     $                    txz(1,1,1,iel),psix_d(1,1,1,iel),lxd,if3d)
+            do ix = 1,lxd
+              do iy = 1,lyd
+                do iz = 1,lzd
+                  ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
+                  if (if3d) then
+                    gpsix_x(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
+                    gpsix_z(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rzmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))   
+                  else
+                    gpsix_x(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
+                    gpsix_z(ix,iy,iz,iel) = 0.0
+                  endif
+                enddo
+              enddo
+            enddo
             endif
           enddo
 
@@ -993,13 +1012,39 @@ C           call add2   (wsz,w1,n)
           ! S for x
           ! S^psi * u
           ! Compute grad of u
-          call gradm1 (tx,ty,tz,vx)
+C           call gradm1 (tx,ty,tz,vx)
           do iel = 1, nelv
-            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
-              call intp_rstd(tx_d,tx,lx1,lxd,if3d,0)
-              call intp_rstd(ty_d,ty,lx1,lxd,if3d,0)
-              call intp_rstd(tz_d,tz,lx1,lxd,if3d,0)
-            endif
+            call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
+     $                    txz(1,1,1,iel),vx_d(1,1,1,iel),lxd,if3d)
+            do ix = 1,lxd
+              do iy = 1,lyd
+                do iz = 1,lzd
+                  ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
+                  if (if3d) then
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tymd(ix,iy,iz,iel)*txz(ix,iy,iz,iel)) 
+                    tz_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rzmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))   
+                  else
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)) 
+                    tz_d(ix,iy,iz,iel) = 0.0
+                  endif
+                enddo
+              enddo
+            enddo
           enddo
           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
           if (ldim == 3) 
@@ -1014,13 +1059,39 @@ C           call add2   (wsx,w1,n)
           ! S for y
           ! S^psi * v
           ! Compute grad of v
-          call gradm1 (tx,ty,tz,vy)
+C           call gradm1 (tx,ty,tz,vy)
           do iel = 1, nelv
-            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
-              call intp_rstd(tx_d,tx,lx1,lxd,if3d,0)
-              call intp_rstd(ty_d,ty,lx1,lxd,if3d,0)
-              call intp_rstd(tz_d,tz,lx1,lxd,if3d,0)
-            endif
+            call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
+     $                    txz(1,1,1,iel),vy_d(1,1,1,iel),lxd,if3d)
+            do ix = 1,lxd
+              do iy = 1,lyd
+                do iz = 1,lzd
+                  ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
+                  if (if3d) then
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tymd(ix,iy,iz,iel)*txz(ix,iy,iz,iel)) 
+                    tz_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rzmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))   
+                  else
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)) 
+                    tz_d(ix,iy,iz,iel) = 0.0
+                  endif
+                enddo
+              enddo
+            enddo
           enddo
 
           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
@@ -1036,15 +1107,40 @@ C           call add2   (wsy,w1,n)
           ! S for z
           ! S^psi * w
           ! Compute grad of w
-          call gradm1 (tx,ty,tz,vz)
+C           call gradm1 (tx,ty,tz,vz)
           do iel = 1, nelv
-            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
-              call intp_rstd(tx_d,tx,lx1,lxd,if3d,0)
-              call intp_rstd(ty_d,ty,lx1,lxd,if3d,0)
-              call intp_rstd(tz_d,tz,lx1,lxd,if3d,0)
-            endif
+            call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
+     $                    txz(1,1,1,iel),vz_d(1,1,1,iel),lxd,if3d)
+            do ix = 1,lxd
+              do iy = 1,lyd
+                do iz = 1,lzd
+                  ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
+                  if (if3d) then
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tymd(ix,iy,iz,iel)*txz(ix,iy,iz,iel)) 
+                    tz_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rzmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))   
+                  else
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)) 
+                    tz_d(ix,iy,iz,iel) = 0.0
+                  endif
+                enddo
+              enddo
+            enddo
           enddo
-
           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
           if (ldim == 3) 
      $     call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
