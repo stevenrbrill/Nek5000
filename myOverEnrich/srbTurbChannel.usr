@@ -672,9 +672,9 @@ C           endif
           call intp_rstd(tzmd(1,1,1,iel),tzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
 C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
 
-            call intp_rstd(vx_d(1,1,1,iel),vx(1,1,1,iel),lx1,lxd,if3d,0)
-            call intp_rstd(vy_d(1,1,1,iel),vy(1,1,1,iel),lx1,lxd,if3d,0)
-            call intp_rstd(vz_d(1,1,1,iel),vz(1,1,1,iel),lx1,lxd,if3d,0)
+C             call intp_rstd(vx_d(1,1,1,iel),vx(1,1,1,iel),lx1,lxd,if3d,0)
+C             call intp_rstd(vy_d(1,1,1,iel),vy(1,1,1,iel),lx1,lxd,if3d,0)
+C             call intp_rstd(vz_d(1,1,1,iel),vz(1,1,1,iel),lx1,lxd,if3d,0)
                 do ix = 1,lx1
                   do iz = 1,lz1
 C                     do iy = 1,ly1
@@ -900,6 +900,15 @@ C           enddo
           secondcall = 1
         endif
         call projenrich
+
+        do iel = 1, nelv
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
+            ! Interpolate to overtintegration points in enriched elements
+            call intp_rstd(vx_d(1,1,1,iel),vx(1,1,1,iel),lx1,lxd,if3d,0)
+            call intp_rstd(vy_d(1,1,1,iel),vy(1,1,1,iel),lx1,lxd,if3d,0)
+            call intp_rstd(vz_d(1,1,1,iel),vz(1,1,1,iel),lx1,lxd,if3d,0)
+            endif
+        enddo
 
         if (comp_en_F.ne. 1) then
           ! Compute the mass matrix for the overintegration points
