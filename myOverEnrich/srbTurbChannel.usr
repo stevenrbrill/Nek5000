@@ -1006,6 +1006,7 @@ C           call add2   (wsz,w1,n)
      $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) !Term 4
           call copy   (tr4z,w1_d,n_d)
           call cmult  (tr4z,-1.0,n_d)
+          call col2(w1_d,bmd,n_d)
           ! Add to total forcing
           call add2   (wsz_d,w1_d,n_d)
 C           call add2   (wsz,w1,n)
@@ -1027,33 +1028,50 @@ C           call gradm1 (tx,ty,tz,vx)
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
                   if (if3d) then
                     tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,4,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,7,iel)*txz(ix,iy,iz,iel))
+     $                       (rx(ind,1,iel)*psix_d(ix,iy,iz,iel)
+     $                       +rx(ind,2,iel)*psiy_d(ix,iy,iz,iel)
+     $                       +rx(ind,3,iel)*psiz_d(ix,iy,iz,iel))
                     ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,2,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,8,iel)*txz(ix,iy,iz,iel)) 
+     $                       (rx(ind,4,iel)*psix_d(ix,iy,iz,iel)
+     $                       +rx(ind,5,iel)*psiy_d(ix,iy,iz,iel)
+     $                       +rx(ind,6,iel)*psiz_d(ix,iy,iz,iel)) 
                     tz_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,3,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,6,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,9,iel)*txz(ix,iy,iz,iel))   
+     $                       (rx(ind,7,iel)*psix_d(ix,iy,iz,iel)
+     $                       +rx(ind,8,iel)*psiy_d(ix,iy,iz,iel)
+     $                       +rx(ind,9,iel)*psiz_d(ix,iy,iz,iel))   
                   else
                     tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,3,iel)*txy(ix,iy,iz,iel))
+     $                       (rx(ind,1,iel)*psix_d(ix,iy,iz,iel)
+     $                       +rx(ind,2,iel)*psiy_d(ix,iy,iz,iel))
                     ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,2,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,4,iel)*txy(ix,iy,iz,iel)) 
+     $                       (rx(ind,3,iel)*psix_d(ix,iy,iz,iel)
+     $                       +rx(ind,4,iel)*psiy_d(ix,iy,iz,iel)) 
                     tz_d(ix,iy,iz,iel) = 0.0
                   endif
                 enddo
               enddo
             enddo
           enddo
-          if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
-          if (ldim == 3) 
-     $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
+          do iel = 1, nelv
+            do ix = 1,lxd
+              do iy = 1,lyd
+                do iz = 1,lzd
+                  ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
+                  if (if3d) then
+                    w1_d(ix,iy,iz,iel) = 
+     $                       (tx_d(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +ty_d(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tz_d(ix,iy,iz,iel)*txz(ix,iy,iz,iel)) 
+                  else
+                    w1_d(ix,iy,iz,iel) = 
+     $                       (tx_d(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +ty_d(ix,iy,iz,iel)*txy(ix,iy,iz,iel)) 
+                  endif
+                enddo
+              enddo
+            enddo
+          enddo
+
           call copy   (tr3x,w1_d,n_d)
           call cmult  (tr3x,-1.0,n_d)
           ! Add to total forcing
@@ -1074,34 +1092,50 @@ C           call gradm1 (tx,ty,tz,vy)
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
                   if (if3d) then
                     tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,4,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,7,iel)*txz(ix,iy,iz,iel))
+     $                       (rx(ind,1,iel)*psix_d(ix,iy,iz,iel)
+     $                       +rx(ind,2,iel)*psiy_d(ix,iy,iz,iel)
+     $                       +rx(ind,3,iel)*psiz_d(ix,iy,iz,iel))
                     ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,2,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,8,iel)*txz(ix,iy,iz,iel)) 
+     $                       (rx(ind,4,iel)*psix_d(ix,iy,iz,iel)
+     $                       +rx(ind,5,iel)*psiy_d(ix,iy,iz,iel)
+     $                       +rx(ind,6,iel)*psiz_d(ix,iy,iz,iel)) 
                     tz_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,3,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,6,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,9,iel)*txz(ix,iy,iz,iel))   
+     $                       (rx(ind,7,iel)*psix_d(ix,iy,iz,iel)
+     $                       +rx(ind,8,iel)*psiy_d(ix,iy,iz,iel)
+     $                       +rx(ind,9,iel)*psiz_d(ix,iy,iz,iel))   
                   else
                     tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,3,iel)*txy(ix,iy,iz,iel))
+     $                       (rx(ind,1,iel)*psix_d(ix,iy,iz,iel)
+     $                       +rx(ind,2,iel)*psiy_d(ix,iy,iz,iel))
                     ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,2,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,4,iel)*txy(ix,iy,iz,iel)) 
+     $                       (rx(ind,3,iel)*psix_d(ix,iy,iz,iel)
+     $                       +rx(ind,4,iel)*psiy_d(ix,iy,iz,iel)) 
                     tz_d(ix,iy,iz,iel) = 0.0
                   endif
                 enddo
               enddo
             enddo
           enddo
+          do iel = 1, nelv
+            do ix = 1,lxd
+              do iy = 1,lyd
+                do iz = 1,lzd
+                  ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
+                  if (if3d) then
+                    w1_d(ix,iy,iz,iel) = 
+     $                       (tx_d(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +ty_d(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tz_d(ix,iy,iz,iel)*txz(ix,iy,iz,iel)) 
+                  else
+                    w1_d(ix,iy,iz,iel) = 
+     $                       (tx_d(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +ty_d(ix,iy,iz,iel)*txy(ix,iy,iz,iel)) 
+                  endif
+                enddo
+              enddo
+            enddo
+          enddo
 
-          if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
-          if (ldim == 3) 
-     $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
           call copy   (tr3y,w1_d,n_d)
           call cmult  (tr3y,-1.0,n_d)
           ! Add to total forcing
@@ -1122,33 +1156,50 @@ C           call gradm1 (tx,ty,tz,vz)
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
                   if (if3d) then
                     tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,4,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,7,iel)*txz(ix,iy,iz,iel))
+     $                       (rx(ind,1,iel)*psix_d(ix,iy,iz,iel)
+     $                       +rx(ind,2,iel)*psiy_d(ix,iy,iz,iel)
+     $                       +rx(ind,3,iel)*psiz_d(ix,iy,iz,iel))
                     ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,2,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,8,iel)*txz(ix,iy,iz,iel)) 
+     $                       (rx(ind,4,iel)*psix_d(ix,iy,iz,iel)
+     $                       +rx(ind,5,iel)*psiy_d(ix,iy,iz,iel)
+     $                       +rx(ind,6,iel)*psiz_d(ix,iy,iz,iel)) 
                     tz_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,3,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,6,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,9,iel)*txz(ix,iy,iz,iel))   
+     $                       (rx(ind,7,iel)*psix_d(ix,iy,iz,iel)
+     $                       +rx(ind,8,iel)*psiy_d(ix,iy,iz,iel)
+     $                       +rx(ind,9,iel)*psiz_d(ix,iy,iz,iel))   
                   else
                     tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,3,iel)*txy(ix,iy,iz,iel))
+     $                       (rx(ind,1,iel)*psix_d(ix,iy,iz,iel)
+     $                       +rx(ind,2,iel)*psiy_d(ix,iy,iz,iel))
                     ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,2,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,4,iel)*txy(ix,iy,iz,iel)) 
+     $                       (rx(ind,3,iel)*psix_d(ix,iy,iz,iel)
+     $                       +rx(ind,4,iel)*psiy_d(ix,iy,iz,iel)) 
                     tz_d(ix,iy,iz,iel) = 0.0
                   endif
                 enddo
               enddo
             enddo
           enddo
-          if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
-          if (ldim == 3) 
-     $     call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
+          do iel = 1, nelv
+            do ix = 1,lxd
+              do iy = 1,lyd
+                do iz = 1,lzd
+                  ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
+                  if (if3d) then
+                    w1_d(ix,iy,iz,iel) = 
+     $                       (tx_d(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +ty_d(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tz_d(ix,iy,iz,iel)*txz(ix,iy,iz,iel)) 
+                  else
+                    w1_d(ix,iy,iz,iel) = 
+     $                       (tx_d(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +ty_d(ix,iy,iz,iel)*txy(ix,iy,iz,iel)) 
+                  endif
+                enddo
+              enddo
+            enddo
+          enddo
+          
           call copy   (tr3z,w1_d,n_d)
           call cmult  (tr3z,-1.0,n_d)
           ! Add to total forcing
