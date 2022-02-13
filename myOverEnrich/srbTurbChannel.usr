@@ -1021,25 +1021,25 @@ C           call gradm1 (tx,ty,tz,vx)
                 do iz = 1,lzd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
                   if (if3d) then
-                    tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,3,iel)*txz(ix,iy,iz,iel))
-                    ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,4,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,6,iel)*txz(ix,iy,iz,iel)) 
-                    tz_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,7,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,8,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,9,iel)*txz(ix,iy,iz,iel))   
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tymd(ix,iy,iz,iel)*txz(ix,iy,iz,iel)) 
+                    tz_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rzmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))   
                   else
-                    tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel))
-                    ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,3,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,4,iel)*txy(ix,iy,iz,iel)) 
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)) 
                     tz_d(ix,iy,iz,iel) = 0.0
                   endif
                 enddo
@@ -1068,25 +1068,25 @@ C           call gradm1 (tx,ty,tz,vy)
                 do iz = 1,lzd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
                   if (if3d) then
-                    tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,3,iel)*txz(ix,iy,iz,iel))
-                    ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,4,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,6,iel)*txz(ix,iy,iz,iel)) 
-                    tz_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,7,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,8,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,9,iel)*txz(ix,iy,iz,iel))   
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tymd(ix,iy,iz,iel)*txz(ix,iy,iz,iel)) 
+                    tz_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rzmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))   
                   else
-                    tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel))
-                    ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,3,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,4,iel)*txy(ix,iy,iz,iel)) 
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)) 
                     tz_d(ix,iy,iz,iel) = 0.0
                   endif
                 enddo
@@ -1116,25 +1116,25 @@ C           call gradm1 (tx,ty,tz,vz)
                 do iz = 1,lzd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
                   if (if3d) then
-                    tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,3,iel)*txz(ix,iy,iz,iel))
-                    ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,4,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,5,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,6,iel)*txz(ix,iy,iz,iel)) 
-                    tz_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,7,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,8,iel)*txy(ix,iy,iz,iel)
-     $                       +rx(ind,9,iel)*txz(ix,iy,iz,iel))   
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tymd(ix,iy,iz,iel)*txz(ix,iy,iz,iel)) 
+                    tz_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rzmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))   
                   else
-                    tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*txy(ix,iy,iz,iel))
-                    ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,3,iel)*txx(ix,iy,iz,iel)
-     $                       +rx(ind,4,iel)*txy(ix,iy,iz,iel)) 
+                    tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
+                    ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
+     $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)) 
                     tz_d(ix,iy,iz,iel) = 0.0
                   endif
                 enddo
