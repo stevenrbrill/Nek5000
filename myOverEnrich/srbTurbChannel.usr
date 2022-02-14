@@ -1026,28 +1026,12 @@ C           call gradm1 (tx,ty,tz,vx)
               do iy = 1,lyd
                 do iz = 1,lzd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
-                  if (if3d) then
                     tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*psix_d(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*psiy_d(ix,iy,iz,iel)
-     $                       +rx(ind,3,iel)*psiz_d(ix,iy,iz,iel))
+     $                       (rx(ind,1,iel)*psix_d(ix,iy,iz,iel))
                     ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,4,iel)*psix_d(ix,iy,iz,iel)
-     $                       +rx(ind,5,iel)*psiy_d(ix,iy,iz,iel)
-     $                       +rx(ind,6,iel)*psiz_d(ix,iy,iz,iel)) 
+     $                       (rx(ind,4,iel)*psix_d(ix,iy,iz,iel)) 
                     tz_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,7,iel)*psix_d(ix,iy,iz,iel)
-     $                       +rx(ind,8,iel)*psiy_d(ix,iy,iz,iel)
-     $                       +rx(ind,9,iel)*psiz_d(ix,iy,iz,iel))   
-                  else
-                    tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*psix_d(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*psiy_d(ix,iy,iz,iel))
-                    ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,3,iel)*psix_d(ix,iy,iz,iel)
-     $                       +rx(ind,4,iel)*psiy_d(ix,iy,iz,iel)) 
-                    tz_d(ix,iy,iz,iel) = 0.0
-                  endif
+     $                       (rx(ind,7,iel)*psix_d(ix,iy,iz,iel))   
                 enddo
               enddo
             enddo
@@ -1057,16 +1041,10 @@ C           call gradm1 (tx,ty,tz,vx)
               do iy = 1,lyd
                 do iz = 1,lzd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
-                  if (if3d) then
                     w1_d(ix,iy,iz,iel) = 
      $                       (tx_d(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
      $                       +ty_d(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
      $                       +tz_d(ix,iy,iz,iel)*txz(ix,iy,iz,iel)) 
-                  else
-                    w1_d(ix,iy,iz,iel) = 
-     $                       (tx_d(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-     $                       +ty_d(ix,iy,iz,iel)*txy(ix,iy,iz,iel)) 
-                  endif
                 enddo
               enddo
             enddo
@@ -1090,28 +1068,12 @@ C           call gradm1 (tx,ty,tz,vy)
               do iy = 1,lyd
                 do iz = 1,lzd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
-                  if (if3d) then
                     tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*psix_d(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*psiy_d(ix,iy,iz,iel)
-     $                       +rx(ind,3,iel)*psiz_d(ix,iy,iz,iel))
+     $                       (rx(ind,1,iel)*psix_d(ix,iy,iz,iel))
                     ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,4,iel)*psix_d(ix,iy,iz,iel)
-     $                       +rx(ind,5,iel)*psiy_d(ix,iy,iz,iel)
-     $                       +rx(ind,6,iel)*psiz_d(ix,iy,iz,iel)) 
+     $                       (rx(ind,4,iel)*psix_d(ix,iy,iz,iel)) 
                     tz_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,7,iel)*psix_d(ix,iy,iz,iel)
-     $                       +rx(ind,8,iel)*psiy_d(ix,iy,iz,iel)
-     $                       +rx(ind,9,iel)*psiz_d(ix,iy,iz,iel))   
-                  else
-                    tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*psix_d(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*psiy_d(ix,iy,iz,iel))
-                    ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,3,iel)*psix_d(ix,iy,iz,iel)
-     $                       +rx(ind,4,iel)*psiy_d(ix,iy,iz,iel)) 
-                    tz_d(ix,iy,iz,iel) = 0.0
-                  endif
+     $                       (rx(ind,7,iel)*psix_d(ix,iy,iz,iel))   
                 enddo
               enddo
             enddo
@@ -1121,16 +1083,10 @@ C           call gradm1 (tx,ty,tz,vy)
               do iy = 1,lyd
                 do iz = 1,lzd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
-                  if (if3d) then
                     w1_d(ix,iy,iz,iel) = 
      $                       (tx_d(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
      $                       +ty_d(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
      $                       +tz_d(ix,iy,iz,iel)*txz(ix,iy,iz,iel)) 
-                  else
-                    w1_d(ix,iy,iz,iel) = 
-     $                       (tx_d(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-     $                       +ty_d(ix,iy,iz,iel)*txy(ix,iy,iz,iel)) 
-                  endif
                 enddo
               enddo
             enddo
@@ -1154,28 +1110,12 @@ C           call gradm1 (tx,ty,tz,vz)
               do iy = 1,lyd
                 do iz = 1,lzd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
-                  if (if3d) then
                     tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*psix_d(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*psiy_d(ix,iy,iz,iel)
-     $                       +rx(ind,3,iel)*psiz_d(ix,iy,iz,iel))
+     $                       (rx(ind,1,iel)*psix_d(ix,iy,iz,iel))
                     ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,4,iel)*psix_d(ix,iy,iz,iel)
-     $                       +rx(ind,5,iel)*psiy_d(ix,iy,iz,iel)
-     $                       +rx(ind,6,iel)*psiz_d(ix,iy,iz,iel)) 
+     $                       (rx(ind,4,iel)*psix_d(ix,iy,iz,iel)) 
                     tz_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,7,iel)*psix_d(ix,iy,iz,iel)
-     $                       +rx(ind,8,iel)*psiy_d(ix,iy,iz,iel)
-     $                       +rx(ind,9,iel)*psiz_d(ix,iy,iz,iel))   
-                  else
-                    tx_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,1,iel)*psix_d(ix,iy,iz,iel)
-     $                       +rx(ind,2,iel)*psiy_d(ix,iy,iz,iel))
-                    ty_d(ix,iy,iz,iel) = 
-     $                       (rx(ind,3,iel)*psix_d(ix,iy,iz,iel)
-     $                       +rx(ind,4,iel)*psiy_d(ix,iy,iz,iel)) 
-                    tz_d(ix,iy,iz,iel) = 0.0
-                  endif
+     $                       (rx(ind,7,iel)*psix_d(ix,iy,iz,iel))   
                 enddo
               enddo
             enddo
@@ -1185,16 +1125,10 @@ C           call gradm1 (tx,ty,tz,vz)
               do iy = 1,lyd
                 do iz = 1,lzd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
-                  if (if3d) then
                     w1_d(ix,iy,iz,iel) = 
      $                       (tx_d(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
      $                       +ty_d(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
      $                       +tz_d(ix,iy,iz,iel)*txz(ix,iy,iz,iel)) 
-                  else
-                    w1_d(ix,iy,iz,iel) = 
-     $                       (tx_d(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-     $                       +ty_d(ix,iy,iz,iel)*txy(ix,iy,iz,iel)) 
-                  endif
                 enddo
               enddo
             enddo
