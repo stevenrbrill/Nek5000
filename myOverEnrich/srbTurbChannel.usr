@@ -930,6 +930,15 @@ C           enddo
           call oprzero(wsx,wsy,wsz)
           call oprzero_d(wsx_d,wsy_d,wsz_d)
 
+        call oprzero_d(tr1x,tr1y,tr1z)
+        call oprzero_d(tr2x,tr2y,tr2z)
+        call oprzero_d(tr3x,tr3y,tr3z)
+        call oprzero_d(tr4x,tr4y,tr4z)
+        call oprzero(tr1x1,tr1y1,tr1z1)
+        call oprzero(tr2x1,tr2y1,tr2z1)
+        call oprzero(tr3x1,tr3y1,tr3z1)
+        call oprzero(tr4x1,tr4y1,tr4z1)
+
           ! ----------------------------------------------------------------
           ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
           ! + Term 4: -rho*dot(psi,gradient(psi))     Should be zero
@@ -1387,9 +1396,9 @@ C C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 -
         call add2 (wintz,T1_rhs_z,n)
 
         if (istep.eq.0 .or. ifoutfld) then
-        call copy   (tr1x,T1_rhs_x,n)
-        call copy   (tr1y,T1_rhs_y,n)
-        call copy   (tr1z,T1_rhs_z,n)
+        call copy   (tr1x1,T1_rhs_x,n)
+        call copy   (tr1y1,T1_rhs_y,n)
+        call copy   (tr1z1,T1_rhs_z,n)
         endif
 
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
@@ -1408,10 +1417,10 @@ c     WALL ENRICHMENT...END
          call add3 (vx_,vx,psix,n) !calculate actual velocity
          call outpost(psix,psiy,psiz,vx_,t,'enr')
 C          call outpost(psix,gpsix_y,psiz,vx_,t,'enr')
-         call outpost(tr1x,tr1y,tr1z,vx_,t,'Tr1')
-         call outpost(tr2x,tr2y,tr2z,vx_,t,'Tr2')
-         call outpost(tr3x,tr3y,tr3z,vx_,t,'Tr3')
-         call outpost(tr4x,tr4y,tr4z,vx_,t,'Tr4')
+         call outpost(tr1x1,tr1y1,tr1z1,vx_,t,'Tr1')
+         call outpost(tr2x1,tr2y1,tr2z1,vx_,t,'Tr2')
+         call outpost(tr3x1,tr3y1,tr3z1,vx_,t,'Tr3')
+         call outpost(tr4x1,tr4y1,tr4z1,vx_,t,'Tr4')
 C          ifto = .true.
 C          call outpost(wsx,wsy,wsz,term3x,convx,'src')
 C          ifto = .false.
