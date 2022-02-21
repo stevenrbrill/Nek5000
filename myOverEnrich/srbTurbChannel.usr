@@ -534,6 +534,18 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,tr4x(lxd,lyd,lzd,lelv)
      $               ,tr4y(lxd,lyd,lzd,lelv)
      $               ,tr4z(lxd,lyd,lzd,lelv)
+     $               ,tr1x1(lx1,ly1,lz1,lelv)
+     $               ,tr1y1(lx1,ly1,lz1,lelv)
+     $               ,tr1z1(lx1,ly1,lz1,lelv)
+     $               ,tr2x1(lx1,ly1,lz1,lelv)
+     $               ,tr2y1(lx1,ly1,lz1,lelv)
+     $               ,tr2z1(lx1,ly1,lz1,lelv)
+     $               ,tr3x1(lx1,ly1,lz1,lelv)
+     $               ,tr3y1(lx1,ly1,lz1,lelv)
+     $               ,tr3z1(lx1,ly1,lz1,lelv)
+     $               ,tr4x1(lx1,ly1,lz1,lelv)
+     $               ,tr4y1(lx1,ly1,lz1,lelv)
+     $               ,tr4z1(lx1,ly1,lz1,lelv)
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)
@@ -933,9 +945,9 @@ C           enddo
           if (ldim == 2) call vdot2  (w1_d,vx_d,vy_d,tx_d,ty_d,n_d) !Term 2
           if (ldim == 3) 
      $       call vdot3  (w1_d,vx_d,vy_d,vz_d,tx_d,ty_d,tz_d,n_d) !Term 2
+          call col2(w1_d,bmd,n_d)  
           call copy   (tr2x,w1_d,n_d)
           call cmult  (tr2x,-1.0,n_d)
-          call col2(w1_d,bmd,n_d)
           ! Add to total forcing
           call add2   (wsx_d,w1_d,n_d)
 C           call add2   (wsx,w1,n)
@@ -945,9 +957,9 @@ C           call add2   (wsx,w1,n)
           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) !Term 4
           if (ldim == 3) 
      $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) !Term 4
+          call col2(w1_d,bmd,n_d)  
           call copy   (tr4x,w1_d,n_d)
           call cmult  (tr4x,-1.0,n_d)
-          call col2(w1_d,bmd,n_d)
           ! Add to total forcing
           call add2   (wsx_d,w1_d,n_d)
 C           call add2   (wsx,w1,n)
@@ -962,9 +974,9 @@ C           call add2   (wsx,w1,n)
           if (ldim == 2) call vdot2  (w1_d,vx_d,vy_d,tx_d,ty_d,n_d) !Term 2
           if (ldim == 3) 
      $       call vdot3  (w1_d,vx_d,vy_d,vz_d,tx_d,ty_d,tz_d,n_d) !Term 2
+          call col2(w1_d,bmd,n_d)
           call copy   (tr2y,w1_d,n_d)
           call cmult  (tr2y,-1.0,n_d)
-          call col2(w1_d,bmd,n_d)
           ! Add to total forcing
           call add2   (wsy_d,w1_d,n_d)
 C           call add2   (wsy,w1,n)
@@ -974,9 +986,9 @@ C           call add2   (wsy,w1,n)
           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) !Term 4
           if (ldim == 3) 
      $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) !Term 4
+          call col2(w1_d,bmd,n_d)
           call copy   (tr4y,w1_d,n_d)
           call cmult  (tr4y,-1.0,n_d)
-          call col2(w1_d,bmd,n_d)
           ! Add to total forcing
           call add2   (wsy_d,w1_d,n_d)
 C           call add2   (wsy,w1,n)
@@ -992,9 +1004,9 @@ C           call add2   (wsy,w1,n)
           if (ldim == 2) call vdot2  (w1_d,vx_d,vy_d,tx_d,ty_d,n_d) !Term 2
           if (ldim == 3) 
      $       call vdot3  (w1_d,vx_d,vy_d,vz_d,tx_d,ty_d,tz_d,n_d) !Term 2
+          call col2(w1_d,bmd,n_d)
           call copy   (tr2z,w1_d,n_d)
           call cmult  (tr2z,-1.0,n_d)
-          call col2(w1_d,bmd,n_d)
           ! Add to total forcing
           call add2   (wsz_d,w1_d,n_d)
 C           call add2   (wsz,w1,n)
@@ -1004,9 +1016,9 @@ C           call add2   (wsz,w1,n)
           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) !Term 4
           if (ldim == 3) 
      $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) !Term 4
+          call col2(w1_d,bmd,n_d)
           call copy   (tr4z,w1_d,n_d)
           call cmult  (tr4z,-1.0,n_d)
-          call col2(w1_d,bmd,n_d)
           ! Add to total forcing
           call add2   (wsz_d,w1_d,n_d)
 C           call add2   (wsz,w1,n)
@@ -1222,6 +1234,27 @@ C           call col2(wsz_d,bmd,n_d)
      $             lx1,lxd,if3d,1)
           enddo
 
+          do iel = 1,nelv
+            call intp_rstd(tr2x1(1,1,1,iel),tr2x(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(tr2y1(1,1,1,iel),tr2y(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(tr2z1(1,1,1,iel),tr2z(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(tr3x1(1,1,1,iel),tr3x(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(tr3y1(1,1,1,iel),tr3y(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(tr3z1(1,1,1,iel),tr3z(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(tr4x1(1,1,1,iel),tr4x(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(tr4y1(1,1,1,iel),tr4y(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(tr4z1(1,1,1,iel),tr4z(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+          enddo
+
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! multiply wsx,wsy,wsz by -rho
           call opcmult(wsx,wsy,wsz,-1.0)
@@ -1351,6 +1384,10 @@ C C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 -
         call add2 (winty,T1_rhs_y,n)
         call add2 (wintz,T1_rhs_z,n)
 
+        call copy   (tr1x,T1_rhs_x,n)
+        call copy   (tr1y,T1_rhs_y,n)
+        call copy   (tr1z,T1_rhs_z,n)
+
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
 C       call oprzero(psix,psiy,psiz)
 C       call oprzero(wsx,wsy,wsz)
@@ -1367,10 +1404,10 @@ c     WALL ENRICHMENT...END
          call add3 (vx_,vx,psix,n) !calculate actual velocity
          call outpost(psix,psiy,psiz,vx_,t,'enr')
 C          call outpost(psix,gpsix_y,psiz,vx_,t,'enr')
-C          call outpost(tr1x,tr1y,tr1z,vx_,t,'Tr1')
-C          call outpost(tr2x,tr2y,tr2z,vx_,t,'Tr2')
-C          call outpost(tr3x,tr3y,tr3z,vx_,t,'Tr3')
-C          call outpost(tr4x,tr4y,tr4z,vx_,t,'Tr4')
+         call outpost(tr1x,tr1y,tr1z,vx_,t,'Tr1')
+         call outpost(tr2x,tr2y,tr2z,vx_,t,'Tr2')
+         call outpost(tr3x,tr3y,tr3z,vx_,t,'Tr3')
+         call outpost(tr4x,tr4y,tr4z,vx_,t,'Tr4')
 C          ifto = .true.
 C          call outpost(wsx,wsy,wsz,term3x,convx,'src')
 C          ifto = .false.
