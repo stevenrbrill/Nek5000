@@ -1234,6 +1234,7 @@ C           call col2(wsz_d,bmd,n_d)
      $             lx1,lxd,if3d,1)
           enddo
 
+          if (istep.eq.0 .or. ifoutfld) then
           do iel = 1,nelv
             call intp_rstd(tr2x1(1,1,1,iel),tr2x(1,1,1,iel),
      $             lx1,lxd,if3d,1)
@@ -1254,6 +1255,7 @@ C           call col2(wsz_d,bmd,n_d)
             call intp_rstd(tr4z1(1,1,1,iel),tr4z(1,1,1,iel),
      $             lx1,lxd,if3d,1)
           enddo
+          endif
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! multiply wsx,wsy,wsz by -rho
@@ -1384,9 +1386,11 @@ C C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 -
         call add2 (winty,T1_rhs_y,n)
         call add2 (wintz,T1_rhs_z,n)
 
+        if (istep.eq.0 .or. ifoutfld) then
         call copy   (tr1x,T1_rhs_x,n)
         call copy   (tr1y,T1_rhs_y,n)
         call copy   (tr1z,T1_rhs_z,n)
+        endif
 
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
 C       call oprzero(psix,psiy,psiz)
