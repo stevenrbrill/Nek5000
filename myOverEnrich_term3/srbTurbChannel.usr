@@ -931,6 +931,7 @@ C           enddo
           ! comp_en_F = 1 ! This loop shouldn't be here. you always need it
           ! compute forcing terms in 3 directions
           call oprzero(wsx,wsy,wsz)
+          call oprzero_d(wsx_d,wsy_d,wsz_d)
           call oprzero(wintx,winty,wintz)
 
 C           call add2   (wsx,tau_w,n)
