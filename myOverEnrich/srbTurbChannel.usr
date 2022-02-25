@@ -642,7 +642,7 @@ C       if (time.lt.50) then
 
         call set_dealias_rx
 
-        call oprzero(psix,psiy,psiz)
+C         call oprzero(psix,psiy,psiz)
         call oprzero_d(psix_d,psiy_d,psiz_d)
         call oprzero_d(gpsix_x,gpsix_y,gpsix_z)
         call oprzero_d(gpsiy_x,gpsiy_y,gpsiy_z)
