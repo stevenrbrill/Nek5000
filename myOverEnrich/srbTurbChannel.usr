@@ -638,10 +638,17 @@ C       if (time.lt.50) then
         call oprzero_d(rxmd,rymd,rzmd)
         call oprzero_d(sxmd,symd,szmd)
         call oprzero_d(txmd,tymd,tzmd)
-
       else
 
         call set_dealias_rx
+
+        call oprzero(psix,psiy,psiz)
+        call oprzero_d(psix_d,psiy_d,psiz_d)
+        call oprzero_d(gpsix_x,gpsix_y,gpsix_z)
+        call oprzero_d(gpsiy_x,gpsiy_y,gpsiy_z)
+        call oprzero_d(gpsiz_x,gpsiz_y,gpsiz_z)
+        call oprzero_d(txx,txy,txz)
+        call oprzero_d(vx_d,vy_d,vz_d)
             
         if (comp_psi .ne. 1) then
 C           if (use_default .eq. 1) then
@@ -929,15 +936,20 @@ C           enddo
           ! compute forcing terms in 3 directions
           call oprzero(wsx,wsy,wsz)
           call oprzero_d(wsx_d,wsy_d,wsz_d)
+          call oprzero(wintx,winty,wintz)
 
-        call oprzero_d(tr1x,tr1y,tr1z)
-        call oprzero_d(tr2x,tr2y,tr2z)
-        call oprzero_d(tr3x,tr3y,tr3z)
-        call oprzero_d(tr4x,tr4y,tr4z)
-        call oprzero(tr1x1,tr1y1,tr1z1)
-        call oprzero(tr2x1,tr2y1,tr2z1)
-        call oprzero(tr3x1,tr3y1,tr3z1)
-        call oprzero(tr4x1,tr4y1,tr4z1)
+          call oprzero_d(tx_d,ty_d,tz_d)
+          call rzero(w1_d,n_d)
+          call oprzero_d(txx,txy,txz)
+
+          call oprzero_d(tr1x,tr1y,tr1z)
+          call oprzero_d(tr2x,tr2y,tr2z)
+          call oprzero_d(tr3x,tr3y,tr3z)
+          call oprzero_d(tr4x,tr4y,tr4z)
+          call oprzero(tr1x1,tr1y1,tr1z1)
+          call oprzero(tr2x1,tr2y1,tr2z1)
+          call oprzero(tr3x1,tr3y1,tr3z1)
+          call oprzero(tr4x1,tr4y1,tr4z1)
 
           ! ----------------------------------------------------------------
           ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
