@@ -1040,6 +1040,13 @@ C          call outpost(psix,gpsix_y,psiz,vx_,t,'enr')
          call outpost(tr2x,tr2y,tr2z,vx_,t,'Tr2')
          call outpost(tr3x,tr3y,tr3z,vx_,t,'Tr3')
          call outpost(tr4x,tr4y,tr4z,vx_,t,'Tr4')
+         call outpost(gpsix_x,gpsix_y,gpsix_z,vx_,t,'gpsi')
+         call gradm1 (txx,txy,txz,vx)
+         call outpost(txx,txy,txz,vx,t,'dudx')
+         call gradm1 (txx,txy,txz,vy)
+         call outpost(txx,txy,txz,vy,t,'dvdx')
+         call gradm1 (txx,txy,txz,vz)
+         call outpost(txx,txy,txz,vz,t,'dwdx')
 C          ifto = .true.
 C          call outpost(wsx,wsy,wsz,term3x,convx,'src')
 C          ifto = .false.
