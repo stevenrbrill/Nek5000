@@ -481,6 +481,9 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save intp_h2
       integer comp_phi_grad
       save comp_phi_grad
+      integer comp_phi
+      save comp_phi
+      integer ixd, iyd, izd, ibd
       integer nb, nq
       common /phigrad/ dpdr(lxd*lyd*lzd,lx1*ly1*lz1)
      $                ,dpds(lxd*lyd*lzd,lx1*ly1*lz1)
@@ -488,6 +491,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $                ,dpdx(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
      $                ,dpdy(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
      $                ,dpdz(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
+     $                ,phis(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
                                !(nb,nq)
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /y_ends/ bot_y, top_y
@@ -950,6 +954,41 @@ C           enddo
           call oprzero(tr2x1,tr2y1,tr2z1)
           call oprzero(tr3x1,tr3y1,tr3z1)
           call oprzero(tr4x1,tr4y1,tr4z1)
+
+          !-----------------------------------------------------------------
+          ! Compute phi at quadrature points
+          if (comp_phi .ne. 1) then
+            call rzero(phis,lx1*ly1*lz1*lxd*lyd*lzd*lelv)
+            call rzero(srb_temp,lx1*ly1*lz1)
+            call rzero(srb_temp_d,lxd*lyd*lzd)
+            iz_end = lz1
+            if (ldim .eq. 2) then
+              iz_end = 1
+            endif
+            do iz = 1,iz_end
+              do iy = 1,ly1
+                do ix = 1,lx1
+                  ib = (iz-1)*lx1*ly1 + (iy-1)*(lx1) + ix
+                  srb_temp(ix,iy,iz,1) = 1
+                  call intp_rstd(srb_temp_d,srb_temp,lx1,lxd,if3d,0)
+
+                  ! Copy to phis
+                  do iz2 = 1,lzd
+                    do iy2 = 1,lyd
+                      do ix2 = 1,lxd
+                        ibd = (iz2-1)*lxd*lyd + (iy2-1)*(lxd) + ix2
+                         phis(ib,ibd,1) = srb_temp_d(ix2,iy2,iz2,1)
+                      enddo
+                    enddo  
+                  enddo
+
+                  srb_temp(ix,iy,iz,1) = 0   
+                enddo
+              enddo
+            enddo
+
+            comp_phi = 1
+          endif 
 
           ! ----------------------------------------------------------------
           ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
