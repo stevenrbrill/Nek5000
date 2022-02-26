@@ -1006,10 +1006,14 @@ C           enddo
           if (ldim == 3) 
      $       call vdot3  (w1_d,vx_d,vy_d,vz_d,tx_d,ty_d,tz_d,n_d) !Term 2
           call col2(w1_d,bmd,n_d)  
-          call copy   (tr2x,w1_d,n_d)
-          call cmult  (tr2x,-1.0,n_d)
+
+          do iel = 1,nelv
+            call mxm(phis(1,1,1),nb,w1_d(1,1,1,iel),nq,w1(1,1,1,iel),1)
+          enddo
+          call copy   (tr2x1,w1,n)
+          call cmult  (tr2x1,-1.0,n)
           ! Add to total forcing
-          call add2   (wsx_d,w1_d,n_d)
+          call add2   (wintx,w1,n)
 C           call add2   (wsx,w1,n)
 
           ! T^psi,2 or dot(psi,gpsi_x)
@@ -1017,11 +1021,15 @@ C           call add2   (wsx,w1,n)
           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) !Term 4
           if (ldim == 3) 
      $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) !Term 4
-          call col2(w1_d,bmd,n_d)  
-          call copy   (tr4x,w1_d,n_d)
-          call cmult  (tr4x,-1.0,n_d)
+          call col2(w1_d,bmd,n_d)
+
+          do iel = 1,nelv
+            call mxm(phis(1,1,1),nb,w1_d(1,1,1,iel),nq,w1(1,1,1,iel),1)
+          enddo  
+          call copy   (tr4x1,w1,n)
+          call cmult  (tr4x1,-1.0,n)
           ! Add to total forcing
-          call add2   (wsx_d,w1_d,n_d)
+          call add2   (wintx,w1,n)
 C           call add2   (wsx,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1035,10 +1043,14 @@ C           call add2   (wsx,w1,n)
           if (ldim == 3) 
      $       call vdot3  (w1_d,vx_d,vy_d,vz_d,tx_d,ty_d,tz_d,n_d) !Term 2
           call col2(w1_d,bmd,n_d)
-          call copy   (tr2y,w1_d,n_d)
-          call cmult  (tr2y,-1.0,n_d)
+
+          do iel = 1,nelv
+            call mxm(phis(1,1,1),nb,w1_d(1,1,1,iel),nq,w1(1,1,1,iel),1)
+          enddo
+          call copy   (tr2y1,w1,n)
+          call cmult  (tr2y1,-1.0,n)
           ! Add to total forcing
-          call add2   (wsy_d,w1_d,n_d)
+          call add2   (winty,w1,n)
 C           call add2   (wsy,w1,n)
 
           ! T^psi,2 or dot(psi,gpsi_y)
@@ -1047,10 +1059,14 @@ C           call add2   (wsy,w1,n)
           if (ldim == 3) 
      $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) !Term 4
           call col2(w1_d,bmd,n_d)
-          call copy   (tr4y,w1_d,n_d)
-          call cmult  (tr4y,-1.0,n_d)
+
+          do iel = 1,nelv
+            call mxm(phis(1,1,1),nb,w1_d(1,1,1,iel),nq,w1(1,1,1,iel),1)
+          enddo
+          call copy   (tr4y1,w1,n)
+          call cmult  (tr4y1,-1.0,n)
           ! Add to total forcing
-          call add2   (wsy_d,w1_d,n_d)
+          call add2   (winty,w1,n)
 C           call add2   (wsy,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1065,10 +1081,14 @@ C           call add2   (wsy,w1,n)
           if (ldim == 3) 
      $       call vdot3  (w1_d,vx_d,vy_d,vz_d,tx_d,ty_d,tz_d,n_d) !Term 2
           call col2(w1_d,bmd,n_d)
-          call copy   (tr2z,w1_d,n_d)
-          call cmult  (tr2z,-1.0,n_d)
+
+          do iel = 1,nelv
+            call mxm(phis(1,1,1),nb,w1_d(1,1,1,iel),nq,w1(1,1,1,iel),1)
+          enddo
+          call copy   (tr2z1,w1,n)
+          call cmult  (tr2z1,-1.0,n)
           ! Add to total forcing
-          call add2   (wsz_d,w1_d,n_d)
+          call add2   (wintz,w1,n)
 C           call add2   (wsz,w1,n)
 
           ! T^psi,2 or dot(psi,gpsi_z)
@@ -1077,10 +1097,14 @@ C           call add2   (wsz,w1,n)
           if (ldim == 3) 
      $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) !Term 4
           call col2(w1_d,bmd,n_d)
-          call copy   (tr4z,w1_d,n_d)
-          call cmult  (tr4z,-1.0,n_d)
+
+          do iel = 1,nelv
+            call mxm(phis(1,1,1),nb,w1_d(1,1,1,iel),nq,w1(1,1,1,iel),1)
+          enddo
+          call copy   (tr4z1,w1,n)
+          call cmult  (tr4z1,-1.0,n)
           ! Add to total forcing
-          call add2   (wsz_d,w1_d,n_d)
+          call add2   (wintz,w1,n)
 C           call add2   (wsz,w1,n)
 
           ! ----------------------------------------------------------------
