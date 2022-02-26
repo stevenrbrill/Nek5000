@@ -957,6 +957,12 @@ C           enddo
 
           !-----------------------------------------------------------------
           ! Compute phi at quadrature points
+          nb = lx1*ly1
+          nq = lxd*lyd
+          if (ldim .eq. 3) then
+            nb = nb*lz1
+            nq = nq*lzd
+          endif
           if (comp_phi .ne. 1) then
             call rzero(phis,lx1*ly1*lz1*lxd*lyd*lzd*lelv)
             call rzero(srb_temp,lx1*ly1*lz1)
@@ -1168,10 +1174,14 @@ C           call gradm1 (tx,ty,tz,vx)
             enddo
           enddo
 
-          call copy   (tr3x,w1_d,n_d)
-          call cmult  (tr3x,-1.0,n_d)
+          do iel = 1,nelv
+            call mxm(phis(1,1,1),nb,w1_d(1,1,1,iel),nq,w1(1,1,1,iel),1)
+          enddo
+
+          call copy   (tr3x1,w1,n)
+          call cmult  (tr3x1,-1.0,n)
           ! Add to total forcing
-          call add2   (wsx_d,w1_d,n_d)
+          call add2   (wintx,w1,n)
 C           call add2   (wsx,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1232,10 +1242,14 @@ C           call gradm1 (tx,ty,tz,vy)
             enddo
           enddo
 
-          call copy   (tr3y,w1_d,n_d)
-          call cmult  (tr3y,-1.0,n_d)
+          do iel = 1,nelv
+            call mxm(phis(1,1,1),nb,w1_d(1,1,1,iel),nq,w1(1,1,1,iel),1)
+          enddo
+
+          call copy   (tr3y1,w1,n)
+          call cmult  (tr3y1,-1.0,n)
           ! Add to total forcing
-          call add2   (wsy_d,w1_d,n_d)
+          call add2   (winty,w1,n)
 C           call add2   (wsy,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1295,11 +1309,15 @@ C           call gradm1 (tx,ty,tz,vz)
               enddo
             enddo
           enddo
-          
-          call copy   (tr3z,w1_d,n_d)
-          call cmult  (tr3z,-1.0,n_d)
+
+          do iel = 1,nelv
+            call mxm(phis(1,1,1),nb,w1_d(1,1,1,iel),nq,w1(1,1,1,iel),1)
+          enddo
+
+          call copy   (tr3z1,w1,n)
+          call cmult  (tr3z1,-1.0,n)
           ! Add to total forcing
-          call add2   (wsz_d,w1_d,n_d)
+          call add2   (wintz,w1,n)
 C           call add2   (wsz,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1309,46 +1327,49 @@ C           call col2(wsy_d,bmd,n_d)
 C           call col2(wsz_d,bmd,n_d)
 
           ! Revert back to non-overintegrated
-          do iel = 1,nelv
-            call intp_rstd(wsx(1,1,1,iel),wsx_d(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(wsy(1,1,1,iel),wsy_d(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(wsz(1,1,1,iel),wsz_d(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-          enddo
+C           do iel = 1,nelv
+C             call intp_rstd(wsx(1,1,1,iel),wsx_d(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(wsy(1,1,1,iel),wsy_d(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(wsz(1,1,1,iel),wsz_d(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C           enddo
 
-          if (istep.eq.0 .or. ifoutfld) then
-          do iel = 1,nelv
-            call intp_rstd(tr2x1(1,1,1,iel),tr2x(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(tr2y1(1,1,1,iel),tr2y(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(tr2z1(1,1,1,iel),tr2z(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(tr3x1(1,1,1,iel),tr3x(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(tr3y1(1,1,1,iel),tr3y(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(tr3z1(1,1,1,iel),tr3z(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(tr4x1(1,1,1,iel),tr4x(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(tr4y1(1,1,1,iel),tr4y(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(tr4z1(1,1,1,iel),tr4z(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-          enddo
-          endif
+C           if (istep.eq.0 .or. ifoutfld) then
+C           do iel = 1,nelv
+C             call intp_rstd(tr2x1(1,1,1,iel),tr2x(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(tr2y1(1,1,1,iel),tr2y(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(tr2z1(1,1,1,iel),tr2z(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(tr3x1(1,1,1,iel),tr3x(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(tr3y1(1,1,1,iel),tr3y(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(tr3z1(1,1,1,iel),tr3z(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(tr4x1(1,1,1,iel),tr4x(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(tr4y1(1,1,1,iel),tr4y(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(tr4z1(1,1,1,iel),tr4z(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C           enddo
+C           endif
 
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! multiply wsx,wsy,wsz by -rho
-          call opcmult(wsx,wsy,wsz,-1.0)
-          call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! multiply wsx,wsy,wsz by -rho
+C           call opcmult(wsx,wsy,wsz,-1.0)
+C           call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
 
-          ! Since we already did the integration, add to preintegrated array
-          call opcopy(wintx,winty,wintz,wsx,wsy,wsz)
-          call opzero(wsx,wsy,wsz)
+C           ! Since we already did the integration, add to preintegrated array
+C           call opcopy(wintx,winty,wintz,wsx,wsy,wsz)
+C           call opzero(wsx,wsy,wsz)
+
+          call opcmult(wintx,winty,wintz,-1.0)
+          call opcolv (wintx,winty,wintz,vtrans(1,1,1,1,1))
         endif
 
         ! Compute T1 (viscous enrichment term)
