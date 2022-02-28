@@ -1037,9 +1037,9 @@ C           call add2   (wsz,w1,n)
             call intp_rstd(wsz(1,1,1,iel),wsz_d(1,1,1,iel),
      $             lx1,lxd,if3d,1)
           enddo
-          call add2(wintx, wsx, n_d)
-          call add2(winty, wsy, n_d)  
-          call add2(wintz, wsz, n_d)    
+          call add2(wintx, wsx, n)
+          call add2(winty, wsy, n)  
+          call add2(wintz, wsz, n)    
           call oprzero(wsx,wsy,wsz)
 
           ! ----------------------------------------------------------------
@@ -1246,9 +1246,9 @@ C           call add2   (wsz,w1,n)
      $             lx1,lxd,if3d,1)
           enddo
 
-          call add2(wintx, wsx, n_d)
-          call add2(winty, wsy, n_d)  
-          call add2(wintz, wsz, n_d)    
+          call add2(wintx, wsx, n)
+          call add2(winty, wsy, n)  
+          call add2(wintz, wsz, n)    
           call oprzero(wsx,wsy,wsz)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
