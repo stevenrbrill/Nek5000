@@ -1308,12 +1308,12 @@ C           call col2(wsz_d,bmd,n_d)
      $             lx1,lxd,if3d,1)
             call intp_rstd(tr3z1(1,1,1,iel),tr3z(1,1,1,iel),
      $             lx1,lxd,if3d,1)
-            call intp_rstd(tr4x1(1,1,1,iel),tr4x(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(tr4y1(1,1,1,iel),tr4y(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(tr4z1(1,1,1,iel),tr4z(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
+C             call intp_rstd(tr4x1(1,1,1,iel),tr4x(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(tr4y1(1,1,1,iel),tr4y(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(tr4z1(1,1,1,iel),tr4z(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
           enddo
           endif
 
