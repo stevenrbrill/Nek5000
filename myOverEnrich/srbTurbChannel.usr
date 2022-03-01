@@ -1092,7 +1092,7 @@ C           call gradm1 (tx,ty,tz,vx)
      $                   (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
           call col2(w1_d,bmd,n_d)  
 
-          call copy   (tr3x,txx,n_d)
+          call copy   (tr3x,tx_d,n_d)
           call cmult  (tr3x,-1.0,n_d)
           ! Add to total forcing
 C           call add2   (wsx_d,w1_d,n_d)
@@ -1142,7 +1142,7 @@ C           call gradm1 (tx,ty,tz,vy)
      $                   (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
           call col2(w1_d,bmd,n_d)  
 
-          call copy   (tr3y,txx,n_d)
+          call copy   (tr3y,tx_d,n_d)
           call cmult  (tr3y,-1.0,n_d)
           ! Add to total forcing
 C           call add2   (wsy_d,w1_d,n_d)
@@ -1192,7 +1192,7 @@ C           call gradm1 (tx,ty,tz,vz)
      $                   (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
           call col2(w1_d,bmd,n_d)
 
-          call copy   (tr3z,txx,n_d)
+          call copy   (tr3z,tx_d,n_d)
           call cmult  (tr3z,-1.0,n_d)
           ! Add to total forcing
 C           call add2   (wsz_d,w1_d,n_d)
