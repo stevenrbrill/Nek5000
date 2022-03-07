@@ -40,9 +40,15 @@ c-----------------------------------------------------------------------
      $               ,psiz(lx1,ly1,lz1,lelv)
 
       NTOT1=lx1*ly1*lz1*NELV
-      CALL SUB2(vx,psix,NTOT1)
-      CALL SUB2(vy,psiy,NTOT1)
-      CALL SUB2(vz,psiz,NTOT1)
+C      CALL SUB2(vx,psix,NTOT1)
+C      CALL SUB2(vy,psiy,NTOT1)
+C      CALL SUB2(vz,psiz,NTOT1)
+
+      do i = 1,NTOT1
+        vx(i,1,1,1) = vx(i,1,1,1) - psix(i,1,1,1)
+        vy(i,1,1,1) = vy(i,1,1,1) - psiy(i,1,1,1)
+        vz(i,1,1,1) = vz(i,1,1,1) - psiz(i,1,1,1)
+      enddo
 
       return
       end
@@ -71,9 +77,15 @@ c-----------------------------------------------------------------------
      $               ,psiz(lx1,ly1,lz1,lelv)
 
       NTOT1=lx1*ly1*lz1*NELV
-      CALL ADD2(vx,psix,NTOT1)
-      CALL ADD2(vy,psiy,NTOT1)
-      CALL ADD2(vz,psiz,NTOT1)
+C      CALL ADD2(vx,psix,NTOT1)
+C      CALL ADD2(vy,psiy,NTOT1)
+C      CALL ADD2(vz,psiz,NTOT1)
+
+      do i = 1,NTOT1
+        vx(i,1,1,1) = vx(i,1,1,1) + psix(i,1,1,1)
+        vy(i,1,1,1) = vy(i,1,1,1) + psiy(i,1,1,1)
+        vz(i,1,1,1) = vz(i,1,1,1) + psiz(i,1,1,1)
+      enddo
 
       return
       end
@@ -643,12 +655,34 @@ C       if (time.lt.50) then
         call set_dealias_rx
 
 C         call oprzero(psix,psiy,psiz)
-        call oprzero_d(psix_d,psiy_d,psiz_d)
-        call oprzero_d(gpsix_x,gpsix_y,gpsix_z)
-        call oprzero_d(gpsiy_x,gpsiy_y,gpsiy_z)
-        call oprzero_d(gpsiz_x,gpsiz_y,gpsiz_z)
-        call oprzero_d(txx,txy,txz)
-        call oprzero_d(vx_d,vy_d,vz_d)
+C         call oprzero_d(psix_d,psiy_d,psiz_d)
+C         call oprzero_d(gpsix_x,gpsix_y,gpsix_z)
+C         call oprzero_d(gpsiy_x,gpsiy_y,gpsiy_z)
+C         call oprzero_d(gpsiz_x,gpsiz_y,gpsiz_z)
+C         call oprzero_d(txx,txy,txz)
+C         call oprzero_d(vx_d,vy_d,vz_d)
+
+        do i = 1,n_d 
+            psix_d(i,1,1,1) = 0.0
+            psiy_d(i,1,1,1) = 0.0
+            psiz_d(i,1,1,1) = 0.0
+            gpsix_x(i,1,1,1) = 0.0
+            gpsix_y(i,1,1,1) = 0.0
+            gpsix_z(i,1,1,1) = 0.0
+            gpsiy_x(i,1,1,1) = 0.0
+            gpsiy_y(i,1,1,1) = 0.0
+            gpsiy_z(i,1,1,1) = 0.0
+            gpsiz_x(i,1,1,1) = 0.0
+            gpsiz_y(i,1,1,1) = 0.0
+            gpsiz_z(i,1,1,1) = 0.0
+            txx(i,1,1,1) = 0.0
+            txy(i,1,1,1) = 0.0
+            txz(i,1,1,1) = 0.0
+            vx_d(i,1,1,1) = 0.0
+            vy_d(i,1,1,1) = 0.0
+            vz_d(i,1,1,1) = 0.0
+        enddo
+
             
         if (comp_psi .ne. 1) then
 C           if (use_default .eq. 1) then
