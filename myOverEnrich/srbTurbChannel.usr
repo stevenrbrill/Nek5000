@@ -968,22 +968,67 @@ C           enddo
 
           ! comp_en_F = 1 ! This loop shouldn't be here. you always need it
           ! compute forcing terms in 3 directions
-          call oprzero(wsx,wsy,wsz)
-          call oprzero_d(wsx_d,wsy_d,wsz_d)
-          call oprzero(wintx,winty,wintz)
+C           call oprzero(wsx,wsy,wsz)
+C           call oprzero(wintx,winty,wintz)
+C           call oprzero(tr1x1,tr1y1,tr1z1)
+C           call oprzero(tr2x1,tr2y1,tr2z1)
+C           call oprzero(tr3x1,tr3y1,tr3z1)
+C           call oprzero(tr4x1,tr4y1,tr4z1)
 
-          call oprzero_d(tx_d,ty_d,tz_d)
-          call rzero(w1_d,n_d)
-          call oprzero_d(txx,txy,txz)
+          do i = 1,n
+            wsx(i,1,1,1) = 0.0
+            wsy(i,1,1,1) = 0.0
+            wsz(i,1,1,1) = 0.0
+            wintx(i,1,1,1) = 0.0
+            winty(i,1,1,1) = 0.0
+            wintz(i,1,1,1) = 0.0
+            tr1x1(i,1,1,1) = 0.0
+            tr1y1(i,1,1,1) = 0.0
+            tr1z1(i,1,1,1) = 0.0
+            tr2x1(i,1,1,1) = 0.0
+            tr2y1(i,1,1,1) = 0.0
+            tr2z1(i,1,1,1) = 0.0
+            tr3x1(i,1,1,1) = 0.0
+            tr3y1(i,1,1,1) = 0.0
+            tr3z1(i,1,1,1) = 0.0
+            tr4x1(i,1,1,1) = 0.0
+            tr4y1(i,1,1,1) = 0.0
+            tr4z1(i,1,1,1) = 0.0
+          enddo
 
-          call oprzero_d(tr1x,tr1y,tr1z)
-          call oprzero_d(tr2x,tr2y,tr2z)
-          call oprzero_d(tr3x,tr3y,tr3z)
-          call oprzero_d(tr4x,tr4y,tr4z)
-          call oprzero(tr1x1,tr1y1,tr1z1)
-          call oprzero(tr2x1,tr2y1,tr2z1)
-          call oprzero(tr3x1,tr3y1,tr3z1)
-          call oprzero(tr4x1,tr4y1,tr4z1)
+C           call oprzero_d(wsx_d,wsy_d,wsz_d)
+C           call oprzero_d(tx_d,ty_d,tz_d)
+C           call rzero(w1_d,n_d)
+C           call oprzero_d(txx,txy,txz)
+C           call oprzero_d(tr1x,tr1y,tr1z)
+C           call oprzero_d(tr2x,tr2y,tr2z)
+C           call oprzero_d(tr3x,tr3y,tr3z)
+C           call oprzero_d(tr4x,tr4y,tr4z)
+
+          do i = 1,n_d
+            wsx_d(i,1,1,1) = 0.0
+            wsy_d(i,1,1,1) = 0.0
+            wsz_d(i,1,1,1) = 0.0
+            tx_d(i,1,1,1) = 0.0
+            ty_d(i,1,1,1) = 0.0
+            tz_d(i,1,1,1) = 0.0
+            w1_d(i,1,1,1) = 0.0
+            txx(i,1,1,1) = 0.0
+            txy(i,1,1,1) = 0.0
+            txz(i,1,1,1) = 0.0
+            tr1x(i,1,1,1) = 0.0
+            tr1y(i,1,1,1) = 0.0
+            tr1z(i,1,1,1) = 0.0
+            tr2x(i,1,1,1) = 0.0
+            tr2y(i,1,1,1) = 0.0
+            tr2z(i,1,1,1) = 0.0
+            tr3x(i,1,1,1) = 0.0
+            tr3y(i,1,1,1) = 0.0
+            tr3z(i,1,1,1) = 0.0
+            tr4x(i,1,1,1) = 0.0
+            tr4y(i,1,1,1) = 0.0
+            tr4z(i,1,1,1) = 0.0
+          enddo
 
           ! ----------------------------------------------------------------
           ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
@@ -1316,10 +1361,19 @@ C           call invcol2(tr3x1,bm1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! multiply wsx,wsy,wsz by -rho
-          call opcmult(wsx,wsy,wsz,-1.0)
-          call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
-          call opcmult(wintx,winty,wintz,-1.0)
-          call opcolv (wintx,winty,wintz,vtrans(1,1,1,1,1))
+C           call opcmult(wsx,wsy,wsz,-1.0)
+C           call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
+C           call opcmult(wintx,winty,wintz,-1.0)
+C           call opcolv (wintx,winty,wintz,vtrans(1,1,1,1,1))
+
+          do i = 1,n
+            wsx(i,1,1,1) = -1.0*wsx(i,1,1,1)*vtrans(i,1,1,1,1)
+            wsy(i,1,1,1) = -1.0*wsy(i,1,1,1)*vtrans(i,1,1,1,1)
+            wsz(i,1,1,1) = -1.0*wsz(i,1,1,1)*vtrans(i,1,1,1,1)
+            wintx(i,1,1,1) = -1.0*wintx(i,1,1,1)*vtrans(i,1,1,1,1)
+            winty(i,1,1,1) = -1.0*winty(i,1,1,1)*vtrans(i,1,1,1,1)
+            wintz(i,1,1,1) = -1.0*wintz(i,1,1,1)*vtrans(i,1,1,1,1)
+          enddo
 
           ! Since we already did the integration, add to preintegrated array
 C           call opcopy(wintx,winty,wintz,wsx,wsy,wsz)
