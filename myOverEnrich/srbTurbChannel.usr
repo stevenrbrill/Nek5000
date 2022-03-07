@@ -611,8 +611,8 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
          call rzero(uti,n)
          do iel = 1, nelv
           if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-          do ix = 1, lx1
-            do iz = 1, lz1
+          do iz = 1, lz1
+            do ix = 1, lx1
                if (flag(iel) .eq. 1) then
                  iy = ly1
                else
@@ -663,9 +663,9 @@ C           endif
           do iel = 1, nelv
             call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),
      $         lx1,lxd,if3d,0) ! 0 --> fwd
-            do ix = 1,lxd
+            do iz = 1,lzd
               do iy = 1,lyd
-                do iz = 1,lzd
+                do ix = 1,lxd
                   ib = (iz-1)*lxd*lyd + (iy-1)*(lxd) + ix
                   bmd(ix,iy,iz,iel) = 
      $               jacmd(ib,iel)*wd(ix)*wd(iy)
@@ -694,8 +694,8 @@ C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 -->
 C             call intp_rstd(vx_d(1,1,1,iel),vx(1,1,1,iel),lx1,lxd,if3d,0)
 C             call intp_rstd(vy_d(1,1,1,iel),vy(1,1,1,iel),lx1,lxd,if3d,0)
 C             call intp_rstd(vz_d(1,1,1,iel),vz(1,1,1,iel),lx1,lxd,if3d,0)
-                do ix = 1,lx1
-                  do iz = 1,lz1
+                do iz = 1,lz1
+                  do ix = 1,lx1
 C                     do iy = 1,ly1
                     ! Get wall distance and y index
                     if (flag(iel) .eq. 1) then
@@ -756,9 +756,9 @@ C                     do iy = 1,ly1
                 iy_ut_match = 1
               endif
               ! Calculate psi at nodes based on u_tau found before
-                do ix = 1,lx1
-                  do iz = 1,lz1
-                    do iy = 1,ly1
+                do iz = 1,lz1
+                  do iy = 1,ly1
+                    do ix = 1,lx1
                       ut_param = uti(ix,iy_ut,iz,iel)
                       if (use_default .eq. 1) then
                         ut_param = utau_ref
@@ -793,9 +793,9 @@ C                     do iy = 1,ly1
 
                 ! Copy psi at overintegration points to correct ordering
                 ! compute gpsi at overintegration points
-                do ix = 1,lxd
-                  do iz = 1,lzd
-                    do iy = 1,lyd
+                do iz = 1,lzd
+                  do iy = 1,lyd
+                    do ix = 1,lxd
                       ut_param = uti_d(ix,iy_ut_match,iz,iel)
                       if (use_default .eq. 1) then
                         ut_param = utau_ref
@@ -817,9 +817,9 @@ C           call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
             call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
      $                    txz(1,1,1,iel),psix_d(1,1,1,iel),lxd,if3d)
-            do ix = 1,lxd
+            do iz = 1,lzd
               do iy = 1,lyd
-                do iz = 1,lzd
+                do ix = 1,lxd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
                   if (if3d) then
                     gpsix_x(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
@@ -1056,9 +1056,9 @@ C           call gradm1 (tx,ty,tz,vx)
             call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
      $                    txz(1,1,1,iel),vx_d(1,1,1,iel),lxd,if3d)
 
-            do ix = 1,lxd
+            do iz = 1,lzd
               do iy = 1,lyd
-                do iz = 1,lzd
+                do ix = 1,lxd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
                   if (if3d) then
                     tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
@@ -1107,9 +1107,9 @@ C           call gradm1 (tx,ty,tz,vy)
             call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
      $                    txz(1,1,1,iel),vy_d(1,1,1,iel),lxd,if3d)
 
-            do ix = 1,lxd
+            do iz = 1,lzd
               do iy = 1,lyd
-                do iz = 1,lzd
+                do ix = 1,lxd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
                   if (if3d) then
                     tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
@@ -1157,9 +1157,9 @@ C           call gradm1 (tx,ty,tz,vz)
             call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
      $                    txz(1,1,1,iel),vz_d(1,1,1,iel),lxd,if3d)
 
-            do ix = 1,lxd
+            do iz = 1,lzd
               do iy = 1,lyd
-                do iz = 1,lzd
+                do ix = 1,lxd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
                   if (if3d) then
                     tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
