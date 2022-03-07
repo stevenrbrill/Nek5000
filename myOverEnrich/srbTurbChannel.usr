@@ -662,25 +662,29 @@ C         call oprzero_d(gpsiz_x,gpsiz_y,gpsiz_z)
 C         call oprzero_d(txx,txy,txz)
 C         call oprzero_d(vx_d,vy_d,vz_d)
 
-        do i = 1,n_d 
-            psix_d(i,1,1,1) = 0.0
-            psiy_d(i,1,1,1) = 0.0
-            psiz_d(i,1,1,1) = 0.0
-            gpsix_x(i,1,1,1) = 0.0
-            gpsix_y(i,1,1,1) = 0.0
-            gpsix_z(i,1,1,1) = 0.0
-            gpsiy_x(i,1,1,1) = 0.0
-            gpsiy_y(i,1,1,1) = 0.0
-            gpsiy_z(i,1,1,1) = 0.0
-            gpsiz_x(i,1,1,1) = 0.0
-            gpsiz_y(i,1,1,1) = 0.0
-            gpsiz_z(i,1,1,1) = 0.0
-            txx(i,1,1,1) = 0.0
-            txy(i,1,1,1) = 0.0
-            txz(i,1,1,1) = 0.0
-            vx_d(i,1,1,1) = 0.0
-            vy_d(i,1,1,1) = 0.0
-            vz_d(i,1,1,1) = 0.0
+        do iel = 1,nelv
+          if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+            do i = 1,lxd*lyd*lzd 
+              psix_d(i,1,1,iel) = 0.0
+              psiy_d(i,1,1,iel) = 0.0
+              psiz_d(i,1,1,iel) = 0.0
+              gpsix_x(i,1,1,iel) = 0.0
+              gpsix_y(i,1,1,iel) = 0.0
+              gpsix_z(i,1,1,iel) = 0.0
+              gpsiy_x(i,1,1,iel) = 0.0
+              gpsiy_y(i,1,1,iel) = 0.0
+              gpsiy_z(i,1,1,iel) = 0.0
+              gpsiz_x(i,1,1,iel) = 0.0
+              gpsiz_y(i,1,1,iel) = 0.0
+              gpsiz_z(i,1,1,iel) = 0.0
+              txx(i,1,1,iel) = 0.0
+              txy(i,1,1,iel) = 0.0
+              txz(i,1,1,iel) = 0.0
+              vx_d(i,1,1,iel) = 0.0
+              vy_d(i,1,1,iel) = 0.0
+              vz_d(i,1,1,iel) = 0.0
+            enddo
+          endif
         enddo
 
             
@@ -975,25 +979,29 @@ C           call oprzero(tr2x1,tr2y1,tr2z1)
 C           call oprzero(tr3x1,tr3y1,tr3z1)
 C           call oprzero(tr4x1,tr4y1,tr4z1)
 
-          do i = 1,n
-            wsx(i,1,1,1) = 0.0
-            wsy(i,1,1,1) = 0.0
-            wsz(i,1,1,1) = 0.0
-            wintx(i,1,1,1) = 0.0
-            winty(i,1,1,1) = 0.0
-            wintz(i,1,1,1) = 0.0
-            tr1x1(i,1,1,1) = 0.0
-            tr1y1(i,1,1,1) = 0.0
-            tr1z1(i,1,1,1) = 0.0
-            tr2x1(i,1,1,1) = 0.0
-            tr2y1(i,1,1,1) = 0.0
-            tr2z1(i,1,1,1) = 0.0
-            tr3x1(i,1,1,1) = 0.0
-            tr3y1(i,1,1,1) = 0.0
-            tr3z1(i,1,1,1) = 0.0
-            tr4x1(i,1,1,1) = 0.0
-            tr4y1(i,1,1,1) = 0.0
-            tr4z1(i,1,1,1) = 0.0
+          do iel = 1,nelv
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+              do i = 1,lx1*ly1*lz1 
+                wsx(i,1,1,iel) = 0.0
+                wsy(i,1,1,iel) = 0.0
+                wsz(i,1,1,iel) = 0.0
+                wintx(i,1,1,iel) = 0.0
+                winty(i,1,1,iel) = 0.0
+                wintz(i,1,1,iel) = 0.0
+                tr1x1(i,1,1,iel) = 0.0
+                tr1y1(i,1,1,iel) = 0.0
+                tr1z1(i,1,1,iel) = 0.0
+                tr2x1(i,1,1,iel) = 0.0
+                tr2y1(i,1,1,iel) = 0.0
+                tr2z1(i,1,1,iel) = 0.0
+                tr3x1(i,1,1,iel) = 0.0
+                tr3y1(i,1,1,iel) = 0.0
+                tr3z1(i,1,1,iel) = 0.0
+                tr4x1(i,1,1,iel) = 0.0
+                tr4y1(i,1,1,iel) = 0.0
+                tr4z1(i,1,1,iel) = 0.0
+              enddo
+            endif
           enddo
 
 C           call oprzero_d(wsx_d,wsy_d,wsz_d)
@@ -1005,29 +1013,33 @@ C           call oprzero_d(tr2x,tr2y,tr2z)
 C           call oprzero_d(tr3x,tr3y,tr3z)
 C           call oprzero_d(tr4x,tr4y,tr4z)
 
-          do i = 1,n_d
-            wsx_d(i,1,1,1) = 0.0
-            wsy_d(i,1,1,1) = 0.0
-            wsz_d(i,1,1,1) = 0.0
-            tx_d(i,1,1,1) = 0.0
-            ty_d(i,1,1,1) = 0.0
-            tz_d(i,1,1,1) = 0.0
-            w1_d(i,1,1,1) = 0.0
-            txx(i,1,1,1) = 0.0
-            txy(i,1,1,1) = 0.0
-            txz(i,1,1,1) = 0.0
-            tr1x(i,1,1,1) = 0.0
-            tr1y(i,1,1,1) = 0.0
-            tr1z(i,1,1,1) = 0.0
-            tr2x(i,1,1,1) = 0.0
-            tr2y(i,1,1,1) = 0.0
-            tr2z(i,1,1,1) = 0.0
-            tr3x(i,1,1,1) = 0.0
-            tr3y(i,1,1,1) = 0.0
-            tr3z(i,1,1,1) = 0.0
-            tr4x(i,1,1,1) = 0.0
-            tr4y(i,1,1,1) = 0.0
-            tr4z(i,1,1,1) = 0.0
+          do iel = 1,nelv
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+              do i = 1,lxd*lyd*lzd 
+                wsx_d(i,1,1,iel) = 0.0
+                wsy_d(i,1,1,iel) = 0.0
+                wsz_d(i,1,1,iel) = 0.0
+                tx_d(i,1,1,iel) = 0.0
+                ty_d(i,1,1,iel) = 0.0
+                tz_d(i,1,1,iel) = 0.0
+                w1_d(i,1,1,iel) = 0.0
+                txx(i,1,1,iel) = 0.0
+                txy(i,1,1,iel) = 0.0
+                txz(i,1,1,iel) = 0.0
+                tr1x(i,1,1,iel) = 0.0
+                tr1y(i,1,1,iel) = 0.0
+                tr1z(i,1,1,iel) = 0.0
+                tr2x(i,1,1,iel) = 0.0
+                tr2y(i,1,1,iel) = 0.0
+                tr2z(i,1,1,iel) = 0.0
+                tr3x(i,1,1,iel) = 0.0
+                tr3y(i,1,1,iel) = 0.0
+                tr3z(i,1,1,iel) = 0.0
+                tr4x(i,1,1,iel) = 0.0
+                tr4y(i,1,1,iel) = 0.0
+                tr4z(i,1,1,iel) = 0.0
+              enddo
+            endif
           enddo
 
           ! ----------------------------------------------------------------
@@ -1366,13 +1378,17 @@ C           call opcolv (wsx,wsy,wsz,vtrans(1,1,1,1,1))
 C           call opcmult(wintx,winty,wintz,-1.0)
 C           call opcolv (wintx,winty,wintz,vtrans(1,1,1,1,1))
 
-          do i = 1,n
-            wsx(i,1,1,1) = -1.0*wsx(i,1,1,1)*vtrans(i,1,1,1,1)
-            wsy(i,1,1,1) = -1.0*wsy(i,1,1,1)*vtrans(i,1,1,1,1)
-            wsz(i,1,1,1) = -1.0*wsz(i,1,1,1)*vtrans(i,1,1,1,1)
-            wintx(i,1,1,1) = -1.0*wintx(i,1,1,1)*vtrans(i,1,1,1,1)
-            winty(i,1,1,1) = -1.0*winty(i,1,1,1)*vtrans(i,1,1,1,1)
-            wintz(i,1,1,1) = -1.0*wintz(i,1,1,1)*vtrans(i,1,1,1,1)
+          do iel = 1,nelv
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+              do i = 1,lx1*ly1*lz1 
+            wsx(i,1,1,iel) = -1.0*wsx(i,1,1,iel)*vtrans(i,1,1,iel,1)
+            wsy(i,1,1,iel) = -1.0*wsy(i,1,1,iel)*vtrans(i,1,1,iel,1)
+            wsz(i,1,1,iel) = -1.0*wsz(i,1,1,iel)*vtrans(i,1,1,iel,1)
+            wintx(i,1,1,iel) = -1.0*wintx(i,1,1,iel)*vtrans(i,1,1,iel,1)
+            winty(i,1,1,iel) = -1.0*winty(i,1,1,iel)*vtrans(i,1,1,iel,1)
+            wintz(i,1,1,iel) = -1.0*wintz(i,1,1,iel)*vtrans(i,1,1,iel,1)
+              enddo
+            endif
           enddo
 
           ! Since we already did the integration, add to preintegrated array
