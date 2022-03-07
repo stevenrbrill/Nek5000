@@ -1252,9 +1252,9 @@ C           call col2(wsz_d,bmd,n_d)
             call intp_rstd(wintz(1,1,1,iel),wsz_d(1,1,1,iel),
      $             lx1,lxd,if3d,1)
           enddo
-          call invcol2(wintx,bm1,n)
-          call invcol2(winty,bm1,n)
-          call invcol2(wintz,bm1,n)
+C           call invcol2(wintx,bm1,n)
+C           call invcol2(winty,bm1,n)
+C           call invcol2(wintz,bm1,n)
 
 C           if (istep.eq.0 .or. ifoutfld) then
 C           do iel = 1,nelv
