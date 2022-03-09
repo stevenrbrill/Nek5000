@@ -654,14 +654,6 @@ C       if (time.lt.50) then
 
         call set_dealias_rx
 
-C         call oprzero(psix,psiy,psiz)
-C         call oprzero_d(psix_d,psiy_d,psiz_d)
-C         call oprzero_d(gpsix_x,gpsix_y,gpsix_z)
-C         call oprzero_d(gpsiy_x,gpsiy_y,gpsiy_z)
-C         call oprzero_d(gpsiz_x,gpsiz_y,gpsiz_z)
-C         call oprzero_d(txx,txy,txz)
-C         call oprzero_d(vx_d,vy_d,vz_d)
-
         do iel = 1,nelv
           if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
             do i = 1,lxd*lyd*lzd 
@@ -972,13 +964,6 @@ C           enddo
 
           ! comp_en_F = 1 ! This loop shouldn't be here. you always need it
           ! compute forcing terms in 3 directions
-C           call oprzero(wsx,wsy,wsz)
-C           call oprzero(wintx,winty,wintz)
-C           call oprzero(tr1x1,tr1y1,tr1z1)
-C           call oprzero(tr2x1,tr2y1,tr2z1)
-C           call oprzero(tr3x1,tr3y1,tr3z1)
-C           call oprzero(tr4x1,tr4y1,tr4z1)
-
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
               do i = 1,lx1*ly1*lz1 
@@ -1003,15 +988,6 @@ C           call oprzero(tr4x1,tr4y1,tr4z1)
               enddo
             endif
           enddo
-
-C           call oprzero_d(wsx_d,wsy_d,wsz_d)
-C           call oprzero_d(tx_d,ty_d,tz_d)
-C           call rzero(w1_d,n_d)
-C           call oprzero_d(txx,txy,txz)
-C           call oprzero_d(tr1x,tr1y,tr1z)
-C           call oprzero_d(tr2x,tr2y,tr2z)
-C           call oprzero_d(tr3x,tr3y,tr3z)
-C           call oprzero_d(tr4x,tr4y,tr4z)
 
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
@@ -1045,96 +1021,6 @@ C           call oprzero_d(tr4x,tr4y,tr4z)
           ! ----------------------------------------------------------------
           ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
           ! + Term 4: -rho*dot(psi,gradient(psi))     Should be zero
-
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! M and T2 for x
-          ! M^psi,2 * u or dot(gpsi, u)
-          ! Should be zero in the simple case
-C           call copy (tx_d,gpsix_x,n_d)
-C           call copy (ty_d,gpsix_y,n_d)
-C           call copy (tz_d,gpsix_z,n_d)
-
-C           if (ldim == 2) call vdot2  (w1_d,vx_d,vy_d,tx_d,ty_d,n_d) !Term 2
-C           if (ldim == 3) 
-C      $       call vdot3  (w1_d,vx_d,vy_d,vz_d,tx_d,ty_d,tz_d,n_d) !Term 2
-C           call col2(w1_d,bmd,n_d)  
-C           call copy   (tr2x,w1_d,n_d)
-C           call cmult  (tr2x,-1.0,n_d)
-C           ! Add to total forcing
-C           call add2   (wsx_d,w1_d,n_d)
-C C           call add2   (wsx,w1,n)
-
-C           ! T^psi,2 or dot(psi,gpsi_x)
-C           ! Should be zero in the simple case
-C           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) !Term 4
-C           if (ldim == 3) 
-C      $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) !Term 4
-C           call col2(w1_d,bmd,n_d)  
-C           call copy   (tr4x,w1_d,n_d)
-C           call cmult  (tr4x,-1.0,n_d)
-C           ! Add to total forcing
-C           call add2   (wsx_d,w1_d,n_d)
-C C           call add2   (wsx,w1,n)
-
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! M and T2 for y
-          ! M^psi,2 * v or dot(gpsi, v)
-C           call copy (tx_d,gpsiy_x,n_d)
-C           call copy (ty_d,gpsiy_y,n_d)
-C           call copy (tz_d,gpsiy_z,n_d)
-
-C           if (ldim == 2) call vdot2  (w1_d,vx_d,vy_d,tx_d,ty_d,n_d) !Term 2
-C           if (ldim == 3) 
-C      $       call vdot3  (w1_d,vx_d,vy_d,vz_d,tx_d,ty_d,tz_d,n_d) !Term 2
-C           call col2(w1_d,bmd,n_d)
-C           call copy   (tr2y,w1_d,n_d)
-C           call cmult  (tr2y,-1.0,n_d)
-C           ! Add to total forcing
-C           call add2   (wsy_d,w1_d,n_d)
-C C           call add2   (wsy,w1,n)
-
-C           ! T^psi,2 or dot(psi,gpsi_y)
-C           ! Should be zero in the simple case
-C           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) !Term 4
-C           if (ldim == 3) 
-C      $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) !Term 4
-C           call col2(w1_d,bmd,n_d)
-C           call copy   (tr4y,w1_d,n_d)
-C           call cmult  (tr4y,-1.0,n_d)
-C           ! Add to total forcing
-C           call add2   (wsy_d,w1_d,n_d)
-C C           call add2   (wsy,w1,n)
-
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! M and T2 for z
-          ! M^psi,3 * w or dot(gpsi, w)
-          ! Should be zero in the simple case
-C           call copy (tx_d,gpsiz_x,n_d)
-C           call copy (ty_d,gpsiz_y,n_d)
-C           call copy (tz_d,gpsiz_z,n_d)
-
-C           if (ldim == 2) call vdot2  (w1_d,vx_d,vy_d,tx_d,ty_d,n_d) !Term 2
-C           if (ldim == 3) 
-C      $       call vdot3  (w1_d,vx_d,vy_d,vz_d,tx_d,ty_d,tz_d,n_d) !Term 2
-C           call col2(w1_d,bmd,n_d)
-C           call copy   (tr2z,w1_d,n_d)
-C           call cmult  (tr2z,-1.0,n_d)
-C           ! Add to total forcing
-C           call add2   (wsz_d,w1_d,n_d)
-C C           call add2   (wsz,w1,n)
-
-C           ! T^psi,2 or dot(psi,gpsi_z)
-C           ! Should be zero in the simple case
-C           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) !Term 4
-C           if (ldim == 3) 
-C      $       call vdot3  (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) !Term 4
-C           call col2(w1_d,bmd,n_d)
-C           call copy   (tr4z,w1_d,n_d)
-C           call cmult  (tr4z,-1.0,n_d)
-C           ! Add to total forcing
-C           call add2   (wsz_d,w1_d,n_d)
-C C           call add2   (wsz,w1,n)
-
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
               do i = 1,lxd*lyd*lzd 
@@ -1195,54 +1081,6 @@ C C           call add2   (wsz,w1,n)
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for x
           ! S^psi * u
-          ! Compute grad of u
-C C           call gradm1 (tx,ty,tz,vx)
-C           do iel = 1, nelv
-C             call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
-C      $                    txz(1,1,1,iel),vx_d(1,1,1,iel),lxd,if3d)
-
-C             do iz = 1,lzd
-C               do iy = 1,lyd
-C                 do ix = 1,lxd
-C                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
-C                   if (if3d) then
-C                     tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
-C      $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-C      $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
-C      $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
-C                     ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
-C      $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-C      $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
-C      $                       +tymd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
-C                     tz_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
-C      $                       (rzmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-C      $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
-C      $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))   
-C                   else
-C                     tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
-C      $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-C      $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
-C                     ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
-C      $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-C      $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
-C                     tz_d(ix,iy,iz,iel) = 0.0
-C                   endif
-C                 enddo
-C               enddo
-C             enddo
-C           enddo
-
-C           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
-C           if (ldim == 3) call vdot3  
-C      $                   (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
-C           call col2(w1_d,bmd,n_d)  
-
-C           call copy   (tr3x,w1_d,n_d)
-C           call cmult  (tr3x,-1.0,n_d)
-C           ! Add to total forcing
-C           call add2   (wsx_d,w1_d,n_d)
-C C           call add2   (wsx,w1,n)
-
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
               call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
@@ -1284,53 +1122,6 @@ C C           call add2   (wsx,w1,n)
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for y
           ! S^psi * v
-          ! Compute grad of v
-C C           call gradm1 (tx,ty,tz,vy)
-C           do iel = 1, nelv
-C             call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
-C      $                    txz(1,1,1,iel),vy_d(1,1,1,iel),lxd,if3d)
-
-C             do iz = 1,lzd
-C               do iy = 1,lyd
-C                 do ix = 1,lxd
-C                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
-C                   if (if3d) then
-C                     tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
-C      $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-C      $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
-C      $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
-C                     ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
-C      $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-C      $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
-C      $                       +tymd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
-C                     tz_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
-C      $                       (rzmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-C      $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
-C      $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))   
-C                   else
-C                     tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
-C      $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-C      $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
-C                     ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
-C      $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-C      $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
-C                     tz_d(ix,iy,iz,iel) = 0.0
-C                   endif
-C                 enddo
-C               enddo
-C             enddo
-C           enddo
-C           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
-C           if (ldim == 3) call vdot3  
-C      $                   (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
-C           call col2(w1_d,bmd,n_d)  
-
-C           call copy   (tr3y,w1_d,n_d)
-C           call cmult  (tr3y,-1.0,n_d)
-C           ! Add to total forcing
-C           call add2   (wsy_d,w1_d,n_d)
-C C           call add2   (wsy,w1,n)
-
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
               call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
@@ -1372,53 +1163,6 @@ C C           call add2   (wsy,w1,n)
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for z
           ! S^psi * w
-          ! Compute grad of w
-C C           call gradm1 (tx,ty,tz,vz)
-C           do iel = 1, nelv
-C             call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
-C      $                    txz(1,1,1,iel),vz_d(1,1,1,iel),lxd,if3d)
-
-C             do iz = 1,lzd
-C               do iy = 1,lyd
-C                 do ix = 1,lxd
-C                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
-C                   if (if3d) then
-C                     tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
-C      $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-C      $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
-C      $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
-C                     ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
-C      $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-C      $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
-C      $                       +tymd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
-C                     tz_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
-C      $                       (rzmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-C      $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
-C      $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))   
-C                   else
-C                     tx_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
-C      $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-C      $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
-C                     ty_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
-C      $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
-C      $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
-C                     tz_d(ix,iy,iz,iel) = 0.0
-C                   endif
-C                 enddo
-C               enddo
-C             enddo
-C           enddo
-C           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) 
-C           if (ldim == 3) call vdot3  
-C      $                   (w1_d,psix_d,psiy_d,psiz_d,tx_d,ty_d,tz_d,n_d) 
-C           call col2(w1_d,bmd,n_d)
-
-C           call copy   (tr3z,w1_d,n_d)
-C           call cmult  (tr3z,-1.0,n_d)
-C           ! Add to total forcing
-C           call add2   (wsz_d,w1_d,n_d)
-C C           call add2   (wsz,w1,n)
-
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
               call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
