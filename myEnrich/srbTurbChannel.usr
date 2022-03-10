@@ -991,14 +991,15 @@ C           call add2   (wsx,tau_w,n)
             endif
           enddo
 
+          call add2 (wintx,T1_rhs_x,n)
+          call add2 (winty,T1_rhs_y,n)
+          call add2 (wintz,T1_rhs_z,n)
+
           ! only compute phi grads once
           if (comp_phi_grad .ne. 1) then
             comp_phi_grad = 1
           endif
         endif
-        call add2 (wintx,T1_rhs_x,n)
-        call add2 (winty,T1_rhs_y,n)
-        call add2 (wintz,T1_rhs_z,n)
         
         call copy (tr1x,T1_rhs_x,n)
         call copy (tr1y,T1_rhs_y,n)
