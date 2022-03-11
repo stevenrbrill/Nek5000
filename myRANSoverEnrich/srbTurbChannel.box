@@ -1,0 +1,11 @@
+-2                     spatial dimension  ( < 0 --> generate .rea/.re2 pair)
+4                      number of fields
+#=======================================================================
+Box
+-3  -8                                     nelx,nely,nelz for Box
+0 1 1.                                          x0,x1,gain
+0 1 1.                                          y0,y1,gain
+P  ,P  ,W  ,W                             bc's  (3 chars each!)
+P  ,P  ,I  ,I  
+P  ,P  ,t  ,t  
+P  ,P  ,t  ,t  
