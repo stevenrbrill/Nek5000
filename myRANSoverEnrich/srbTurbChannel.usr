@@ -519,11 +519,11 @@ c     VARIABLES DECLARED FOR ENRICHMENT METHOD
       save secondcall
       real utau_ref, Re_tau
 C       real psix(lx1,ly1,lz1,lelv)
-      real gpsix_x(lxd,lyd,lzd,lelv), gpsix_y(lxd,lyd,lzd,lelv)
-      real gpsix_z(lxd,lyd,lzd,lelv), gpsiy_x(lxd,lyd,lzd,lelv)
-      real gpsiy_y(lxd,lyd,lzd,lelv), gpsiy_z(lxd,lyd,lzd,lelv)
-      real gpsiz_x(lxd,lyd,lzd,lelv), gpsiz_y(lxd,lyd,lzd,lelv)
-      real gpsiz_z(lxd,lyd,lzd,lelv)
+C       real gpsix_x(lxd,lyd,lzd,lelv), gpsix_y(lxd,lyd,lzd,lelv)
+C       real gpsix_z(lxd,lyd,lzd,lelv), gpsiy_x(lxd,lyd,lzd,lelv)
+C       real gpsiy_y(lxd,lyd,lzd,lelv), gpsiy_z(lxd,lyd,lzd,lelv)
+C       real gpsiz_x(lxd,lyd,lzd,lelv), gpsiz_y(lxd,lyd,lzd,lelv)
+C       real gpsiz_z(lxd,lyd,lzd,lelv)
       real psi_trans(lx1,lz1,lyd,lelv), psi_trans2(lxd,lzd,lyd,lelv)
 C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv) 
       real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
@@ -648,6 +648,15 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,psix_rhs(lx1,ly1,lz1,lelv)
      $               ,psiy_rhs(lx1,ly1,lz1,lelv)
      $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+      common /engrad/ gpsix_x(lxd,lyd,lzd,lelv), 
+     $                gpsix_y(lxd,lyd,lzd,lelv),
+     $                gpsix_z(lxd,lyd,lzd,lelv), 
+     $                gpsiy_x(lxd,lyd,lzd,lelv),
+     $                gpsiy_y(lxd,lyd,lzd,lelv), 
+     $                gpsiy_z(lxd,lyd,lzd,lelv),
+     $                gpsiz_x(lxd,lyd,lzd,lelv), 
+     $                gpsiz_y(lxd,lyd,lzd,lelv),
+     $                gpsiz_z(lxd,lyd,lzd,lelv)
       common /ransenrich/ wsk(lx1,ly1,lz1,lelv)
      $                 ,  wsomg(lx1,ly1,lz1,lelv)
      $                 ,  wsk_d(lxd,lyd,lzd,lelv)
@@ -736,7 +745,7 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       ! Start enrichment at time 50
 C       if (time.lt.50) then
-      if (time.lt.50000000) then
+      if (time.lt.50) then
         call oprzero(psix,psiy,psiz)
         call oprzero_d(psix_d,psiy_d,psiz_d)
         call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
@@ -1502,122 +1511,122 @@ C           call opzero(wsx,wsy,wsz)
 
         ! Compute T1 (viscous enrichment term)
         ! (nu*dot(grad phi, grad psi))
-        if (comp_T1 .ne. 1) then
-          if (use_default .eq. 1) then
-            comp_T1 = 1 ! Comment for adaptation
-          endif
+C         if (comp_T1 .ne. 1) then
+C           if (use_default .eq. 1) then
+C             comp_T1 = 1 ! Comment for adaptation
+C           endif
 
-C           call oprzero(wintx,winty,wintz)
-          call rzero  (T1_rhs_x,n)
-          call rzero  (T1_rhs_y,n)
-          call rzero  (T1_rhs_z,n)
-          call rzero  (tx_d,n_d)
-          call rzero  (ty_d,n_d)
-          call rzero  (tz_d,n_d)
-          call rzero  (w1_d,n_d)
-          call rzero  (w2_d,n_d)
-          call rzero  (w3_d,n_d)
-          call rzero  (phi_temp,n_d)
+C C           call oprzero(wintx,winty,wintz)
+C           call rzero  (T1_rhs_x,n)
+C           call rzero  (T1_rhs_y,n)
+C           call rzero  (T1_rhs_z,n)
+C           call rzero  (tx_d,n_d)
+C           call rzero  (ty_d,n_d)
+C           call rzero  (tz_d,n_d)
+C           call rzero  (w1_d,n_d)
+C           call rzero  (w2_d,n_d)
+C           call rzero  (w3_d,n_d)
+C           call rzero  (phi_temp,n_d)
 
-          ! Compute phi grads of reference elements
-          if (comp_phi_grad .ne. 1) then
-            call rzero(srb_temp,lx1*ly1*lz1)
-            call rzero(srb_temp_d,lxd*lyd*lzd)
-            iz_end = lz1
-            if (ldim .eq. 2) then
-              iz_end = 1
-            endif
-            do iz = 1,iz_end
-              do iy = 1,ly1
-                do ix = 1,lx1
-                  ib = (iz-1)*lx1*ly1 + (iy-1)*(lx1) + ix
-                  srb_temp(ix,iy,iz,1) = 1
-                  call intp_rstd(srb_temp_d,srb_temp,lx1,lxd,if3d,0)
-                  call grad_rst(dpdr(1,ib),dpds(1,ib),dpdt(1,ib),
-     $                   srb_temp_d,lxd,if3d)
-                  srb_temp(ix,iy,iz,1) = 0   
-                enddo
-              enddo
-            enddo
-          endif   
+C           ! Compute phi grads of reference elements
+C           if (comp_phi_grad .ne. 1) then
+C             call rzero(srb_temp,lx1*ly1*lz1)
+C             call rzero(srb_temp_d,lxd*lyd*lzd)
+C             iz_end = lz1
+C             if (ldim .eq. 2) then
+C               iz_end = 1
+C             endif
+C             do iz = 1,iz_end
+C               do iy = 1,ly1
+C                 do ix = 1,lx1
+C                   ib = (iz-1)*lx1*ly1 + (iy-1)*(lx1) + ix
+C                   srb_temp(ix,iy,iz,1) = 1
+C                   call intp_rstd(srb_temp_d,srb_temp,lx1,lxd,if3d,0)
+C                   call grad_rst(dpdr(1,ib),dpds(1,ib),dpdt(1,ib),
+C      $                   srb_temp_d,lxd,if3d)
+C                   srb_temp(ix,iy,iz,1) = 0   
+C                 enddo
+C               enddo
+C             enddo
+C           endif   
 
-          nb = lx1*ly1
-          nq = lxd*lyd
-          if (ldim .eq. 3) then
-            nb = nb*lz1
-            nq = nq*lzd
-          endif
-          do iel = 1,nelv 
-            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-              ! Compute phi grad
-              if (comp_phi_grad .ne. 1) then
-C           call intp_rstd(rxmd(1,1,1,iel),rxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-C           call intp_rstd(rymd(1,1,1,iel),rym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-C           call intp_rstd(rzmd(1,1,1,iel),rzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-C           call intp_rstd(sxmd(1,1,1,iel),sxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-C           call intp_rstd(symd(1,1,1,iel),sym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-C           call intp_rstd(szmd(1,1,1,iel),szm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-C           call intp_rstd(txmd(1,1,1,iel),txm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-C           call intp_rstd(tymd(1,1,1,iel),tym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-C           call intp_rstd(tzmd(1,1,1,iel),tzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-C C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-                do j=1,nb ! actually nb
-                  do i=1,nq ! actually nq
-                dpdx(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rxmd(i,1,1,iel)
-     $                                     + dpds(i,j)*sxmd(i,1,1,iel)
-     $                                     + dpdt(i,j)*txmd(i,1,1,iel) )
-                dpdy(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rymd(i,1,1,iel)
-     $                                     + dpds(i,j)*symd(i,1,1,iel)
-     $                                     + dpdt(i,j)*tymd(i,1,1,iel) )
-                dpdz(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rzmd(i,1,1,iel)
-     $                                     + dpds(i,j)*szmd(i,1,1,iel)
-     $                                     + dpdt(i,j)*tzmd(i,1,1,iel) )
-                  enddo
-                enddo
-              endif
-              ! Compute other parts of T1
-              call intp_rstd(vdiff_d(1,1,1,iel),vdiff(1,1,1,iel,1),
-     $             lx1,lxd,if3d,0)
-              call col3(srb_temp_d,bmd(1,1,1,iel),vdiff_d(1,1,1,iel),nq)
-              call col3(tx_d,srb_temp_d,gpsix_x(1,1,1,iel),nq)
-              call col3(ty_d,srb_temp_d,gpsix_y(1,1,1,iel),nq)
-              call col3(tz_d,srb_temp_d,gpsix_z(1,1,1,iel),nq)
+C           nb = lx1*ly1
+C           nq = lxd*lyd
+C           if (ldim .eq. 3) then
+C             nb = nb*lz1
+C             nq = nq*lzd
+C           endif
+C           do iel = 1,nelv 
+C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C               ! Compute phi grad
+C               if (comp_phi_grad .ne. 1) then
+C C           call intp_rstd(rxmd(1,1,1,iel),rxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C C           call intp_rstd(rymd(1,1,1,iel),rym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C C           call intp_rstd(rzmd(1,1,1,iel),rzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C C           call intp_rstd(sxmd(1,1,1,iel),sxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C C           call intp_rstd(symd(1,1,1,iel),sym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C C           call intp_rstd(szmd(1,1,1,iel),szm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C C           call intp_rstd(txmd(1,1,1,iel),txm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C C           call intp_rstd(tymd(1,1,1,iel),tym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C C           call intp_rstd(tzmd(1,1,1,iel),tzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C C C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C                 do j=1,nb ! actually nb
+C                   do i=1,nq ! actually nq
+C                 dpdx(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rxmd(i,1,1,iel)
+C      $                                     + dpds(i,j)*sxmd(i,1,1,iel)
+C      $                                     + dpdt(i,j)*txmd(i,1,1,iel) )
+C                 dpdy(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rymd(i,1,1,iel)
+C      $                                     + dpds(i,j)*symd(i,1,1,iel)
+C      $                                     + dpdt(i,j)*tymd(i,1,1,iel) )
+C                 dpdz(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rzmd(i,1,1,iel)
+C      $                                     + dpds(i,j)*szmd(i,1,1,iel)
+C      $                                     + dpdt(i,j)*tzmd(i,1,1,iel) )
+C                   enddo
+C                 enddo
+C               endif
+C               ! Compute other parts of T1
+C               call intp_rstd(vdiff_d(1,1,1,iel),vdiff(1,1,1,iel,1),
+C      $             lx1,lxd,if3d,0)
+C               call col3(srb_temp_d,bmd(1,1,1,iel),vdiff_d(1,1,1,iel),nq)
+C               call col3(tx_d,srb_temp_d,gpsix_x(1,1,1,iel),nq)
+C               call col3(ty_d,srb_temp_d,gpsix_y(1,1,1,iel),nq)
+C               call col3(tz_d,srb_temp_d,gpsix_z(1,1,1,iel),nq)
 
-              call mxm(dpdx(1,1,iel) ,nb,tx_d,nq,w1,1)
-              call mxm(dpdy(1,1,iel) ,nb,ty_d,nq,w2,1)
-              call mxm(dpdz(1,1,iel) ,nb,tz_d,nq,w3,1)
+C               call mxm(dpdx(1,1,iel) ,nb,tx_d,nq,w1,1)
+C               call mxm(dpdy(1,1,iel) ,nb,ty_d,nq,w2,1)
+C               call mxm(dpdz(1,1,iel) ,nb,tz_d,nq,w3,1)
 
-              call cmult (w1,-1.,nb)
-              call cmult (w2,-1.,nb)
-              call cmult (w3,-1.,nb)
+C               call cmult (w1,-1.,nb)
+C               call cmult (w2,-1.,nb)
+C               call cmult (w3,-1.,nb)
 
-              call cmult (w1,2.0,nb)
+C               call cmult (w1,2.0,nb)
 
-              call add2(T1_rhs_x(1,1,1,iel),w1,nb)
-              call add2(T1_rhs_x(1,1,1,iel),w2,nb)
-              call add2(T1_rhs_x(1,1,1,iel),w3,nb)
+C               call add2(T1_rhs_x(1,1,1,iel),w1,nb)
+C               call add2(T1_rhs_x(1,1,1,iel),w2,nb)
+C               call add2(T1_rhs_x(1,1,1,iel),w3,nb)
 
-              ! Cross terms
-              call mxm(dpdx(1,1,iel) ,nb,ty_d,nb,w1,1)
-              call mxm(dpdx(1,1,iel) ,nb,tz_d,nb,w2,1)
+C               ! Cross terms
+C               call mxm(dpdx(1,1,iel) ,nb,ty_d,nb,w1,1)
+C               call mxm(dpdx(1,1,iel) ,nb,tz_d,nb,w2,1)
 
-              call cmult (w1,-1.,nb)
-              call cmult (w2,-1.,nb)
+C               call cmult (w1,-1.,nb)
+C               call cmult (w2,-1.,nb)
 
-              call add2(T1_rhs_y(1,1,1,iel),w1,nb)
-              call add2(T1_rhs_z(1,1,1,iel),w2,nb)
-            endif
-          enddo
+C               call add2(T1_rhs_y(1,1,1,iel),w1,nb)
+C               call add2(T1_rhs_z(1,1,1,iel),w2,nb)
+C             endif
+C           enddo
           
-          ! only compute phi grads once
-          if (comp_phi_grad .ne. 1) then
-            comp_phi_grad = 1
-          endif
-        endif
+C           ! only compute phi grads once
+C           if (comp_phi_grad .ne. 1) then
+C             comp_phi_grad = 1
+C           endif
+C         endif
 
-        call add2 (wintx,T1_rhs_x,n)
-        call add2 (winty,T1_rhs_y,n)
-        call add2 (wintz,T1_rhs_z,n)
+C         call add2 (wintx,T1_rhs_x,n)
+C         call add2 (winty,T1_rhs_y,n)
+C         call add2 (wintz,T1_rhs_z,n)
 
         if (istep.eq.0 .or. ifoutfld) then
         call copy   (tr1x1,T1_rhs_x,n)
@@ -1931,6 +1940,463 @@ C            dTdy_w = stat_y(1)
          close(57)
 
  998  endif
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      subroutine userchk2 ()
+      include 'SIZE'
+      include 'TOTAL'
+      include 'RANS_KOMG'
+
+            integer ILAG
+
+      real x0(3)
+      data x0 /0.0, 0.0, 0.0/ 
+      save x0
+
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
+      real atime,timel
+      save atime,timel
+
+      integer ntdump
+      save    ntdump
+
+      real    rwk(INTP_NMAX,ldim+1) ! r, s, t, dist2
+      integer iwk(INTP_NMAX,3)      ! code, proc, el 
+      save    rwk, iwk
+
+      integer nint, intp_h
+      save    nint, intp_h
+
+      logical iffpts
+      save iffpts
+
+      real xint(INTP_NMAX),yint(INTP_NMAX),zint(INTP_NMAX)
+      save xint, yint, zint
+      save igs_x, igs_z
+
+      parameter(nstat=13)
+      real ravg(lx1*ly1*lz1*lelt,nstat)
+      real stat(lx1*ly1*lz1*lelt,nstat)
+      real stat_y(INTP_NMAX*nstat)
+      save ravg, stat, stat_y
+
+      save dragx_avg, dragx_avg_poly
+      real tw_poly, u_tau_poly, tw_tot, u_tau_tot, u_tau_out
+
+      logical ifverbose
+      common /gaaa/    wo1(lx1,ly1,lz1,lelv)
+     &              ,  wo2(lx1,ly1,lz1,lelv)
+     &              ,  wo3(lx1,ly1,lz1,lelv)
+
+      integer flag(lelv)
+      common /beflag/ flag
+
+c----------------------------------------------------------------
+c     VARIABLES DECLARED FOR USING THE NON-ITERATIVE METHOD  
+      real tauold(lx1,ly1,lz1,lelv), taunew(lx1,ly1,lz1,lelv)
+      common /wallshear/ taunew
+      save tauold
+      
+      real M, Kappa, utau_init
+      data M/5.17/, kappa/0.41/, utau_init/0.2/
+      save M, kappa, utau_init
+c----------------------------------------------------------------
+c     VARIABLES DECLARED FOR USING THE ITERATIVE METHOD 
+      real newton,secant,rtol,ut0,ut1,uti(lx1,ly1,lz1,lelv),utau
+      integer flg, maxiter, count
+      data rtol/1.0e-5/, maxiter/20000/
+      data flg/2/, count/0/ !flg = flag for the chosen wall model
+c      data uti/0.2/  !Initial guess value of utau for Newton Method
+      data ut0/0.04/, ut1/0.08/ !Initial guess values for Secant Method
+      save rtol, maxiter, flg, uti, ut0, ut1
+c---------------------------------------------------------------
+
+      real tplus
+      real tmn, tmx   
+
+      integer bIDs(1)
+      save iobj_wall
+
+c---------------------------------------------------------------
+c     VARIABLES DECLARED FOR ENRICHMENT METHOD
+      integer secondcall
+      save secondcall
+      real utau_ref, Re_tau
+C       real psix(lx1,ly1,lz1,lelv)
+C       real gpsix_x(lxd,lyd,lzd,lelv), gpsix_y(lxd,lyd,lzd,lelv)
+C       real gpsix_z(lxd,lyd,lzd,lelv), gpsiy_x(lxd,lyd,lzd,lelv)
+C       real gpsiy_y(lxd,lyd,lzd,lelv), gpsiy_z(lxd,lyd,lzd,lelv)
+C       real gpsiz_x(lxd,lyd,lzd,lelv), gpsiz_y(lxd,lyd,lzd,lelv)
+C       real gpsiz_z(lxd,lyd,lzd,lelv)
+      real psi_trans(lx1,lz1,lyd,lelv), psi_trans2(lxd,lzd,lyd,lelv)
+C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv) 
+      real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
+      real myH1_rhs(lx1,ly1,lz1,lelv), myH2_rhs(lx1,ly1,lz1,lelv) 
+      real phi_temp(lxd,lyd,lzd,lelv), T1_rhs_x(lx1,ly1,lz1,lelv) 
+      real T1_rhs_y(lx1,ly1,lz1,lelv), T1_rhs_z(lx1,ly1,lz1,lelv) 
+      save T1_rhs_x, T1_rhs_y, T1_rhs_z
+      save T1_rhs
+      integer comp_T1, comp_en_F, comp_psi, iy_ut, avg_ind, use_default
+      integer ind
+      save comp_T1, comp_en_F, comp_psi
+      real tau_w(lx1,ly1,lz1,lelv)
+      real srb_temp(lx1,ly1,lz1,lelv)
+      real srb_temp_d(lxd,lyd,lzd,lelv)
+
+      real xmd(lxd,lyd,lzd,lelv), ymd(lxd,lyd,lzd,lelv) 
+      real zmd(lxd,lyd,lzd,lelv), vx_d(lxd,lyd,lzd,lelv)
+      real vy_d(lxd,lyd,lzd,lelv), vz_d(lxd,lyd,lzd,lelv)
+      real k_d(lxd,lyd,lzd,lelv), omg_d(lxd,lyd,lzd,lelv)
+      real psix_d(lxd,lyd,lzd,lelv)
+      real psiy_d(lxd,lyd,lzd,lelv)
+      real psiz_d(lxd,lyd,lzd,lelv)
+      real vdiff_d(lxd,lyd,lzd,lelv)
+      real bmd(lxd,lyd,lzd,lelv)
+      real jacmd(lxd*lyd*lzd,lelv)
+      real uti_d(lxd,lyd,lzd,lelv)
+      save uti_d
+      integer ib, ib2, iz_end, iy_match, iy_ut_match
+      real srbtest, ut_param, tau_param
+      real ut_avg_fit_bot, ut_avg_fit_top, u_match(2)
+      real psix_int(INTP_NMAX)
+      save psix_int
+      real xint_match(2),yint_match(2),zint_match(2)
+      save xint_match, yint_match, zint_match
+      real    rwk2(2,ldim+1) ! r, s, t, dist2
+      integer iwk2(2,3)      ! code, proc, el 
+      save    rwk2, iwk2
+      integer intp_h2
+      save intp_h2
+      integer comp_phi_grad
+      save comp_phi_grad
+      integer nb, nq
+      common /phigrad/ dpdr(lxd*lyd*lzd,lx1*ly1*lz1)
+     $                ,dpds(lxd*lyd*lzd,lx1*ly1*lz1)
+     $                ,dpdt(lxd*lyd*lzd,lx1*ly1*lz1)
+     $                ,dpdx(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
+     $                ,dpdy(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
+     $                ,dpdz(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
+                               !(nb,nq)
+      data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
+      common /y_ends/ bot_y, top_y
+      common /dealias1/ zd(lxd),wd(lxd)
+      common /scrns/ w1(lx1,ly1,lz1,lelv)
+     $              ,w2(lx1,ly1,lz1,lelv)
+     $              ,w3(lx1,ly1,lz1,lelv)
+     $              ,tx(lx1,ly1,lz1,lelv)
+     $              ,ty(lx1,ly1,lz1,lelv)
+     $              ,tz(lx1,ly1,lz1,lelv)
+      common /srb_scrns/ w1_d(lxd,lyd,lzd,lelv)
+     $              ,w2_d(lxd,lyd,lzd,lelv)
+     $              ,w3_d(lxd,lyd,lzd,lelv)
+     $              ,tx_d(lxd,lyd,lzd,lelv)
+     $              ,ty_d(lxd,lyd,lzd,lelv)
+     $              ,tz_d(lxd,lyd,lzd,lelv)
+     $              ,wsx_d(lxd,lyd,lzd,lelv)
+     $              ,wsy_d(lxd,lyd,lzd,lelv)
+     $              ,wsz_d(lxd,lyd,lzd,lelv)
+     $              ,rxmd(lxd,lyd,lzd,lelv)
+     $              ,rymd(lxd,lyd,lzd,lelv)
+     $              ,rzmd(lxd,lyd,lzd,lelv)
+     $              ,sxmd(lxd,lyd,lzd,lelv)
+     $              ,symd(lxd,lyd,lzd,lelv)
+     $              ,szmd(lxd,lyd,lzd,lelv)
+     $              ,txmd(lxd,lyd,lzd,lelv)
+     $              ,tymd(lxd,lyd,lzd,lelv)
+     $              ,tzmd(lxd,lyd,lzd,lelv)
+      common /tensor/ txx(lxd,lyd,lzd,lelv)
+     $               ,tyy(lxd,lyd,lzd,lelv)
+     $               ,tzz(lxd,lyd,lzd,lelv)
+     $               ,txy(lxd,lyd,lzd,lelv)
+     $               ,tyz(lxd,lyd,lzd,lelv)
+     $               ,txz(lxd,lyd,lzd,lelv)
+     $               ,tr1x(lxd,lyd,lzd,lelv)
+     $               ,tr1y(lxd,lyd,lzd,lelv)
+     $               ,tr1z(lxd,lyd,lzd,lelv)
+     $               ,tr2x(lxd,lyd,lzd,lelv)
+     $               ,tr2y(lxd,lyd,lzd,lelv)
+     $               ,tr2z(lxd,lyd,lzd,lelv)
+     $               ,tr3x(lxd,lyd,lzd,lelv)
+     $               ,tr3y(lxd,lyd,lzd,lelv)
+     $               ,tr3z(lxd,lyd,lzd,lelv)
+     $               ,tr4x(lxd,lyd,lzd,lelv)
+     $               ,tr4y(lxd,lyd,lzd,lelv)
+     $               ,tr4z(lxd,lyd,lzd,lelv)
+     $               ,tr1x1(lx1,ly1,lz1,lelv)
+     $               ,tr1y1(lx1,ly1,lz1,lelv)
+     $               ,tr1z1(lx1,ly1,lz1,lelv)
+     $               ,tr2x1(lx1,ly1,lz1,lelv)
+     $               ,tr2y1(lx1,ly1,lz1,lelv)
+     $               ,tr2z1(lx1,ly1,lz1,lelv)
+     $               ,tr3x1(lx1,ly1,lz1,lelv)
+     $               ,tr3y1(lx1,ly1,lz1,lelv)
+     $               ,tr3z1(lx1,ly1,lz1,lelv)
+     $               ,tr4x1(lx1,ly1,lz1,lelv)
+     $               ,tr4y1(lx1,ly1,lz1,lelv)
+     $               ,tr4z1(lx1,ly1,lz1,lelv)
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+      common /engrad/ gpsix_x(lxd,lyd,lzd,lelv), 
+     $                gpsix_y(lxd,lyd,lzd,lelv),
+     $                gpsix_z(lxd,lyd,lzd,lelv), 
+     $                gpsiy_x(lxd,lyd,lzd,lelv),
+     $                gpsiy_y(lxd,lyd,lzd,lelv), 
+     $                gpsiy_z(lxd,lyd,lzd,lelv),
+     $                gpsiz_x(lxd,lyd,lzd,lelv), 
+     $                gpsiz_y(lxd,lyd,lzd,lelv),
+     $                gpsiz_z(lxd,lyd,lzd,lelv)
+      common /ransenrich/ wsk(lx1,ly1,lz1,lelv)
+     $                 ,  wsomg(lx1,ly1,lz1,lelv)
+     $                 ,  wsk_d(lxd,lyd,lzd,lelv)
+     $                 ,  wsomg_d(lxd,lyd,lzd,lelv)
+     $                 ,  wintk(lx1,ly1,lz1,lelv)
+     $                 ,  wintomg(lx1,ly1,lz1,lelv)
+
+      real wall_dist
+      common /walldist/ wall_dist(lx1,ly1,lz1,lelv)
+
+      real ypmin,ypmax,ypave,utmin,utmax,utave
+
+
+c---------------------------------------------------------------
+C       if (mod(istep,10).eq.0) then
+C         call print_limits !monitor the solution
+C         call y_p_limits(wd,ypmin,ypmax,ypave,utmin,utmax,utave)
+C         if(nio.eq.0) then
+C           write(6,256)'y_p+',ypmin,ypmax,ypave
+C           write(6,256)'u_tau',utmin,utmax,utave
+C           write(6,*)
+C         endif
+C       endif
+
+C  256  format(a15,3es13.4)
+
+C       save psix, psiy, psiz
+c---------------------------------------------------------------
+
+      n     = nx1*ny1*nz1*nelv
+      nelx  = NUMBER_ELEMENTS_X
+      nely  = NUMBER_ELEMENTS_Y
+      nelz  = NUMBER_ELEMENTS_Z
+
+C       if (istep.eq.0) then
+C          bIDs(1) = 1
+C          call create_obj(iobj_wall,bIDs,1)
+C          nm = iglsum(nmember(iobj_wall),1)
+C          if(nid.eq.0) write(6,*) 'obj_wall nmem:', nm 
+C          call prepost(.true.,'  ')
+C       endif
+
+C       ubar = glsc2(vx,bm1,n)/volvm1
+C       e2   = glsc3(vy,bm1,vy,n)+glsc3(vz,bm1,vz,n)
+C       e2   = e2/volvm1
+C       if (nfield.gt.1) then
+C         tmn  = glmin(t,n)
+C         tmx  = glmax(t,n)
+C       endif
+C       if(nid.eq.0) write(6,2) time,ubar,e2,tmn,tmx
+C    2               format(1p5e13.4,' monitor')
+
+c     WALL ENRICHMENT...START
+
+      !if(nid.eq.0) write(6,*) "Perform wall enrichment"
+      
+c      call add3 (vx_,vx,psix,n) !calculate actual velocity
+
+      use_default = 1
+
+      if (istep.eq.0) then
+          call oprzero(psix,psiy,psiz)
+          call oprzero(gpsix_x,gpsix_y,gpsix_z)
+          call oprzero(gpsiy_x,gpsiy_y,gpsiy_z)
+          call oprzero(gpsiz_x,gpsiz_y,gpsiz_z)
+         do iel = 1, nelv
+          do ix = 1, lx1
+           do iy = 1, ly1
+            do iz = 1, lz1
+               uti(ix,iy,iz,iel) = 0.08 ! Guess value for N-R solver
+            enddo
+           enddo
+          enddo
+         enddo
+      endif
+
+      ! Start enrichment at time 50
+C       if (time.lt.50) then
+      if (time.lt.50.0) then
+        call oprzero(psix,psiy,psiz)
+        call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
+        call oprzero(wsx,wsy,wsz)
+        call oprzero(wintx,winty,wintz)
+        call oprzero(wrhsx,wrhsy,wrhsz)
+        call rzero(wsk, n)
+        call rzero(wsomg,n)
+
+      else
+
+        ! Compute T1 (viscous enrichment term)
+        ! (nu*dot(grad phi, grad psi))
+        if (comp_T1 .ne. 1) then
+C           if (use_default .eq. 1) then
+C             comp_T1 = 1 ! Comment for adaptation
+C           endif
+
+C           call oprzero(wintx,winty,wintz)
+          call rzero  (T1_rhs_x,n)
+          call rzero  (T1_rhs_y,n)
+          call rzero  (T1_rhs_z,n)
+          call rzero  (tx_d,n_d)
+          call rzero  (ty_d,n_d)
+          call rzero  (tz_d,n_d)
+          call rzero  (w1_d,n_d)
+          call rzero  (w2_d,n_d)
+          call rzero  (w3_d,n_d)
+          call rzero  (phi_temp,n_d)
+
+          ! Compute phi grads of reference elements
+          if (comp_phi_grad .ne. 1) then
+            call rzero(srb_temp,lx1*ly1*lz1)
+            call rzero(srb_temp_d,lxd*lyd*lzd)
+            iz_end = lz1
+            if (ldim .eq. 2) then
+              iz_end = 1
+            endif
+            do iz = 1,iz_end
+              do iy = 1,ly1
+                do ix = 1,lx1
+                  ib = (iz-1)*lx1*ly1 + (iy-1)*(lx1) + ix
+                  srb_temp(ix,iy,iz,1) = 1
+                  call intp_rstd(srb_temp_d,srb_temp,lx1,lxd,if3d,0)
+                  call grad_rst(dpdr(1,ib),dpds(1,ib),dpdt(1,ib),
+     $                   srb_temp_d,lxd,if3d)
+                  srb_temp(ix,iy,iz,1) = 0   
+                enddo
+              enddo
+            enddo
+          endif   
+
+          nb = lx1*ly1
+          nq = lxd*lyd
+          if (ldim .eq. 3) then
+            nb = nb*lz1
+            nq = nq*lzd
+          endif
+          do iel = 1,nelv 
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+            call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),
+     $         lx1,lxd,if3d,0) ! 0 --> fwd
+            do iz = 1,lzd
+              do iy = 1,lyd
+                do ix = 1,lxd
+                  ib = (iz-1)*lxd*lyd + (iy-1)*(lxd) + ix
+                  bmd(ix,iy,iz,iel) = 
+     $               jacmd(ib,iel)*wd(ix)*wd(iy)
+                  if (ldim == 3) then
+                        bmd(ix,iy,iz,iel) = bmd(ix,iy,iz,iel)*wd(iz)
+                  endif
+                enddo
+              enddo
+            enddo
+              ! Compute phi grad
+              if (comp_phi_grad .ne. 1) then
+          call intp_rstd(rxmd(1,1,1,iel),rxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(rymd(1,1,1,iel),rym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(rzmd(1,1,1,iel),rzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(sxmd(1,1,1,iel),sxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(symd(1,1,1,iel),sym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(szmd(1,1,1,iel),szm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(txmd(1,1,1,iel),txm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(tymd(1,1,1,iel),tym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+          call intp_rstd(tzmd(1,1,1,iel),tzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+                do j=1,nb ! actually nb
+                  do i=1,nq ! actually nq
+                dpdx(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rxmd(i,1,1,iel)
+     $                                     + dpds(i,j)*sxmd(i,1,1,iel)
+     $                                     + dpdt(i,j)*txmd(i,1,1,iel) )
+                dpdy(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rymd(i,1,1,iel)
+     $                                     + dpds(i,j)*symd(i,1,1,iel)
+     $                                     + dpdt(i,j)*tymd(i,1,1,iel) )
+                dpdz(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rzmd(i,1,1,iel)
+     $                                     + dpds(i,j)*szmd(i,1,1,iel)
+     $                                     + dpdt(i,j)*tzmd(i,1,1,iel) )
+                  enddo
+                enddo
+              endif
+              ! Compute other parts of T1
+              call intp_rstd(vdiff_d(1,1,1,iel),vdiff(1,1,1,iel,1),
+     $             lx1,lxd,if3d,0)
+              call col3(srb_temp_d,bmd(1,1,1,iel),vdiff_d(1,1,1,iel),nq)
+              call col3(tx_d,srb_temp_d,gpsix_x(1,1,1,iel),nq)
+              call col3(ty_d,srb_temp_d,gpsix_y(1,1,1,iel),nq)
+              call col3(tz_d,srb_temp_d,gpsix_z(1,1,1,iel),nq)
+
+              call mxm(dpdx(1,1,iel) ,nb,tx_d,nq,w1,1)
+              call mxm(dpdy(1,1,iel) ,nb,ty_d,nq,w2,1)
+              call mxm(dpdz(1,1,iel) ,nb,tz_d,nq,w3,1)
+
+              call cmult (w1,-1.,nb)
+              call cmult (w2,-1.,nb)
+              call cmult (w3,-1.,nb)
+
+              call cmult (w1,2.0,nb)
+
+              call add2(T1_rhs_x(1,1,1,iel),w1,nb)
+              call add2(T1_rhs_x(1,1,1,iel),w2,nb)
+              call add2(T1_rhs_x(1,1,1,iel),w3,nb)
+
+              ! Cross terms
+              call mxm(dpdx(1,1,iel) ,nb,ty_d,nb,w1,1)
+              call mxm(dpdx(1,1,iel) ,nb,tz_d,nb,w2,1)
+
+              call cmult (w1,-1.,nb)
+              call cmult (w2,-1.,nb)
+
+              call add2(T1_rhs_y(1,1,1,iel),w1,nb)
+              call add2(T1_rhs_z(1,1,1,iel),w2,nb)
+            endif
+          enddo
+          
+          ! only compute phi grads once
+          if (comp_phi_grad .ne. 1) then
+            comp_phi_grad = 1
+          endif
+        endif
+
+        call add2 (wintx,T1_rhs_x,n)
+        call add2 (winty,T1_rhs_y,n)
+        call add2 (wintz,T1_rhs_z,n)
+
+      ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
+C       call oprzero(psix,psiy,psiz)
+C       call oprzero(wsx,wsy,wsz)
+C       call oprzero(wintx,winty,wintz)
+
+      endif
+
+c     WALL ENRICHMENT...END
 
       return
       end
