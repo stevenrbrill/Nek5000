@@ -529,6 +529,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
       real myH1_rhs(lx1,ly1,lz1,lelv), myH2_rhs(lx1,ly1,lz1,lelv) 
       real phi_temp(lxd,lyd,lzd,lelv), T1_rhs_x(lx1,ly1,lz1,lelv) 
+      real phi_temp1(lx1,ly1,lz1,lelv)
       real T1_rhs_y(lx1,ly1,lz1,lelv), T1_rhs_z(lx1,ly1,lz1,lelv) 
       save T1_rhs_x, T1_rhs_y, T1_rhs_z
       save T1_rhs
@@ -656,7 +657,16 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $                gpsiy_z(lxd,lyd,lzd,lelv),
      $                gpsiz_x(lxd,lyd,lzd,lelv), 
      $                gpsiz_y(lxd,lyd,lzd,lelv),
-     $                gpsiz_z(lxd,lyd,lzd,lelv)
+     $                gpsiz_z(lxd,lyd,lzd,lelv),
+     $                gpsix_x1(lxd,lyd,lzd,lelv), 
+     $                gpsix_y1(lxd,lyd,lzd,lelv),
+     $                gpsix_z1(lxd,lyd,lzd,lelv), 
+     $                gpsiy_x1(lxd,lyd,lzd,lelv),
+     $                gpsiy_y1(lxd,lyd,lzd,lelv), 
+     $                gpsiy_z1(lxd,lyd,lzd,lelv),
+     $                gpsiz_x1(lxd,lyd,lzd,lelv), 
+     $                gpsiz_y1(lxd,lyd,lzd,lelv),
+     $                gpsiz_z1(lxd,lyd,lzd,lelv)
       common /ransenrich/ wsk(lx1,ly1,lz1,lelv)
      $                 ,  wsomg(lx1,ly1,lz1,lelv)
      $                 ,  wsk_d(lxd,lyd,lzd,lelv)
@@ -745,7 +755,7 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       ! Start enrichment at time 50
 C       if (time.lt.50) then
-      if (time.lt.50) then
+      if (time.lt.50.0) then
         call oprzero(psix,psiy,psiz)
         call oprzero_d(psix_d,psiy_d,psiz_d)
         call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
@@ -908,6 +918,10 @@ C                     do iy = 1,ly1
                       psix(ix,iy,iz,iel) = calc_psi(xm1(ix,iy,iz,iel),
      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
      $                   ut_param,param(2))
+                      gpsix_y1(ix,iy,iz,iel) = 
+     $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+     $                   ut_param,param(2))
                     enddo
                   enddo
                 enddo
@@ -983,6 +997,8 @@ C           call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
             enddo
             endif
           enddo
+
+          call gradm1(gpsix_x1,phi_temp1,gpsix_z1,psix)
 
           ! Get enrichment values on boundary of enriched region
           ! Not currently used
@@ -1225,7 +1241,7 @@ C           enddo
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
                   w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-                  wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
+C                   wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
                   tr3x(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
               enddo
             endif
@@ -1266,7 +1282,7 @@ C           enddo
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
                   w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-                  wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
+C                   wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
                   tr3y(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
               enddo
             endif
@@ -1307,7 +1323,7 @@ C           enddo
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
                   w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-                  wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
+C                   wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
                   tr3z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
               enddo
             endif
@@ -1348,8 +1364,7 @@ C           enddo
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
                   w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-                  wsk_d(i,1,1,iel) = wsk_d(i,1,1,iel) + w1_d(i,1,1,iel)
-C                   tr3z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+C                   wsk_d(i,1,1,iel) = wsk_d(i,1,1,iel) + w1_d(i,1,1,iel)
               enddo
             endif
           enddo
@@ -1389,7 +1404,7 @@ C                   tr3z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
                   w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-               wsomg_d(i,1,1,iel) = wsomg_d(i,1,1,iel) + w1_d(i,1,1,iel)
+C                wsomg_d(i,1,1,iel) = wsomg_d(i,1,1,iel) + w1_d(i,1,1,iel)
               enddo
             endif
           enddo
@@ -1405,7 +1420,7 @@ C                   tr3z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
           call cmult  (tr4x1,-1.0,n)
 C           call col2   (tr4x1,bm1,n)
           ! Add to total forcing
-C           call add2   (wsx,w1,n)
+          call add2   (wsx,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for y
@@ -1418,7 +1433,7 @@ C           call add2   (wsx,w1,n)
           call cmult  (tr4y1,-1.0,n)
 C           call col2   (tr4y1,bm1,n)
           ! Add to total forcing
-C           call add2   (wsy,w1,n)
+          call add2   (wsy,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for z
@@ -1431,7 +1446,7 @@ C           call add2   (wsy,w1,n)
           call cmult  (tr4z1,-1.0,n)
 C           call col2   (tr4z1,bm1,n)
           ! Add to total forcing
-C           call add2   (wsz,w1,n)
+          call add2   (wsz,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for k
@@ -1444,7 +1459,7 @@ C           call add2   (wsz,w1,n)
           call cmult  (tr4z1,-1.0,n)
 C           call col2   (tr4z1,bm1,n)
           ! Add to total forcing
-C           call add2   (wsk,w1,n)
+          call add2   (wsk,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for omg
@@ -1457,7 +1472,7 @@ C           call add2   (wsk,w1,n)
           call cmult  (tr4z1,-1.0,n)
 C           call col2   (tr4z1,bm1,n)
           ! Add to total forcing
-C           call add2   (wsomg,w1,n)
+          call add2   (wsomg,w1,n)
 
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1520,6 +1535,10 @@ C           call opcolv (wintx,winty,wintz,vtrans(1,1,1,1,1))
             wsx(i,1,1,iel) = -1.0*wsx(i,1,1,iel)*vtrans(i,1,1,iel,1)
             wsy(i,1,1,iel) = -1.0*wsy(i,1,1,iel)*vtrans(i,1,1,iel,1)
             wsz(i,1,1,iel) = -1.0*wsz(i,1,1,iel)*vtrans(i,1,1,iel,1)
+            wsk(i,1,1,iel) = -1.0*wsk(i,1,1,iel)
+     $                      *vtrans(i,1,1,iel,ifld_k-1)
+            wsomg(i,1,1,iel) = -1.0*wsomg(i,1,1,iel)
+     $                      *vtrans(i,1,1,iel,ifld_omg-1)
             wintx(i,1,1,iel) = -1.0*wintx(i,1,1,iel)*vtrans(i,1,1,iel,1)
             winty(i,1,1,iel) = -1.0*winty(i,1,1,iel)*vtrans(i,1,1,iel,1)
             wintz(i,1,1,iel) = -1.0*wintz(i,1,1,iel)*vtrans(i,1,1,iel,1)
@@ -2066,6 +2085,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
       real myH1_rhs(lx1,ly1,lz1,lelv), myH2_rhs(lx1,ly1,lz1,lelv) 
       real phi_temp(lxd,lyd,lzd,lelv), T1_rhs_x(lx1,ly1,lz1,lelv) 
+      real phi_temp1(lx1,ly1,lz1,lelv)
       real T1_rhs_y(lx1,ly1,lz1,lelv), T1_rhs_z(lx1,ly1,lz1,lelv) 
       save T1_rhs_x, T1_rhs_y, T1_rhs_z
       save T1_rhs
@@ -2109,6 +2129,12 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $                ,dpdx(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
      $                ,dpdy(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
      $                ,dpdz(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
+     $                ,dpdr1(lx1*ly1*lz1,lx1*ly1*lz1)
+     $                ,dpds1(lx1*ly1*lz1,lx1*ly1*lz1)
+     $                ,dpdt1(lx1*ly1*lz1,lx1*ly1*lz1)
+     $                ,dpdx1(lx1*ly1*lz1,lx1*ly1*lz1,lelv)
+     $                ,dpdy1(lx1*ly1*lz1,lx1*ly1*lz1,lelv)
+     $                ,dpdz1(lx1*ly1*lz1,lx1*ly1*lz1,lelv)
                                !(nb,nq)
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /y_ends/ bot_y, top_y
@@ -2193,7 +2219,16 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $                gpsiy_z(lxd,lyd,lzd,lelv),
      $                gpsiz_x(lxd,lyd,lzd,lelv), 
      $                gpsiz_y(lxd,lyd,lzd,lelv),
-     $                gpsiz_z(lxd,lyd,lzd,lelv)
+     $                gpsiz_z(lxd,lyd,lzd,lelv),
+     $                gpsix_x1(lxd,lyd,lzd,lelv), 
+     $                gpsix_y1(lxd,lyd,lzd,lelv),
+     $                gpsix_z1(lxd,lyd,lzd,lelv), 
+     $                gpsiy_x1(lxd,lyd,lzd,lelv),
+     $                gpsiy_y1(lxd,lyd,lzd,lelv), 
+     $                gpsiy_z1(lxd,lyd,lzd,lelv),
+     $                gpsiz_x1(lxd,lyd,lzd,lelv), 
+     $                gpsiz_y1(lxd,lyd,lzd,lelv),
+     $                gpsiz_z1(lxd,lyd,lzd,lelv)
       common /ransenrich/ wsk(lx1,ly1,lz1,lelv)
      $                 ,  wsomg(lx1,ly1,lz1,lelv)
      $                 ,  wsk_d(lxd,lyd,lzd,lelv)
@@ -2285,6 +2320,139 @@ C       if (time.lt.50) then
 
         ! Compute T1 (viscous enrichment term)
         ! (nu*dot(grad phi, grad psi))
+C         if (comp_T1 .ne. 1) then
+C C           if (use_default .eq. 1) then
+C C             comp_T1 = 1 ! Comment for adaptation
+C C           endif
+
+C C           call oprzero(wintx,winty,wintz)
+C           call rzero  (T1_rhs_x,n)
+C           call rzero  (T1_rhs_y,n)
+C           call rzero  (T1_rhs_z,n)
+C           call rzero  (tx_d,n_d)
+C           call rzero  (ty_d,n_d)
+C           call rzero  (tz_d,n_d)
+C           call rzero  (w1_d,n_d)
+C           call rzero  (w2_d,n_d)
+C           call rzero  (w3_d,n_d)
+C           call rzero  (phi_temp,n_d)
+
+C           ! Compute phi grads of reference elements
+C           if (comp_phi_grad .ne. 1) then
+C             call rzero(srb_temp,lx1*ly1*lz1)
+C             call rzero(srb_temp_d,lxd*lyd*lzd)
+C             iz_end = lz1
+C             if (ldim .eq. 2) then
+C               iz_end = 1
+C             endif
+C             do iz = 1,iz_end
+C               do iy = 1,ly1
+C                 do ix = 1,lx1
+C                   ib = (iz-1)*lx1*ly1 + (iy-1)*(lx1) + ix
+C                   srb_temp(ix,iy,iz,1) = 1
+C                   call intp_rstd(srb_temp_d,srb_temp,lx1,lxd,if3d,0)
+C                   call grad_rst(dpdr(1,ib),dpds(1,ib),dpdt(1,ib),
+C      $                   srb_temp_d,lxd,if3d)
+C                   srb_temp(ix,iy,iz,1) = 0   
+C                 enddo
+C               enddo
+C             enddo
+C           endif   
+
+C           nb = lx1*ly1
+C           nq = lxd*lyd
+C           if (ldim .eq. 3) then
+C             nb = nb*lz1
+C             nq = nq*lzd
+C           endif
+C           do iel = 1,nelv 
+C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C             call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),
+C      $         lx1,lxd,if3d,0) ! 0 --> fwd
+C             do iz = 1,lzd
+C               do iy = 1,lyd
+C                 do ix = 1,lxd
+C                   ib = (iz-1)*lxd*lyd + (iy-1)*(lxd) + ix
+C                   bmd(ix,iy,iz,iel) = 
+C      $               jacmd(ib,iel)*wd(ix)*wd(iy)
+C                   if (ldim == 3) then
+C                         bmd(ix,iy,iz,iel) = bmd(ix,iy,iz,iel)*wd(iz)
+C                   endif
+C                 enddo
+C               enddo
+C             enddo
+C               ! Compute phi grad
+C               if (comp_phi_grad .ne. 1) then
+C           call intp_rstd(rxmd(1,1,1,iel),rxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(rymd(1,1,1,iel),rym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(rzmd(1,1,1,iel),rzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(sxmd(1,1,1,iel),sxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(symd(1,1,1,iel),sym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(szmd(1,1,1,iel),szm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(txmd(1,1,1,iel),txm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(tymd(1,1,1,iel),tym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call intp_rstd(tzmd(1,1,1,iel),tzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C C C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C                 do j=1,nb ! actually nb
+C                   do i=1,nq ! actually nq
+C                 dpdx(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rxmd(i,1,1,iel)
+C      $                                     + dpds(i,j)*sxmd(i,1,1,iel)
+C      $                                     + dpdt(i,j)*txmd(i,1,1,iel) )
+C                 dpdy(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rymd(i,1,1,iel)
+C      $                                     + dpds(i,j)*symd(i,1,1,iel)
+C      $                                     + dpdt(i,j)*tymd(i,1,1,iel) )
+C                 dpdz(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rzmd(i,1,1,iel)
+C      $                                     + dpds(i,j)*szmd(i,1,1,iel)
+C      $                                     + dpdt(i,j)*tzmd(i,1,1,iel) )
+C                   enddo
+C                 enddo
+C               endif
+C               ! Compute other parts of T1
+C               call intp_rstd(vdiff_d(1,1,1,iel),vdiff(1,1,1,iel,1),
+C      $             lx1,lxd,if3d,0)
+C               call col3(srb_temp_d,bmd(1,1,1,iel),vdiff_d(1,1,1,iel),nq)
+C               call col3(tx_d,srb_temp_d,gpsix_x(1,1,1,iel),nq)
+C               call col3(ty_d,srb_temp_d,gpsix_y(1,1,1,iel),nq)
+C               call col3(tz_d,srb_temp_d,gpsix_z(1,1,1,iel),nq)
+
+C               call mxm(dpdx(1,1,iel) ,nb,tx_d,nq,w1,1)
+C               call mxm(dpdy(1,1,iel) ,nb,ty_d,nq,w2,1)
+C               call mxm(dpdz(1,1,iel) ,nb,tz_d,nq,w3,1)
+
+C               call cmult (w1,-1.,nb)
+C               call cmult (w2,-1.,nb)
+C               call cmult (w3,-1.,nb)
+
+C               call cmult (w1,2.0,nb)
+
+C               call add2(T1_rhs_x(1,1,1,iel),w1,nb)
+C               call add2(T1_rhs_x(1,1,1,iel),w2,nb)
+C               call add2(T1_rhs_x(1,1,1,iel),w3,nb)
+
+C               ! Cross terms
+C               call mxm(dpdx(1,1,iel) ,nb,ty_d,nb,w1,1)
+C               call mxm(dpdx(1,1,iel) ,nb,tz_d,nb,w2,1)
+
+C               call cmult (w1,-1.,nb)
+C               call cmult (w2,-1.,nb)
+
+C               call add2(T1_rhs_y(1,1,1,iel),w1,nb)
+C               call add2(T1_rhs_z(1,1,1,iel),w2,nb)
+C             endif
+C           enddo
+          
+C           ! only compute phi grads once
+C           if (comp_phi_grad .ne. 1) then
+C             comp_phi_grad = 1
+C           endif
+C         endif
+
+C         call add2 (wintx,T1_rhs_x,n)
+C         call add2 (winty,T1_rhs_y,n)
+C         call add2 (wintz,T1_rhs_z,n)
+
+
+        ! Not overint
         if (comp_T1 .ne. 1) then
 C           if (use_default .eq. 1) then
 C             comp_T1 = 1 ! Comment for adaptation
@@ -2294,30 +2462,34 @@ C           call oprzero(wintx,winty,wintz)
           call rzero  (T1_rhs_x,n)
           call rzero  (T1_rhs_y,n)
           call rzero  (T1_rhs_z,n)
-          call rzero  (tx_d,n_d)
-          call rzero  (ty_d,n_d)
-          call rzero  (tz_d,n_d)
-          call rzero  (w1_d,n_d)
-          call rzero  (w2_d,n_d)
-          call rzero  (w3_d,n_d)
-          call rzero  (phi_temp,n_d)
+          call rzero  (tx,n)
+          call rzero  (ty,n)
+          call rzero  (tz,n)
+          call rzero  (w1,n)
+          call rzero  (w2,n)
+          call rzero  (w3,n)
+          call rzero  (phi_temp,n)
 
           ! Compute phi grads of reference elements
           if (comp_phi_grad .ne. 1) then
-            call rzero(srb_temp,lx1*ly1*lz1)
-            call rzero(srb_temp_d,lxd*lyd*lzd)
             iz_end = lz1
             if (ldim .eq. 2) then
               iz_end = 1
             endif
-            do iz = 1,iz_end
+            do iz = 1,lz1
               do iy = 1,ly1
                 do ix = 1,lx1
                   ib = (iz-1)*lx1*ly1 + (iy-1)*(lx1) + ix
+                  call rzero(srb_temp,lx1*ly1*lz1*nelev)
                   srb_temp(ix,iy,iz,1) = 1
-                  call intp_rstd(srb_temp_d,srb_temp,lx1,lxd,if3d,0)
-                  call grad_rst(dpdr(1,ib),dpds(1,ib),dpdt(1,ib),
-     $                   srb_temp_d,lxd,if3d)
+                  if (ldim .eq. 2) then           
+                    call local_grad2(dpdr(1,ib),
+     $                   dpds(1,ib),srb_temp,lx1-1,1,dxm1,dxtm1)
+                  elseif (ldim .eq. 3) then
+                    call local_grad3(dpdr1(1,ib),
+     $                   dpds1(1,ib),dpdt1(1,ib),
+     $                   srb_temp,lx1-1,1,dxm1,dxtm1)
+                  endif
                   srb_temp(ix,iy,iz,1) = 0   
                 enddo
               enddo
@@ -2325,64 +2497,37 @@ C           call oprzero(wintx,winty,wintz)
           endif   
 
           nb = lx1*ly1
-          nq = lxd*lyd
           if (ldim .eq. 3) then
             nb = nb*lz1
-            nq = nq*lzd
           endif
           do iel = 1,nelv 
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-            call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),
-     $         lx1,lxd,if3d,0) ! 0 --> fwd
-            do iz = 1,lzd
-              do iy = 1,lyd
-                do ix = 1,lxd
-                  ib = (iz-1)*lxd*lyd + (iy-1)*(lxd) + ix
-                  bmd(ix,iy,iz,iel) = 
-     $               jacmd(ib,iel)*wd(ix)*wd(iy)
-                  if (ldim == 3) then
-                        bmd(ix,iy,iz,iel) = bmd(ix,iy,iz,iel)*wd(iz)
-                  endif
-                enddo
-              enddo
-            enddo
               ! Compute phi grad
               if (comp_phi_grad .ne. 1) then
-          call intp_rstd(rxmd(1,1,1,iel),rxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-          call intp_rstd(rymd(1,1,1,iel),rym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-          call intp_rstd(rzmd(1,1,1,iel),rzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-          call intp_rstd(sxmd(1,1,1,iel),sxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-          call intp_rstd(symd(1,1,1,iel),sym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-          call intp_rstd(szmd(1,1,1,iel),szm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-          call intp_rstd(txmd(1,1,1,iel),txm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-          call intp_rstd(tymd(1,1,1,iel),tym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-          call intp_rstd(tzmd(1,1,1,iel),tzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-C C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
                 do j=1,nb ! actually nb
-                  do i=1,nq ! actually nq
-                dpdx(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rxmd(i,1,1,iel)
-     $                                     + dpds(i,j)*sxmd(i,1,1,iel)
-     $                                     + dpdt(i,j)*txmd(i,1,1,iel) )
-                dpdy(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rymd(i,1,1,iel)
-     $                                     + dpds(i,j)*symd(i,1,1,iel)
-     $                                     + dpdt(i,j)*tymd(i,1,1,iel) )
-                dpdz(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rzmd(i,1,1,iel)
-     $                                     + dpds(i,j)*szmd(i,1,1,iel)
-     $                                     + dpdt(i,j)*tzmd(i,1,1,iel) )
+                  do i=1,nb ! actually nq
+               dpdx1(j,i,iel)=jacmi(i,iel)*(dpdr1(i,j)*rxm1(i,1,1,iel)
+     $                           + dpds1(i,j)*sxm1(i,1,1,iel)
+     $                           + dpdt1(i,j)*txm1(i,1,1,iel) )
+               dpdy1(j,i,iel)=jacmi(i,iel)*(dpdr1(i,j)*rym1(i,1,1,iel)
+     $                           + dpds1(i,j)*sym1(i,1,1,iel)
+     $                           + dpdt1(i,j)*tym1(i,1,1,iel) )
+               dpdz1(j,i,iel)=jacmi(i,iel)*(dpdr1(i,j)*rzm1(i,1,1,iel)
+     $                           + dpds1(i,j)*szm1(i,1,1,iel)
+     $                           + dpdt1(i,j)*tzm1(i,1,1,iel) )
                   enddo
                 enddo
               endif
               ! Compute other parts of T1
-              call intp_rstd(vdiff_d(1,1,1,iel),vdiff(1,1,1,iel,1),
-     $             lx1,lxd,if3d,0)
-              call col3(srb_temp_d,bmd(1,1,1,iel),vdiff_d(1,1,1,iel),nq)
-              call col3(tx_d,srb_temp_d,gpsix_x(1,1,1,iel),nq)
-              call col3(ty_d,srb_temp_d,gpsix_y(1,1,1,iel),nq)
-              call col3(tz_d,srb_temp_d,gpsix_z(1,1,1,iel),nq)
+              call col3(srb_temp,bm1(1,1,1,iel),vdiff(1,1,1,iel,1),nb)
+              call col3(tx,srb_temp,gpsix_x1(1,1,1,iel),nb)
+              call col3(ty,srb_temp,gpsix_y1(1,1,1,iel),nb)
+              call col3(tz,srb_temp,gpsix_z1(1,1,1,iel),nb)
+              ! TODO: Add psiy and psiz parts
 
-              call mxm(dpdx(1,1,iel) ,nb,tx_d,nq,w1,1)
-              call mxm(dpdy(1,1,iel) ,nb,ty_d,nq,w2,1)
-              call mxm(dpdz(1,1,iel) ,nb,tz_d,nq,w3,1)
+              call mxm(dpdx1(1,1,iel) ,nb,tx,nb,w1,1)
+              call mxm(dpdy1(1,1,iel) ,nb,ty,nb,w2,1)
+              call mxm(dpdz1(1,1,iel) ,nb,tz,nb,w3,1)
 
               call cmult (w1,-1.,nb)
               call cmult (w2,-1.,nb)
@@ -2395,8 +2540,8 @@ C C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 -
               call add2(T1_rhs_x(1,1,1,iel),w3,nb)
 
               ! Cross terms
-              call mxm(dpdx(1,1,iel) ,nb,ty_d,nb,w1,1)
-              call mxm(dpdx(1,1,iel) ,nb,tz_d,nb,w2,1)
+              call mxm(dpdx1(1,1,iel) ,nb,ty,nb,w1,1)
+              call mxm(dpdx1(1,1,iel) ,nb,tz,nb,w2,1)
 
               call cmult (w1,-1.,nb)
               call cmult (w2,-1.,nb)
@@ -2405,7 +2550,7 @@ C C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 -
               call add2(T1_rhs_z(1,1,1,iel),w2,nb)
             endif
           enddo
-          
+
           ! only compute phi grads once
           if (comp_phi_grad .ne. 1) then
             comp_phi_grad = 1
