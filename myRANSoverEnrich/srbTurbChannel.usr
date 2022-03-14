@@ -1434,6 +1434,33 @@ C           call col2   (tr4z1,bm1,n)
 C           call add2   (wsz,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          ! S for k
+          ! S^psi * k
+          ! Compute grad of k
+          call gradm1 (tx,ty,tz,t(1,1,1,1,ifld_k-1))
+          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
+          call copy   (tr4z1,w1,n)
+          call cmult  (tr4z1,-1.0,n)
+C           call col2   (tr4z1,bm1,n)
+          ! Add to total forcing
+C           call add2   (wsk,w1,n)
+
+          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          ! S for omg
+          ! S^psi * omg
+          ! Compute grad of omg
+          call gradm1 (tx,ty,tz,t(1,1,1,1,ifld_omg-1))
+          if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
+          if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
+          call copy   (tr4z1,w1,n)
+          call cmult  (tr4z1,-1.0,n)
+C           call col2   (tr4z1,bm1,n)
+          ! Add to total forcing
+C           call add2   (wsomg,w1,n)
+
+
+          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! Multiply by mass matrix for integration  
 C           call col2(wsx_d,bmd,n_d)
 C           call col2(wsy_d,bmd,n_d)
@@ -1497,9 +1524,9 @@ C           call opcolv (wintx,winty,wintz,vtrans(1,1,1,1,1))
             winty(i,1,1,iel) = -1.0*winty(i,1,1,iel)*vtrans(i,1,1,iel,1)
             wintz(i,1,1,iel) = -1.0*wintz(i,1,1,iel)*vtrans(i,1,1,iel,1)
             wintk(i,1,1,iel) = -1.0*wintk(i,1,1,iel)
-     $                          *vtrans(i,1,1,iel,ifld_k)
+     $                          *vtrans(i,1,1,iel,ifld_k-1)
             wintomg(i,1,1,iel) = -1.0*wintomg(i,1,1,iel)
-     $                          *vtrans(i,1,1,iel,ifld_omg)
+     $                          *vtrans(i,1,1,iel,ifld_omg-1)
               enddo
             endif
           enddo
