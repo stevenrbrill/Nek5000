@@ -127,6 +127,33 @@ c     mass matrix on the Gauss-Lobatto mesh.
       return
       end
 c-----------------------------------------------------------------------
+      subroutine srb_makeuq
+
+c     Fill up user defined forcing function and collocate will the
+c     mass matrix on the Gauss-Lobatto mesh.
+
+      include 'SIZE'
+      include 'INPUT'
+      include 'MASS'
+      include 'SOLN'
+      include 'TSTEP'
+
+      real bqint(lx1,ly1,lz1,lelt)
+      n = lx1*ly1*lz1*nelfld(ifield)
+
+      if (.not.ifcvfld(ifield)) time = time-dt ! Set time to t^n-1 for user function
+
+      if (nio.eq.0.and.loglevel.gt.2) 
+     $   write(6,*) 'makeuq', ifield, time
+      call srb_setqvol(bq(1,1,1,1,ifield-1),bqint(1,1,1,1))
+      call col2   (bq(1,1,1,1,ifield-1) ,bm1,n)
+      call add2 (bq(1,1,1,1,ifield-1),bqint(1,1,1,1),n)
+
+      if (.not.ifcvfld(ifield)) time = time+dt ! Restore time
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine setqvol(bql)
 
 c     Set user specified volumetric forcing function (e.g. heat source).
@@ -150,6 +177,53 @@ c     Set user specified volumetric forcing function (e.g. heat source).
       do iel=1,nel
 
          call nekuq (bql,iel) ! ONLY SUPPORT USERQ - pff, 3/08/16
+
+c        igrp = igroup(iel)
+c        if (matype(igrp,ifield).eq.1) then ! constant source within a group
+c           cqvol = cpgrp(igrp,ifield,3)
+c           call cfill (bql(1,iel),cqvol,nxyz1)
+c        else  !  pff 2/6/96 ............ default is to look at userq
+c           call nekuq (bql,iel)
+c        endif
+
+      enddo
+c
+c 101 FORMAT(' Wrong material type (',I3,') for group',I3,', field',I2
+c    $    ,/,' Aborting in SETQVOL.')
+C  
+
+#ifdef TIMER
+      tusfq=tusfq+(dnekclock()-etime1)
+#endif
+ 
+      return
+      end
+C
+c-----------------------------------------------------------------------
+      subroutine srb_setqvol(bql,bqint)
+
+c     Set user specified volumetric forcing function (e.g. heat source).
+
+      include 'SIZE'
+      include 'INPUT'
+      include 'SOLN'
+      include 'TSTEP'
+      include 'CTIMER'
+
+      real bql(lx1*ly1*lz1,lelt)
+      real bqint(lx1*ly1*lz1,lelt)
+
+#ifdef TIMER
+      etime1=dnekclock()
+#endif
+
+      nel   = nelfld(ifield)
+      nxyz1 = lx1*ly1*lz1
+      n     = nxyz1*nel
+
+      do iel=1,nel
+
+         call srb_nekuq (bql,bqint,iel) ! ONLY SUPPORT USERQ - pff, 3/08/16
 
 c        igrp = igroup(iel)
 c        if (matype(igrp,ifield).eq.1) then ! constant source within a group
@@ -196,6 +270,38 @@ c
          qvol = 0.0
          call userq   (i,j,k,ielg)
          bql(i,j,k,iel) = qvol
+ 10   continue
+
+      return
+      end
+
+      subroutine srb_nekuq (bql,bqint,iel)
+C------------------------------------------------------------------
+C
+C     Generate user-specified volumetric source term (temp./p.s.)
+C
+C------------------------------------------------------------------
+      include 'SIZE'
+      include 'SOLN'
+      include 'MASS'
+      include 'PARALLEL'
+      include 'TSTEP'
+      include 'NEKUSE'
+      include 'INPUT'
+c
+      real bql(lx1,ly1,lz1,lelt)
+      real bqint(lx1,ly1,lz1,lelt)
+c
+      ielg = lglel(iel)
+      do 10 k=1,lz1
+      do 10 j=1,ly1
+      do 10 i=1,lx1
+         if (optlevel.le.2) call nekasgn (i,j,k,iel)
+         qvol = 0.0
+         call userq   (i,j,k,ielg)
+         bql(i,j,k,iel) = qvol
+         call userqint(i,j,k,ielg)
+         bqint(i,j,k,ielg) = qint
  10   continue
 
       return
