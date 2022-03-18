@@ -658,15 +658,15 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $                gpsiz_x(lxd,lyd,lzd,lelv), 
      $                gpsiz_y(lxd,lyd,lzd,lelv),
      $                gpsiz_z(lxd,lyd,lzd,lelv),
-     $                gpsix_x1(lxd,lyd,lzd,lelv), 
-     $                gpsix_y1(lxd,lyd,lzd,lelv),
-     $                gpsix_z1(lxd,lyd,lzd,lelv), 
-     $                gpsiy_x1(lxd,lyd,lzd,lelv),
-     $                gpsiy_y1(lxd,lyd,lzd,lelv), 
-     $                gpsiy_z1(lxd,lyd,lzd,lelv),
-     $                gpsiz_x1(lxd,lyd,lzd,lelv), 
-     $                gpsiz_y1(lxd,lyd,lzd,lelv),
-     $                gpsiz_z1(lxd,lyd,lzd,lelv)
+     $                gpsix_x1(lx1,ly1,lz1,lelv), 
+     $                gpsix_y1(lx1,ly1,lz1,lelv),
+     $                gpsix_z1(lx1,ly1,lz1,lelv), 
+     $                gpsiy_x1(lx1,ly1,lz1,lelv),
+     $                gpsiy_y1(lx1,ly1,lz1,lelv), 
+     $                gpsiy_z1(lx1,ly1,lz1,lelv),
+     $                gpsiz_x1(lx1,ly1,lz1,lelv), 
+     $                gpsiz_y1(lx1,ly1,lz1,lelv),
+     $                gpsiz_z1(lx1,ly1,lz1,lelv)
       common /ransenrich/ wsk(lx1,ly1,lz1,lelv)
      $                 ,  wsomg(lx1,ly1,lz1,lelv)
      $                 ,  wsk_d(lxd,lyd,lzd,lelv)
@@ -2220,15 +2220,15 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $                gpsiz_x(lxd,lyd,lzd,lelv), 
      $                gpsiz_y(lxd,lyd,lzd,lelv),
      $                gpsiz_z(lxd,lyd,lzd,lelv),
-     $                gpsix_x1(lxd,lyd,lzd,lelv), 
-     $                gpsix_y1(lxd,lyd,lzd,lelv),
-     $                gpsix_z1(lxd,lyd,lzd,lelv), 
-     $                gpsiy_x1(lxd,lyd,lzd,lelv),
-     $                gpsiy_y1(lxd,lyd,lzd,lelv), 
-     $                gpsiy_z1(lxd,lyd,lzd,lelv),
-     $                gpsiz_x1(lxd,lyd,lzd,lelv), 
-     $                gpsiz_y1(lxd,lyd,lzd,lelv),
-     $                gpsiz_z1(lxd,lyd,lzd,lelv)
+     $                gpsix_x1(lx1,ly1,lz1,lelv), 
+     $                gpsix_y1(lx1,ly1,lz1,lelv),
+     $                gpsix_z1(lx1,ly1,lz1,lelv), 
+     $                gpsiy_x1(lx1,ly1,lz1,lelv),
+     $                gpsiy_y1(lx1,ly1,lz1,lelv), 
+     $                gpsiy_z1(lx1,ly1,lz1,lelv),
+     $                gpsiz_x1(lx1,ly1,lz1,lelv), 
+     $                gpsiz_y1(lx1,ly1,lz1,lelv),
+     $                gpsiz_z1(lx1,ly1,lz1,lelv)
       common /ransenrich/ wsk(lx1,ly1,lz1,lelv)
      $                 ,  wsomg(lx1,ly1,lz1,lelv)
      $                 ,  wsk_d(lxd,lyd,lzd,lelv)
@@ -2483,8 +2483,8 @@ C           call oprzero(wintx,winty,wintz)
                   call rzero(srb_temp,lx1*ly1*lz1*nelev)
                   srb_temp(ix,iy,iz,1) = 1
                   if (ldim .eq. 2) then           
-                    call local_grad2(dpdr(1,ib),
-     $                   dpds(1,ib),srb_temp,lx1-1,1,dxm1,dxtm1)
+                    call local_grad2(dpdr1(1,ib),
+     $                   dpds1(1,ib),srb_temp,lx1-1,1,dxm1,dxtm1)
                   elseif (ldim .eq. 3) then
                     call local_grad3(dpdr1(1,ib),
      $                   dpds1(1,ib),dpdt1(1,ib),
@@ -2779,7 +2779,7 @@ c      param(84) = 1e-6    ! setting initial time step
 
       do i=1,n
          xc(i,1) = xscale*xc(i,1)
-         yc(i,1) = 2*yscale*yc(i,1)-1  ! No stretching 
+         yc(i,1) = 2*yscale*yc(i,1)-1.  ! No stretching 
          !yc(i,1) = tanh(BETAM*(2*yscale*yc(i,1)-1))/tanh(BETAM) ! Stretching
         if (ldim == 3) then
          zc(i,1) = zscale*zc(i,1)
