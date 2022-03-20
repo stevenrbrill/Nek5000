@@ -1157,48 +1157,38 @@ C           enddo
           ! + Term 4: -rho*dot(psi,gradient(psi))     Should be zero
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-              do i = 1,lxd*lyd*lzd 
+              do i = 1,lx1*ly1*lz1 
                 ! T2x
-                w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsix_x(i,1,1,iel)
-     $                          + vy_d(i,1,1,iel)*gpsix_y(i,1,1,iel)
-                w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-                wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
-                tr2x(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+                w1(i,1,1,iel) = vx(i,1,1,iel)*gpsix_x1(i,1,1,iel)
+     $                          + vy(i,1,1,iel)*gpsix_y1(i,1,1,iel)
+                wsx(i,1,1,iel) = wsx(i,1,1,iel) + w1(i,1,1,iel)
+                tr2x1(i,1,1,iel) = w1(i,1,1,iel)
                 
                 ! T4x
-                w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsix_x(i,1,1,iel)
-     $                          + psiy_d(i,1,1,iel)*gpsix_y(i,1,1,iel)
-                w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-                wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
-                tr4x(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+                w1(i,1,1,iel) = psix(i,1,1,iel)*gpsix_x1(i,1,1,iel)
+     $                          + psiy(i,1,1,iel)*gpsix_y1(i,1,1,iel)
+                wsx(i,1,1,iel) = wsx(i,1,1,iel) + w1(i,1,1,iel)
+                tr4x1(i,1,1,iel) = w1(i,1,1,iel)
 
                 ! T2y
-                w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsiy_x(i,1,1,iel)
-     $                          + vy_d(i,1,1,iel)*gpsiy_y(i,1,1,iel)
-                w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-                wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
-                tr2y(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+                w1(i,1,1,iel) = vx(i,1,1,iel)*gpsiy_x1(i,1,1,iel)
+     $                          + vy(i,1,1,iel)*gpsiy_y1(i,1,1,iel)
+                wsy(i,1,1,iel) = wsy(i,1,1,iel) + w1(i,1,1,iel)
                 
                 ! T4y
-                w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsiy_x(i,1,1,iel)
-     $                          + psiy_d(i,1,1,iel)*gpsiy_y(i,1,1,iel)
-                w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-                wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
-                tr4y(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+                w1(i,1,1,iel) = psix(i,1,1,iel)*gpsiy_x1(i,1,1,iel)
+     $                          + psiy(i,1,1,iel)*gpsiy_y1(i,1,1,iel)
+                wsy(i,1,1,iel) = wsy(i,1,1,iel) + w1(i,1,1,iel)
 
                 ! T2z
-                w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsiz_x(i,1,1,iel)
-     $                          + vy_d(i,1,1,iel)*gpsiz_y(i,1,1,iel)
-                w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-                wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
-                tr2z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+                w1(i,1,1,iel) = vx(i,1,1,iel)*gpsiz_x1(i,1,1,iel)
+     $                          + vy(i,1,1,iel)*gpsiz_y1(i,1,1,iel)
+                wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
                 
                 ! T4z
-                w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsiz_x(i,1,1,iel)
-     $                          + psiy_d(i,1,1,iel)*gpsiz_y(i,1,1,iel)
-                w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-                wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
-                tr4z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+                w1(i,1,1,iel) = psix(i,1,1,iel)*gpsiz_x1(i,1,1,iel)
+     $                          + psiy(i,1,1,iel)*gpsiz_y1(i,1,1,iel)
+                wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
               enddo
             endif
           enddo      
@@ -2451,14 +2441,13 @@ C         call add2 (wintx,T1_rhs_x,n)
 C         call add2 (winty,T1_rhs_y,n)
 C         call add2 (wintz,T1_rhs_z,n)
 
-
         ! Not overint
         if (comp_T1 .ne. 1) then
 C           if (use_default .eq. 1) then
 C             comp_T1 = 1 ! Comment for adaptation
 C           endif
 
-C           call oprzero(wintx,winty,wintz)
+          call oprzero(wintx,winty,wintz)
           call rzero  (T1_rhs_x,n)
           call rzero  (T1_rhs_y,n)
           call rzero  (T1_rhs_z,n)
@@ -2468,7 +2457,7 @@ C           call oprzero(wintx,winty,wintz)
           call rzero  (w1,n)
           call rzero  (w2,n)
           call rzero  (w3,n)
-          call rzero  (phi_temp,n)
+          call rzero  (phi_temp1,n)
 
           ! Compute phi grads of reference elements
           if (comp_phi_grad .ne. 1) then
@@ -2551,15 +2540,15 @@ C           call oprzero(wintx,winty,wintz)
             endif
           enddo
 
+          call add2 (wintx,T1_rhs_x,n)
+          call add2 (winty,T1_rhs_y,n)
+          call add2 (wintz,T1_rhs_z,n)
+
           ! only compute phi grads once
           if (comp_phi_grad .ne. 1) then
             comp_phi_grad = 1
           endif
         endif
-
-        call add2 (wintx,T1_rhs_x,n)
-        call add2 (winty,T1_rhs_y,n)
-        call add2 (wintz,T1_rhs_z,n)
 
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
 C       call oprzero(psix,psiy,psiz)
