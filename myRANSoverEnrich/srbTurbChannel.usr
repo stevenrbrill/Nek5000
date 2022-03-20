@@ -1155,6 +1155,54 @@ C           enddo
           ! ----------------------------------------------------------------
           ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
           ! + Term 4: -rho*dot(psi,gradient(psi))     Should be zero
+C           do iel = 1,nelv
+C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C               do i = 1,lxd*lyd*lzd 
+C                 ! T2x
+C                 w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsix_x(i,1,1,iel)
+C      $                          + vy_d(i,1,1,iel)*gpsix_y(i,1,1,iel)
+C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C C                 wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
+C                 tr2x(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+                
+C                 ! T4x
+C                 w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsix_x(i,1,1,iel)
+C      $                          + psiy_d(i,1,1,iel)*gpsix_y(i,1,1,iel)
+C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C C                 wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
+C                 tr4x(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+
+C                 ! T2y
+C                 w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsiy_x(i,1,1,iel)
+C      $                          + vy_d(i,1,1,iel)*gpsiy_y(i,1,1,iel)
+C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C C                 wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
+C                 tr2y(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+                
+C                 ! T4y
+C                 w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsiy_x(i,1,1,iel)
+C      $                          + psiy_d(i,1,1,iel)*gpsiy_y(i,1,1,iel)
+C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C C                 wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
+C                 tr4y(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+
+C                 ! T2z
+C                 w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsiz_x(i,1,1,iel)
+C      $                          + vy_d(i,1,1,iel)*gpsiz_y(i,1,1,iel)
+C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C C                 wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
+C                 tr2z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+                
+C                 ! T4z
+C                 w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsiz_x(i,1,1,iel)
+C      $                          + psiy_d(i,1,1,iel)*gpsiz_y(i,1,1,iel)
+C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C C                 wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
+C                 tr4z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+C               enddo
+C             endif
+C           enddo      
+
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
               do i = 1,lx1*ly1*lz1 
@@ -1199,205 +1247,205 @@ C           enddo
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for x
           ! S^psi * u
-          do iel = 1,nelv
-            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-              call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
-     $                    txz(1,1,1,iel),vx_d(1,1,1,iel),lxd,if3d)    
-              do i = 1,lxd*lyd*lzd 
-                  ! Term 3x
-                  if (if3d) then
-                    tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +txmd(i,1,1,iel)*txz(i,1,1,iel))
-                    ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +symd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +tymd(i,1,1,iel)*txz(i,1,1,iel))
-                    tz_d(i,1,1,iel) = 1./jacmd(i,iel)*
-     $                       (rzmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +szmd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +tzmd(i,1,1,iel)*txz(i,1,1,iel))
-                  else
-                    tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel))
-                    ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
-                    tz_d(i,1,1,iel) = 0.0
-                  endif
-                  w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
-     $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
-     $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
-                  w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-C                   wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
-                  tr3x(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
-              enddo
-            endif
-          enddo
+C           do iel = 1,nelv
+C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C               call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
+C      $                    txz(1,1,1,iel),vx_d(1,1,1,iel),lxd,if3d)    
+C               do i = 1,lxd*lyd*lzd 
+C                   ! Term 3x
+C                   if (if3d) then
+C                     tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +txmd(i,1,1,iel)*txz(i,1,1,iel))
+C                     ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +symd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +tymd(i,1,1,iel)*txz(i,1,1,iel))
+C                     tz_d(i,1,1,iel) = 1./jacmd(i,iel)*
+C      $                       (rzmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +szmd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +tzmd(i,1,1,iel)*txz(i,1,1,iel))
+C                   else
+C                     tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel))
+C                     ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
+C                     tz_d(i,1,1,iel) = 0.0
+C                   endif
+C                   w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
+C      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
+C      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
+C                   w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C C                   wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
+C                   tr3x(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+C               enddo
+C             endif
+C           enddo
 
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! S for y
-          ! S^psi * v
-          do iel = 1,nelv
-            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-              call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
-     $                    txz(1,1,1,iel),vy_d(1,1,1,iel),lxd,if3d)    
-              do i = 1,lxd*lyd*lzd 
-                  ! Term 3x
-                  if (if3d) then
-                    tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +txmd(i,1,1,iel)*txz(i,1,1,iel))
-                    ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +symd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +tymd(i,1,1,iel)*txz(i,1,1,iel))
-                    tz_d(i,1,1,iel) = 1./jacmd(i,iel)*
-     $                       (rzmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +szmd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +tzmd(i,1,1,iel)*txz(i,1,1,iel))
-                  else
-                    tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel))
-                    ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
-                    tz_d(i,1,1,iel) = 0.0
-                  endif
-                  w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
-     $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
-     $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
-                  w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-C                   wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
-                  tr3y(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
-              enddo
-            endif
-          enddo
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! S for y
+C           ! S^psi * v
+C           do iel = 1,nelv
+C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C               call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
+C      $                    txz(1,1,1,iel),vy_d(1,1,1,iel),lxd,if3d)    
+C               do i = 1,lxd*lyd*lzd 
+C                   ! Term 3x
+C                   if (if3d) then
+C                     tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +txmd(i,1,1,iel)*txz(i,1,1,iel))
+C                     ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +symd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +tymd(i,1,1,iel)*txz(i,1,1,iel))
+C                     tz_d(i,1,1,iel) = 1./jacmd(i,iel)*
+C      $                       (rzmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +szmd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +tzmd(i,1,1,iel)*txz(i,1,1,iel))
+C                   else
+C                     tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel))
+C                     ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
+C                     tz_d(i,1,1,iel) = 0.0
+C                   endif
+C                   w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
+C      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
+C      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
+C                   w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C C                   wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
+C                   tr3y(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+C               enddo
+C             endif
+C           enddo
 
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! S for z
-          ! S^psi * w
-          do iel = 1,nelv
-            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-              call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
-     $                    txz(1,1,1,iel),vz_d(1,1,1,iel),lxd,if3d)    
-              do i = 1,lxd*lyd*lzd 
-                  ! Term 3x
-                  if (if3d) then
-                    tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +txmd(i,1,1,iel)*txz(i,1,1,iel))
-                    ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +symd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +tymd(i,1,1,iel)*txz(i,1,1,iel))
-                    tz_d(i,1,1,iel) = 1./jacmd(i,iel)*
-     $                       (rzmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +szmd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +tzmd(i,1,1,iel)*txz(i,1,1,iel))
-                  else
-                    tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel))
-                    ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
-                    tz_d(i,1,1,iel) = 0.0
-                  endif
-                  w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
-     $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
-     $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
-                  w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-C                   wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
-                  tr3z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
-              enddo
-            endif
-          enddo
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! S for z
+C           ! S^psi * w
+C           do iel = 1,nelv
+C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C               call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
+C      $                    txz(1,1,1,iel),vz_d(1,1,1,iel),lxd,if3d)    
+C               do i = 1,lxd*lyd*lzd 
+C                   ! Term 3x
+C                   if (if3d) then
+C                     tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +txmd(i,1,1,iel)*txz(i,1,1,iel))
+C                     ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +symd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +tymd(i,1,1,iel)*txz(i,1,1,iel))
+C                     tz_d(i,1,1,iel) = 1./jacmd(i,iel)*
+C      $                       (rzmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +szmd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +tzmd(i,1,1,iel)*txz(i,1,1,iel))
+C                   else
+C                     tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel))
+C                     ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
+C                     tz_d(i,1,1,iel) = 0.0
+C                   endif
+C                   w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
+C      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
+C      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
+C                   w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C C                   wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
+C                   tr3z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+C               enddo
+C             endif
+C           enddo
 
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! S for k
-          ! S^psi * k
-          do iel = 1,nelv
-            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-              call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
-     $                    txz(1,1,1,iel),k_d(1,1,1,iel),lxd,if3d)    
-              do i = 1,lxd*lyd*lzd 
-                  ! Term 3x
-                  if (if3d) then
-                    tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +txmd(i,1,1,iel)*txz(i,1,1,iel))
-                    ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +symd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +tymd(i,1,1,iel)*txz(i,1,1,iel))
-                    tz_d(i,1,1,iel) = 1./jacmd(i,iel)*
-     $                       (rzmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +szmd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +tzmd(i,1,1,iel)*txz(i,1,1,iel))
-                  else
-                    tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel))
-                    ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
-                    tz_d(i,1,1,iel) = 0.0
-                  endif
-                  w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
-     $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
-     $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
-                  w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-C                   wsk_d(i,1,1,iel) = wsk_d(i,1,1,iel) + w1_d(i,1,1,iel)
-              enddo
-            endif
-          enddo
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! S for k
+C           ! S^psi * k
+C           do iel = 1,nelv
+C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C               call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
+C      $                    txz(1,1,1,iel),k_d(1,1,1,iel),lxd,if3d)    
+C               do i = 1,lxd*lyd*lzd 
+C                   ! Term 3x
+C                   if (if3d) then
+C                     tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +txmd(i,1,1,iel)*txz(i,1,1,iel))
+C                     ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +symd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +tymd(i,1,1,iel)*txz(i,1,1,iel))
+C                     tz_d(i,1,1,iel) = 1./jacmd(i,iel)*
+C      $                       (rzmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +szmd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +tzmd(i,1,1,iel)*txz(i,1,1,iel))
+C                   else
+C                     tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel))
+C                     ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
+C                     tz_d(i,1,1,iel) = 0.0
+C                   endif
+C                   w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
+C      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
+C      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
+C                   w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C C                   wsk_d(i,1,1,iel) = wsk_d(i,1,1,iel) + w1_d(i,1,1,iel)
+C               enddo
+C             endif
+C           enddo
 
-          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-          ! S for z
-          ! S^psi * w
-          do iel = 1,nelv
-            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-              call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
-     $                    txz(1,1,1,iel),omg_d(1,1,1,iel),lxd,if3d)    
-              do i = 1,lxd*lyd*lzd 
-                  ! Term 3x
-                  if (if3d) then
-                    tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +txmd(i,1,1,iel)*txz(i,1,1,iel))
-                    ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +symd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +tymd(i,1,1,iel)*txz(i,1,1,iel))
-                    tz_d(i,1,1,iel) = 1./jacmd(i,iel)*
-     $                       (rzmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +szmd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +tzmd(i,1,1,iel)*txz(i,1,1,iel))
-                  else
-                    tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel))
-                    ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
-                    tz_d(i,1,1,iel) = 0.0
-                  endif
-                  w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
-     $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
-     $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
-                  w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-C                wsomg_d(i,1,1,iel) = wsomg_d(i,1,1,iel) + w1_d(i,1,1,iel)
-              enddo
-            endif
-          enddo
+C           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+C           ! S for z
+C           ! S^psi * w
+C           do iel = 1,nelv
+C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C               call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
+C      $                    txz(1,1,1,iel),omg_d(1,1,1,iel),lxd,if3d)    
+C               do i = 1,lxd*lyd*lzd 
+C                   ! Term 3x
+C                   if (if3d) then
+C                     tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +txmd(i,1,1,iel)*txz(i,1,1,iel))
+C                     ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +symd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +tymd(i,1,1,iel)*txz(i,1,1,iel))
+C                     tz_d(i,1,1,iel) = 1./jacmd(i,iel)*
+C      $                       (rzmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +szmd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +tzmd(i,1,1,iel)*txz(i,1,1,iel))
+C                   else
+C                     tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel))
+C                     ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
+C                     tz_d(i,1,1,iel) = 0.0
+C                   endif
+C                   w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
+C      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
+C      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
+C                   w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C C                wsomg_d(i,1,1,iel) = wsomg_d(i,1,1,iel) + w1_d(i,1,1,iel)
+C               enddo
+C             endif
+C           enddo
 
             ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for x
@@ -1472,18 +1520,18 @@ C           call col2(wsy_d,bmd,n_d)
 C           call col2(wsz_d,bmd,n_d)
 
           ! Revert back to non-overintegrated
-          do iel = 1,nelv
-            call intp_rstd(wintx(1,1,1,iel),wsx_d(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(winty(1,1,1,iel),wsy_d(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(wintz(1,1,1,iel),wsz_d(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(wintk(1,1,1,iel),wsk_d(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(wintomg(1,1,1,iel),wsomg_d(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-          enddo
+C           do iel = 1,nelv
+C             call intp_rstd(wintx(1,1,1,iel),wsx_d(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(winty(1,1,1,iel),wsy_d(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(wintz(1,1,1,iel),wsz_d(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(wintk(1,1,1,iel),wsk_d(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(wintomg(1,1,1,iel),wsomg_d(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C           enddo
 C           call invcol2(wintx,bm1,n)
 C           call invcol2(winty,bm1,n)
 C           call invcol2(wintz,bm1,n)
@@ -1529,13 +1577,13 @@ C           call opcolv (wintx,winty,wintz,vtrans(1,1,1,1,1))
      $                      *vtrans(i,1,1,iel,ifld_k-1)
             wsomg(i,1,1,iel) = -1.0*wsomg(i,1,1,iel)
      $                      *vtrans(i,1,1,iel,ifld_omg-1)
-            wintx(i,1,1,iel) = -1.0*wintx(i,1,1,iel)*vtrans(i,1,1,iel,1)
-            winty(i,1,1,iel) = -1.0*winty(i,1,1,iel)*vtrans(i,1,1,iel,1)
-            wintz(i,1,1,iel) = -1.0*wintz(i,1,1,iel)*vtrans(i,1,1,iel,1)
-            wintk(i,1,1,iel) = -1.0*wintk(i,1,1,iel)
-     $                          *vtrans(i,1,1,iel,ifld_k-1)
-            wintomg(i,1,1,iel) = -1.0*wintomg(i,1,1,iel)
-     $                          *vtrans(i,1,1,iel,ifld_omg-1)
+C             wintx(i,1,1,iel) = -1.0*wintx(i,1,1,iel)*vtrans(i,1,1,iel,1)
+C             winty(i,1,1,iel) = -1.0*winty(i,1,1,iel)*vtrans(i,1,1,iel,1)
+C             wintz(i,1,1,iel) = -1.0*wintz(i,1,1,iel)*vtrans(i,1,1,iel,1)
+C             wintk(i,1,1,iel) = -1.0*wintk(i,1,1,iel)
+C      $                          *vtrans(i,1,1,iel,ifld_k-1)
+C             wintomg(i,1,1,iel) = -1.0*wintomg(i,1,1,iel)
+C      $                          *vtrans(i,1,1,iel,ifld_omg-1)
               enddo
             endif
           enddo
