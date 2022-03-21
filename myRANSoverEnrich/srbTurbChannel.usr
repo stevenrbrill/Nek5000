@@ -1086,7 +1086,7 @@ C           enddo
             call intp_rstd(vz_d(1,1,1,iel),vz(1,1,1,iel),lx1,lxd,if3d,0)
             call intp_rstd(k_d(1,1,1,iel),t(1,1,1,1,ifld_k-1),lx1,lxd,
      $             if3d,0)
-            call intp_rstd(omg_d(1,1,1,iel),t(1,1,1,1,ifld_omg-1),lx1,
+            call intp_rstd(omg_d(1,1,1,iel),t(1,1,1,1,ifld_omega-1),lx1,
      $             lxd,if3d,0)
             endif
         enddo
@@ -1503,7 +1503,7 @@ C           call col2   (tr4z1,bm1,n)
           ! S for omg
           ! S^psi * omg
           ! Compute grad of omg
-          call gradm1 (tx,ty,tz,t(1,1,1,1,ifld_omg-1))
+          call gradm1 (tx,ty,tz,t(1,1,1,1,ifld_omega-1))
           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
           call copy   (tr4z1,w1,n)
