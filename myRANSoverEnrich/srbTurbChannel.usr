@@ -1102,6 +1102,8 @@ C           enddo
                 wsx(i,1,1,iel) = 0.0
                 wsy(i,1,1,iel) = 0.0
                 wsz(i,1,1,iel) = 0.0
+                wsk(i,1,1,iel) = 0.0
+                wsomg(i,1,1,iel) = 0.0
                 wintx(i,1,1,iel) = 0.0
                 winty(i,1,1,iel) = 0.0
                 wintz(i,1,1,iel) = 0.0
