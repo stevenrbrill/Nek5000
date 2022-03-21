@@ -1,14 +1,14 @@
 [GENERAL]
 stopAt = endTime
-endTime = 100
-dt = 1.0e-3
+endTime = 150
+dt = 2.0e-3
 writeControl = runTime
-writeInterval = 1.0
+writeInterval = 10.0
 timeStepper = BDF2
 dealiasing = no
 
-userParam01 = 0.1    # start time collecting statistics
-userParam02 = 1.0     # writeInterval 1D statistics 
+userParam01 = 100    # start time collecting statistics
+userParam02 = 10     # writeInterval 1D statistics 
 
 [PROBLEMTYPE]
 equation = incompNS
