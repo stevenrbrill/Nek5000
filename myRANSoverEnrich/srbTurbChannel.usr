@@ -703,23 +703,23 @@ c---------------------------------------------------------------
       nely  = NUMBER_ELEMENTS_Y
       nelz  = NUMBER_ELEMENTS_Z
 
-      if (istep.eq.0) then
-         bIDs(1) = 1
-         call create_obj(iobj_wall,bIDs,1)
-         nm = iglsum(nmember(iobj_wall),1)
-         if(nid.eq.0) write(6,*) 'obj_wall nmem:', nm 
-         call prepost(.true.,'  ')
-      endif
+       if (istep.eq.0) then
+          bIDs(1) = 1
+          call create_obj(iobj_wall,bIDs,1)
+          nm = iglsum(nmember(iobj_wall),1)
+          if(nid.eq.0) write(6,*) 'obj_wall nmem:', nm 
+          call prepost(.true.,'  ')
+       endif
 
-      ubar = glsc2(vx,bm1,n)/volvm1
-      e2   = glsc3(vy,bm1,vy,n)+glsc3(vz,bm1,vz,n)
-      e2   = e2/volvm1
-      if (nfield.gt.1) then
-        tmn  = glmin(t,n)
-        tmx  = glmax(t,n)
-      endif
-      if(nid.eq.0) write(6,2) time,ubar,e2,tmn,tmx
-   2               format(1p5e13.4,' monitor')
+       ubar = glsc2(vx,bm1,n)/volvm1
+       e2   = glsc3(vy,bm1,vy,n)+glsc3(vz,bm1,vz,n)
+       e2   = e2/volvm1
+       if (nfield.gt.1) then
+         tmn  = glmin(t,n)
+         tmx  = glmax(t,n)
+       endif
+       if(nid.eq.0) write(6,2) time,ubar,e2,tmn,tmx
+    2               format(1p5e13.4,' monitor')
 
 c     WALL ENRICHMENT...START
 
@@ -2699,9 +2699,9 @@ C       call rzero  (w3,n)
             do ix = 1,lx1
               do iz = 1,lz1
 C                 do iy = 1,ly1
-                  iy = ly1
-                  iy_psi = 1
-                  w1(ix,iy,iz,iel) = -psix_rhs(ix,iy_psi,iz,iel)
+C                  iy = ly1
+C                  iy_psi = 1
+C                  w1(ix,iy,iz,iel) = -psix_rhs(ix,iy_psi,iz,iel)
 C                   w2(ix,iy,iz,iel) = -psiy_rhs(ix,iy_psi,iz,iel)
 C                   w3(ix,iy,iz,iel) = -psiz_rhs(ix,iy_psi,iz,iel)
 C                 enddo
