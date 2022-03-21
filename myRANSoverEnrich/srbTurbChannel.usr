@@ -519,11 +519,11 @@ c     VARIABLES DECLARED FOR ENRICHMENT METHOD
       save secondcall
       real utau_ref, Re_tau
 C       real psix(lx1,ly1,lz1,lelv)
-C       real gpsix_x(lxd,lyd,lzd,lelv), gpsix_y(lxd,lyd,lzd,lelv)
-C       real gpsix_z(lxd,lyd,lzd,lelv), gpsiy_x(lxd,lyd,lzd,lelv)
-C       real gpsiy_y(lxd,lyd,lzd,lelv), gpsiy_z(lxd,lyd,lzd,lelv)
-C       real gpsiz_x(lxd,lyd,lzd,lelv), gpsiz_y(lxd,lyd,lzd,lelv)
-C       real gpsiz_z(lxd,lyd,lzd,lelv)
+C       real gpsix_x_d(lxd,lyd,lzd,lelv), gpsix_y_d(lxd,lyd,lzd,lelv)
+C       real gpsix_z_d(lxd,lyd,lzd,lelv), gpsiy_x_d(lxd,lyd,lzd,lelv)
+C       real gpsiy_y_d(lxd,lyd,lzd,lelv), gpsiy_z_d(lxd,lyd,lzd,lelv)
+C       real gpsiz_x_d(lxd,lyd,lzd,lelv), gpsiz_y_d(lxd,lyd,lzd,lelv)
+C       real gpsiz_z_d(lxd,lyd,lzd,lelv)
       real psi_trans(lx1,lz1,lyd,lelv), psi_trans2(lxd,lzd,lyd,lelv)
 C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv) 
       real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
@@ -646,27 +646,27 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,gpsix_x(lx1,ly1,lz1,lelv) 
+     $               ,gpsix_y(lx1,ly1,lz1,lelv)
+     $               ,gpsix_z(lx1,ly1,lz1,lelv) 
+     $               ,gpsiy_x(lx1,ly1,lz1,lelv)
+     $               ,gpsiy_y(lx1,ly1,lz1,lelv) 
+     $               ,gpsiy_z(lx1,ly1,lz1,lelv)
+     $               ,gpsiz_x(lx1,ly1,lz1,lelv) 
+     $               ,gpsiz_y(lx1,ly1,lz1,lelv)
+     $               ,gpsiz_z(lx1,ly1,lz1,lelv)
      $               ,psix_rhs(lx1,ly1,lz1,lelv)
      $               ,psiy_rhs(lx1,ly1,lz1,lelv)
      $               ,psiz_rhs(lx1,ly1,lz1,lelv)
-      common /engrad/ gpsix_x(lxd,lyd,lzd,lelv), 
-     $                gpsix_y(lxd,lyd,lzd,lelv),
-     $                gpsix_z(lxd,lyd,lzd,lelv), 
-     $                gpsiy_x(lxd,lyd,lzd,lelv),
-     $                gpsiy_y(lxd,lyd,lzd,lelv), 
-     $                gpsiy_z(lxd,lyd,lzd,lelv),
-     $                gpsiz_x(lxd,lyd,lzd,lelv), 
-     $                gpsiz_y(lxd,lyd,lzd,lelv),
-     $                gpsiz_z(lxd,lyd,lzd,lelv),
-     $                gpsix_x1(lx1,ly1,lz1,lelv), 
-     $                gpsix_y1(lx1,ly1,lz1,lelv),
-     $                gpsix_z1(lx1,ly1,lz1,lelv), 
-     $                gpsiy_x1(lx1,ly1,lz1,lelv),
-     $                gpsiy_y1(lx1,ly1,lz1,lelv), 
-     $                gpsiy_z1(lx1,ly1,lz1,lelv),
-     $                gpsiz_x1(lx1,ly1,lz1,lelv), 
-     $                gpsiz_y1(lx1,ly1,lz1,lelv),
-     $                gpsiz_z1(lx1,ly1,lz1,lelv)
+      common /engrad/ gpsix_x_d(lxd,lyd,lzd,lelv), 
+     $                gpsix_y_d(lxd,lyd,lzd,lelv),
+     $                gpsix_z_d(lxd,lyd,lzd,lelv), 
+     $                gpsiy_x_d(lxd,lyd,lzd,lelv),
+     $                gpsiy_y_d(lxd,lyd,lzd,lelv), 
+     $                gpsiy_z_d(lxd,lyd,lzd,lelv),
+     $                gpsiz_x_d(lxd,lyd,lzd,lelv), 
+     $                gpsiz_y_d(lxd,lyd,lzd,lelv),
+     $                gpsiz_z_d(lxd,lyd,lzd,lelv)
       common /ransenrich/ wsk(lx1,ly1,lz1,lelv)
      $                 ,  wsomg(lx1,ly1,lz1,lelv)
      $                 ,  wsk_d(lxd,lyd,lzd,lelv)
@@ -732,9 +732,9 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
       if (istep.eq.0) then
           call oprzero(psix,psiy,psiz)
           call oprzero_d(psix_d,psiy_d,psiz_d)
-          call oprzero_d(gpsix_x,gpsix_y,gpsix_z)
-          call oprzero_d(gpsiy_x,gpsiy_y,gpsiy_z)
-          call oprzero_d(gpsiz_x,gpsiz_y,gpsiz_z)
+          call oprzero_d(gpsix_x_d,gpsix_y_d,gpsix_z_d)
+          call oprzero_d(gpsiy_x_d,gpsiy_y_d,gpsiy_z_d)
+          call oprzero_d(gpsiz_x_d,gpsiz_y_d,gpsiz_z_d)
           call rzero(taunew,n)
          call rzero(uti,n)
          do iel = 1, nelv
@@ -780,15 +780,15 @@ C       if (time.lt.50) then
               psix_d(i,1,1,iel) = 0.0
               psiy_d(i,1,1,iel) = 0.0
               psiz_d(i,1,1,iel) = 0.0
-              gpsix_x(i,1,1,iel) = 0.0
-              gpsix_y(i,1,1,iel) = 0.0
-              gpsix_z(i,1,1,iel) = 0.0
-              gpsiy_x(i,1,1,iel) = 0.0
-              gpsiy_y(i,1,1,iel) = 0.0
-              gpsiy_z(i,1,1,iel) = 0.0
-              gpsiz_x(i,1,1,iel) = 0.0
-              gpsiz_y(i,1,1,iel) = 0.0
-              gpsiz_z(i,1,1,iel) = 0.0
+              gpsix_x_d(i,1,1,iel) = 0.0
+              gpsix_y_d(i,1,1,iel) = 0.0
+              gpsix_z_d(i,1,1,iel) = 0.0
+              gpsiy_x_d(i,1,1,iel) = 0.0
+              gpsiy_y_d(i,1,1,iel) = 0.0
+              gpsiy_z_d(i,1,1,iel) = 0.0
+              gpsiz_x_d(i,1,1,iel) = 0.0
+              gpsiz_y_d(i,1,1,iel) = 0.0
+              gpsiz_z_d(i,1,1,iel) = 0.0
               txx(i,1,1,iel) = 0.0
               txy(i,1,1,iel) = 0.0
               txz(i,1,1,iel) = 0.0
@@ -918,7 +918,7 @@ C                     do iy = 1,ly1
                       psix(ix,iy,iz,iel) = calc_psi(xm1(ix,iy,iz,iel),
      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
      $                   ut_param,param(2))
-                      gpsix_y1(ix,iy,iz,iel) = 
+                      gpsix_y(ix,iy,iz,iel) = 
      $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
      $                   ut_param,param(2))
@@ -957,7 +957,7 @@ C                     do iy = 1,ly1
                         ut_param = utau_ref
                       endif
                       psix_d(ix,iy,iz,iel) = psi_trans2(ix,iz,iy,iel)
-                      gpsix_y(ix,iy,iz,iel) = 
+                      gpsix_y_d(ix,iy,iz,iel) = 
      $                   calc_gpsix_y(xmd(ix,iy,iz,iel),
      $                   ymd(ix,iy,iz,iel),zmd(ix,iy,iz,iel),flag(iel),
      $                   ut_param,param(2))
@@ -978,19 +978,19 @@ C           call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
                 do ix = 1,lxd
                   ind = (iz-1)*lyd*lxd + (iy-1)*lxd + ix
                   if (if3d) then
-                    gpsix_x(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+                    gpsix_x_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
      $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
      $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
      $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
-                    gpsix_z(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
+                    gpsix_z_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
      $                       (rzmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
      $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
      $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))   
                   else
-                    gpsix_x(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
+                    gpsix_x_d(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
      $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
      $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
-                    gpsix_z(ix,iy,iz,iel) = 0.0
+                    gpsix_z_d(ix,iy,iz,iel) = 0.0
                   endif
                 enddo
               enddo
@@ -998,7 +998,7 @@ C           call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
             endif
           enddo
 
-          call gradm1(gpsix_x1,phi_temp1,gpsix_z1,psix)
+          call gradm1(gpsix_x,phi_temp1,gpsix_z,psix)
 
           ! Get enrichment values on boundary of enriched region
           ! Not currently used
@@ -1159,43 +1159,43 @@ C           do iel = 1,nelv
 C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
 C               do i = 1,lxd*lyd*lzd 
 C                 ! T2x
-C                 w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsix_x(i,1,1,iel)
-C      $                          + vy_d(i,1,1,iel)*gpsix_y(i,1,1,iel)
+C                 w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsix_x_d(i,1,1,iel)
+C      $                          + vy_d(i,1,1,iel)*gpsix_y_d(i,1,1,iel)
 C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
 C C                 wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
 C                 tr2x(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
                 
 C                 ! T4x
-C                 w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsix_x(i,1,1,iel)
-C      $                          + psiy_d(i,1,1,iel)*gpsix_y(i,1,1,iel)
+C                 w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsix_x_d(i,1,1,iel)
+C      $                          + psiy_d(i,1,1,iel)*gpsix_y_d(i,1,1,iel)
 C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
 C C                 wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
 C                 tr4x(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
 
 C                 ! T2y
-C                 w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsiy_x(i,1,1,iel)
-C      $                          + vy_d(i,1,1,iel)*gpsiy_y(i,1,1,iel)
+C                 w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsiy_x_d(i,1,1,iel)
+C      $                          + vy_d(i,1,1,iel)*gpsiy_y_d(i,1,1,iel)
 C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
 C C                 wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
 C                 tr2y(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
                 
 C                 ! T4y
-C                 w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsiy_x(i,1,1,iel)
-C      $                          + psiy_d(i,1,1,iel)*gpsiy_y(i,1,1,iel)
+C                 w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsiy_x_d(i,1,1,iel)
+C      $                          + psiy_d(i,1,1,iel)*gpsiy_y_d(i,1,1,iel)
 C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
 C C                 wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
 C                 tr4y(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
 
 C                 ! T2z
-C                 w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsiz_x(i,1,1,iel)
-C      $                          + vy_d(i,1,1,iel)*gpsiz_y(i,1,1,iel)
+C                 w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsiz_x_d(i,1,1,iel)
+C      $                          + vy_d(i,1,1,iel)*gpsiz_y_d(i,1,1,iel)
 C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
 C C                 wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
 C                 tr2z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
                 
 C                 ! T4z
-C                 w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsiz_x(i,1,1,iel)
-C      $                          + psiy_d(i,1,1,iel)*gpsiz_y(i,1,1,iel)
+C                 w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsiz_x_d(i,1,1,iel)
+C      $                          + psiy_d(i,1,1,iel)*gpsiz_y_d(i,1,1,iel)
 C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
 C C                 wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
 C                 tr4z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
@@ -1207,35 +1207,35 @@ C           enddo
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
               do i = 1,lx1*ly1*lz1 
                 ! T2x
-                w1(i,1,1,iel) = vx(i,1,1,iel)*gpsix_x1(i,1,1,iel)
-     $                          + vy(i,1,1,iel)*gpsix_y1(i,1,1,iel)
+                w1(i,1,1,iel) = vx(i,1,1,iel)*gpsix_x(i,1,1,iel)
+     $                          + vy(i,1,1,iel)*gpsix_y(i,1,1,iel)
                 wsx(i,1,1,iel) = wsx(i,1,1,iel) + w1(i,1,1,iel)
                 tr2x1(i,1,1,iel) = w1(i,1,1,iel)
                 
                 ! T4x
-                w1(i,1,1,iel) = psix(i,1,1,iel)*gpsix_x1(i,1,1,iel)
-     $                          + psiy(i,1,1,iel)*gpsix_y1(i,1,1,iel)
+                w1(i,1,1,iel) = psix(i,1,1,iel)*gpsix_x(i,1,1,iel)
+     $                          + psiy(i,1,1,iel)*gpsix_y(i,1,1,iel)
                 wsx(i,1,1,iel) = wsx(i,1,1,iel) + w1(i,1,1,iel)
                 tr4x1(i,1,1,iel) = w1(i,1,1,iel)
 
                 ! T2y
-                w1(i,1,1,iel) = vx(i,1,1,iel)*gpsiy_x1(i,1,1,iel)
-     $                          + vy(i,1,1,iel)*gpsiy_y1(i,1,1,iel)
+                w1(i,1,1,iel) = vx(i,1,1,iel)*gpsiy_x(i,1,1,iel)
+     $                          + vy(i,1,1,iel)*gpsiy_y(i,1,1,iel)
                 wsy(i,1,1,iel) = wsy(i,1,1,iel) + w1(i,1,1,iel)
                 
                 ! T4y
-                w1(i,1,1,iel) = psix(i,1,1,iel)*gpsiy_x1(i,1,1,iel)
-     $                          + psiy(i,1,1,iel)*gpsiy_y1(i,1,1,iel)
+                w1(i,1,1,iel) = psix(i,1,1,iel)*gpsiy_x(i,1,1,iel)
+     $                          + psiy(i,1,1,iel)*gpsiy_y(i,1,1,iel)
                 wsy(i,1,1,iel) = wsy(i,1,1,iel) + w1(i,1,1,iel)
 
                 ! T2z
-                w1(i,1,1,iel) = vx(i,1,1,iel)*gpsiz_x1(i,1,1,iel)
-     $                          + vy(i,1,1,iel)*gpsiz_y1(i,1,1,iel)
+                w1(i,1,1,iel) = vx(i,1,1,iel)*gpsiz_x(i,1,1,iel)
+     $                          + vy(i,1,1,iel)*gpsiz_y(i,1,1,iel)
                 wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
                 
                 ! T4z
-                w1(i,1,1,iel) = psix(i,1,1,iel)*gpsiz_x1(i,1,1,iel)
-     $                          + psiy(i,1,1,iel)*gpsiz_y1(i,1,1,iel)
+                w1(i,1,1,iel) = psix(i,1,1,iel)*gpsiz_x(i,1,1,iel)
+     $                          + psiy(i,1,1,iel)*gpsiz_y(i,1,1,iel)
                 wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
               enddo
             endif
@@ -1576,14 +1576,14 @@ C           call opcolv (wintx,winty,wintz,vtrans(1,1,1,1,1))
             wsk(i,1,1,iel) = -1.0*wsk(i,1,1,iel)
      $                      *vtrans(i,1,1,iel,ifld_k-1)
             wsomg(i,1,1,iel) = -1.0*wsomg(i,1,1,iel)
-     $                      *vtrans(i,1,1,iel,ifld_omg-1)
+     $                      *vtrans(i,1,1,iel,ifld_omega-1)
 C             wintx(i,1,1,iel) = -1.0*wintx(i,1,1,iel)*vtrans(i,1,1,iel,1)
 C             winty(i,1,1,iel) = -1.0*winty(i,1,1,iel)*vtrans(i,1,1,iel,1)
 C             wintz(i,1,1,iel) = -1.0*wintz(i,1,1,iel)*vtrans(i,1,1,iel,1)
 C             wintk(i,1,1,iel) = -1.0*wintk(i,1,1,iel)
 C      $                          *vtrans(i,1,1,iel,ifld_k-1)
 C             wintomg(i,1,1,iel) = -1.0*wintomg(i,1,1,iel)
-C      $                          *vtrans(i,1,1,iel,ifld_omg-1)
+C      $                          *vtrans(i,1,1,iel,ifld_omega-1)
               enddo
             endif
           enddo
@@ -1672,9 +1672,9 @@ C               ! Compute other parts of T1
 C               call intp_rstd(vdiff_d(1,1,1,iel),vdiff(1,1,1,iel,1),
 C      $             lx1,lxd,if3d,0)
 C               call col3(srb_temp_d,bmd(1,1,1,iel),vdiff_d(1,1,1,iel),nq)
-C               call col3(tx_d,srb_temp_d,gpsix_x(1,1,1,iel),nq)
-C               call col3(ty_d,srb_temp_d,gpsix_y(1,1,1,iel),nq)
-C               call col3(tz_d,srb_temp_d,gpsix_z(1,1,1,iel),nq)
+C               call col3(tx_d,srb_temp_d,gpsix_x_d(1,1,1,iel),nq)
+C               call col3(ty_d,srb_temp_d,gpsix_y_d(1,1,1,iel),nq)
+C               call col3(tz_d,srb_temp_d,gpsix_z_d(1,1,1,iel),nq)
 
 C               call mxm(dpdx(1,1,iel) ,nb,tx_d,nq,w1,1)
 C               call mxm(dpdy(1,1,iel) ,nb,ty_d,nq,w2,1)
@@ -1733,7 +1733,7 @@ c     WALL ENRICHMENT...END
          ! reconstruct velocity field
          call add3 (vx_,vx,psix,n) !calculate actual velocity
          call outpost(psix,psiy,psiz,vx_,t,'enr')
-C          call outpost(psix,gpsix_y,psiz,vx_,t,'enr')
+C          call outpost(psix,gpsix_y_d,psiz,vx_,t,'enr')
 C          call outpost(tr1x1,tr1y1,tr1z1,vx_,t,'Tr1')
 C          call outpost(tr2x1,tr2y1,tr2z1,vx_,t,'Tr2')
 C          call outpost(tr3x1,tr3y1,tr3z1,vx_,t,'Tr3')
@@ -2113,11 +2113,11 @@ c     VARIABLES DECLARED FOR ENRICHMENT METHOD
       save secondcall
       real utau_ref, Re_tau
 C       real psix(lx1,ly1,lz1,lelv)
-C       real gpsix_x(lxd,lyd,lzd,lelv), gpsix_y(lxd,lyd,lzd,lelv)
-C       real gpsix_z(lxd,lyd,lzd,lelv), gpsiy_x(lxd,lyd,lzd,lelv)
-C       real gpsiy_y(lxd,lyd,lzd,lelv), gpsiy_z(lxd,lyd,lzd,lelv)
-C       real gpsiz_x(lxd,lyd,lzd,lelv), gpsiz_y(lxd,lyd,lzd,lelv)
-C       real gpsiz_z(lxd,lyd,lzd,lelv)
+C       real gpsix_x(lxd,lyd,lzd,lelv), gpsix_y_d(lxd,lyd,lzd,lelv)
+C       real gpsix_z_d(lxd,lyd,lzd,lelv), gpsiy_x_d(lxd,lyd,lzd,lelv)
+C       real gpsiy_y_d(lxd,lyd,lzd,lelv), gpsiy_z_d(lxd,lyd,lzd,lelv)
+C       real gpsiz_x_d(lxd,lyd,lzd,lelv), gpsiz_y_d(lxd,lyd,lzd,lelv)
+C       real gpsiz_z_d(lxd,lyd,lzd,lelv)
       real psi_trans(lx1,lz1,lyd,lelv), psi_trans2(lxd,lzd,lyd,lelv)
 C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv) 
       real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
@@ -2246,27 +2246,27 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,gpsix_x(lx1,ly1,lz1,lelv) 
+     $               ,gpsix_y(lx1,ly1,lz1,lelv)
+     $               ,gpsix_z(lx1,ly1,lz1,lelv) 
+     $               ,gpsiy_x(lx1,ly1,lz1,lelv)
+     $               ,gpsiy_y(lx1,ly1,lz1,lelv) 
+     $               ,gpsiy_z(lx1,ly1,lz1,lelv)
+     $               ,gpsiz_x(lx1,ly1,lz1,lelv) 
+     $               ,gpsiz_y(lx1,ly1,lz1,lelv)
+     $               ,gpsiz_z(lx1,ly1,lz1,lelv)
      $               ,psix_rhs(lx1,ly1,lz1,lelv)
      $               ,psiy_rhs(lx1,ly1,lz1,lelv)
      $               ,psiz_rhs(lx1,ly1,lz1,lelv)
-      common /engrad/ gpsix_x(lxd,lyd,lzd,lelv), 
-     $                gpsix_y(lxd,lyd,lzd,lelv),
-     $                gpsix_z(lxd,lyd,lzd,lelv), 
-     $                gpsiy_x(lxd,lyd,lzd,lelv),
-     $                gpsiy_y(lxd,lyd,lzd,lelv), 
-     $                gpsiy_z(lxd,lyd,lzd,lelv),
-     $                gpsiz_x(lxd,lyd,lzd,lelv), 
-     $                gpsiz_y(lxd,lyd,lzd,lelv),
-     $                gpsiz_z(lxd,lyd,lzd,lelv),
-     $                gpsix_x1(lx1,ly1,lz1,lelv), 
-     $                gpsix_y1(lx1,ly1,lz1,lelv),
-     $                gpsix_z1(lx1,ly1,lz1,lelv), 
-     $                gpsiy_x1(lx1,ly1,lz1,lelv),
-     $                gpsiy_y1(lx1,ly1,lz1,lelv), 
-     $                gpsiy_z1(lx1,ly1,lz1,lelv),
-     $                gpsiz_x1(lx1,ly1,lz1,lelv), 
-     $                gpsiz_y1(lx1,ly1,lz1,lelv),
-     $                gpsiz_z1(lx1,ly1,lz1,lelv)
+      common /engrad/ gpsix_x_d(lxd,lyd,lzd,lelv), 
+     $                gpsix_y_d(lxd,lyd,lzd,lelv),
+     $                gpsix_z_d(lxd,lyd,lzd,lelv), 
+     $                gpsiy_x_d(lxd,lyd,lzd,lelv),
+     $                gpsiy_y_d(lxd,lyd,lzd,lelv), 
+     $                gpsiy_z_d(lxd,lyd,lzd,lelv),
+     $                gpsiz_x_d(lxd,lyd,lzd,lelv), 
+     $                gpsiz_y_d(lxd,lyd,lzd,lelv),
+     $                gpsiz_z_d(lxd,lyd,lzd,lelv)
       common /ransenrich/ wsk(lx1,ly1,lz1,lelv)
      $                 ,  wsomg(lx1,ly1,lz1,lelv)
      $                 ,  wsk_d(lxd,lyd,lzd,lelv)
@@ -2329,9 +2329,9 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       if (istep.eq.0) then
           call oprzero(psix,psiy,psiz)
-          call oprzero(gpsix_x,gpsix_y,gpsix_z)
-          call oprzero(gpsiy_x,gpsiy_y,gpsiy_z)
-          call oprzero(gpsiz_x,gpsiz_y,gpsiz_z)
+          call oprzero(gpsix_x_d,gpsix_y_d,gpsix_z_d)
+          call oprzero(gpsiy_x_d,gpsiy_y_d,gpsiy_z_d)
+          call oprzero(gpsiz_x_d,gpsiz_y_d,gpsiz_z_d)
          do iel = 1, nelv
           do ix = 1, lx1
            do iy = 1, ly1
@@ -2449,9 +2449,9 @@ C               ! Compute other parts of T1
 C               call intp_rstd(vdiff_d(1,1,1,iel),vdiff(1,1,1,iel,1),
 C      $             lx1,lxd,if3d,0)
 C               call col3(srb_temp_d,bmd(1,1,1,iel),vdiff_d(1,1,1,iel),nq)
-C               call col3(tx_d,srb_temp_d,gpsix_x(1,1,1,iel),nq)
-C               call col3(ty_d,srb_temp_d,gpsix_y(1,1,1,iel),nq)
-C               call col3(tz_d,srb_temp_d,gpsix_z(1,1,1,iel),nq)
+C               call col3(tx_d,srb_temp_d,gpsix_x_d(1,1,1,iel),nq)
+C               call col3(ty_d,srb_temp_d,gpsix_y_d(1,1,1,iel),nq)
+C               call col3(tz_d,srb_temp_d,gpsix_z_d(1,1,1,iel),nq)
 
 C               call mxm(dpdx(1,1,iel) ,nb,tx_d,nq,w1,1)
 C               call mxm(dpdy(1,1,iel) ,nb,ty_d,nq,w2,1)
@@ -2557,9 +2557,9 @@ C           endif
               endif
               ! Compute other parts of T1
               call col3(srb_temp,bm1(1,1,1,iel),vdiff(1,1,1,iel,1),nb)
-              call col3(tx,srb_temp,gpsix_x1(1,1,1,iel),nb)
-              call col3(ty,srb_temp,gpsix_y1(1,1,1,iel),nb)
-              call col3(tz,srb_temp,gpsix_z1(1,1,1,iel),nb)
+              call col3(tx,srb_temp,gpsix_x(1,1,1,iel),nb)
+              call col3(ty,srb_temp,gpsix_y(1,1,1,iel),nb)
+              call col3(tz,srb_temp,gpsix_z(1,1,1,iel),nb)
               ! TODO: Add psiy and psiz parts
 
               call mxm(dpdx1(1,1,iel) ,nb,tx,nb,w1,1)
@@ -2651,10 +2651,19 @@ c     VARIABLES DECLARED FOR ENRICHMENT METHOD
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,gpsix_x(lx1,ly1,lz1,lelv) 
+     $               ,gpsix_y(lx1,ly1,lz1,lelv)
+     $               ,gpsix_z(lx1,ly1,lz1,lelv) 
+     $               ,gpsiy_x(lx1,ly1,lz1,lelv)
+     $               ,gpsiy_y(lx1,ly1,lz1,lelv) 
+     $               ,gpsiy_z(lx1,ly1,lz1,lelv)
+     $               ,gpsiz_x(lx1,ly1,lz1,lelv) 
+     $               ,gpsiz_y(lx1,ly1,lz1,lelv)
+     $               ,gpsiz_z(lx1,ly1,lz1,lelv)
      $               ,psix_rhs(lx1,ly1,lz1,lelv)
      $               ,psiy_rhs(lx1,ly1,lz1,lelv)
      $               ,psiz_rhs(lx1,ly1,lz1,lelv)
-
+      
 C       save psix, psiy, psiz
 c---------------------------------------------------------------
 
