@@ -1157,53 +1157,53 @@ C           enddo
           ! ----------------------------------------------------------------
           ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
           ! + Term 4: -rho*dot(psi,gradient(psi))     Should be zero
-C           do iel = 1,nelv
-C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-C               do i = 1,lxd*lyd*lzd 
-C                 ! T2x
-C                 w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsix_x_d(i,1,1,iel)
-C      $                          + vy_d(i,1,1,iel)*gpsix_y_d(i,1,1,iel)
-C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-C C                 wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
-C                 tr2x(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+          do iel = 1,nelv
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+              do i = 1,lxd*lyd*lzd 
+                ! T2x
+                w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsix_x_d(i,1,1,iel)
+     $                          + vy_d(i,1,1,iel)*gpsix_y_d(i,1,1,iel)
+                w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C                 wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
+                tr2x(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
                 
-C                 ! T4x
-C                 w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsix_x_d(i,1,1,iel)
-C      $                          + psiy_d(i,1,1,iel)*gpsix_y_d(i,1,1,iel)
-C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-C C                 wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
-C                 tr4x(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+                ! T4x
+                w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsix_x_d(i,1,1,iel)
+     $                          + psiy_d(i,1,1,iel)*gpsix_y_d(i,1,1,iel)
+                w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C                 wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
+                tr4x(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
 
-C                 ! T2y
-C                 w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsiy_x_d(i,1,1,iel)
-C      $                          + vy_d(i,1,1,iel)*gpsiy_y_d(i,1,1,iel)
-C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-C C                 wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
-C                 tr2y(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+                ! T2y
+                w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsiy_x_d(i,1,1,iel)
+     $                          + vy_d(i,1,1,iel)*gpsiy_y_d(i,1,1,iel)
+                w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C                 wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
+                tr2y(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
                 
-C                 ! T4y
-C                 w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsiy_x_d(i,1,1,iel)
-C      $                          + psiy_d(i,1,1,iel)*gpsiy_y_d(i,1,1,iel)
-C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-C C                 wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
-C                 tr4y(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+                ! T4y
+                w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsiy_x_d(i,1,1,iel)
+     $                          + psiy_d(i,1,1,iel)*gpsiy_y_d(i,1,1,iel)
+                w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C                 wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
+                tr4y(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
 
-C                 ! T2z
-C                 w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsiz_x_d(i,1,1,iel)
-C      $                          + vy_d(i,1,1,iel)*gpsiz_y_d(i,1,1,iel)
-C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-C C                 wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
-C                 tr2z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+                ! T2z
+                w1_d(i,1,1,iel) = vx_d(i,1,1,iel)*gpsiz_x_d(i,1,1,iel)
+     $                          + vy_d(i,1,1,iel)*gpsiz_y_d(i,1,1,iel)
+                w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C                 wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
+                tr2z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
                 
-C                 ! T4z
-C                 w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsiz_x_d(i,1,1,iel)
-C      $                          + psiy_d(i,1,1,iel)*gpsiz_y_d(i,1,1,iel)
-C                 w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-C C                 wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
-C                 tr4z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
-C               enddo
-C             endif
-C           enddo      
+                ! T4z
+                w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*gpsiz_x_d(i,1,1,iel)
+     $                          + psiy_d(i,1,1,iel)*gpsiz_y_d(i,1,1,iel)
+                w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
+C                 wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
+                tr4z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
+              enddo
+            endif
+          enddo      
 
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
@@ -1522,18 +1522,18 @@ C           call col2(wsy_d,bmd,n_d)
 C           call col2(wsz_d,bmd,n_d)
 
           ! Revert back to non-overintegrated
-C           do iel = 1,nelv
-C             call intp_rstd(wintx(1,1,1,iel),wsx_d(1,1,1,iel),
-C      $             lx1,lxd,if3d,1)
-C             call intp_rstd(winty(1,1,1,iel),wsy_d(1,1,1,iel),
-C      $             lx1,lxd,if3d,1)
-C             call intp_rstd(wintz(1,1,1,iel),wsz_d(1,1,1,iel),
-C      $             lx1,lxd,if3d,1)
-C             call intp_rstd(wintk(1,1,1,iel),wsk_d(1,1,1,iel),
-C      $             lx1,lxd,if3d,1)
-C             call intp_rstd(wintomg(1,1,1,iel),wsomg_d(1,1,1,iel),
-C      $             lx1,lxd,if3d,1)
-C           enddo
+          do iel = 1,nelv
+            call intp_rstd(wintx(1,1,1,iel),wsx_d(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(winty(1,1,1,iel),wsy_d(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(wintz(1,1,1,iel),wsz_d(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(wintk(1,1,1,iel),wsk_d(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(wintomg(1,1,1,iel),wsomg_d(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+          enddo
 C           call invcol2(wintx,bm1,n)
 C           call invcol2(winty,bm1,n)
 C           call invcol2(wintz,bm1,n)
@@ -1579,13 +1579,13 @@ C           call opcolv (wintx,winty,wintz,vtrans(1,1,1,1,1))
      $                      *vtrans(i,1,1,iel,ifld_k-1)
             wsomg(i,1,1,iel) = -1.0*wsomg(i,1,1,iel)
      $                      *vtrans(i,1,1,iel,ifld_omega-1)
-C             wintx(i,1,1,iel) = -1.0*wintx(i,1,1,iel)*vtrans(i,1,1,iel,1)
-C             winty(i,1,1,iel) = -1.0*winty(i,1,1,iel)*vtrans(i,1,1,iel,1)
-C             wintz(i,1,1,iel) = -1.0*wintz(i,1,1,iel)*vtrans(i,1,1,iel,1)
-C             wintk(i,1,1,iel) = -1.0*wintk(i,1,1,iel)
-C      $                          *vtrans(i,1,1,iel,ifld_k-1)
-C             wintomg(i,1,1,iel) = -1.0*wintomg(i,1,1,iel)
-C      $                          *vtrans(i,1,1,iel,ifld_omega-1)
+            wintx(i,1,1,iel) = -1.0*wintx(i,1,1,iel)*vtrans(i,1,1,iel,1)
+            winty(i,1,1,iel) = -1.0*winty(i,1,1,iel)*vtrans(i,1,1,iel,1)
+            wintz(i,1,1,iel) = -1.0*wintz(i,1,1,iel)*vtrans(i,1,1,iel,1)
+            wintk(i,1,1,iel) = -1.0*wintk(i,1,1,iel)
+     $                          *vtrans(i,1,1,iel,ifld_k-1)
+            wintomg(i,1,1,iel) = -1.0*wintomg(i,1,1,iel)
+     $                          *vtrans(i,1,1,iel,ifld_omega-1)
               enddo
             endif
           enddo
@@ -2329,21 +2329,21 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       use_default = 1
 
-      if (istep.eq.0) then
-          call oprzero(psix,psiy,psiz)
-          call oprzero(gpsix_x_d,gpsix_y_d,gpsix_z_d)
-          call oprzero(gpsiy_x_d,gpsiy_y_d,gpsiy_z_d)
-          call oprzero(gpsiz_x_d,gpsiz_y_d,gpsiz_z_d)
-         do iel = 1, nelv
-          do ix = 1, lx1
-           do iy = 1, ly1
-            do iz = 1, lz1
-               uti(ix,iy,iz,iel) = 0.08 ! Guess value for N-R solver
-            enddo
-           enddo
-          enddo
-         enddo
-      endif
+C       if (istep.eq.0) then
+C           call oprzero(psix,psiy,psiz)
+C           call oprzero(gpsix_x_d,gpsix_y_d,gpsix_z_d)
+C           call oprzero(gpsiy_x_d,gpsiy_y_d,gpsiy_z_d)
+C           call oprzero(gpsiz_x_d,gpsiz_y_d,gpsiz_z_d)
+C          do iel = 1, nelv
+C           do ix = 1, lx1
+C            do iy = 1, ly1
+C             do iz = 1, lz1
+C                uti(ix,iy,iz,iel) = 0.08 ! Guess value for N-R solver
+C             enddo
+C            enddo
+C           enddo
+C          enddo
+C       endif
 
       ! Start enrichment at time 50
 C       if (time.lt.50) then
@@ -2497,7 +2497,7 @@ C           if (use_default .eq. 1) then
 C             comp_T1 = 1 ! Comment for adaptation
 C           endif
 
-          call oprzero(wintx,winty,wintz)
+C           call oprzero(wintx,winty,wintz)
           call rzero  (T1_rhs_x,n)
           call rzero  (T1_rhs_y,n)
           call rzero  (T1_rhs_z,n)
