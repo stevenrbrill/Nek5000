@@ -32,7 +32,7 @@ c
       parameter (lorder=3)             ! max order in time
       parameter (lx1m=lx1)               ! GLL points mesh solver
       parameter (lfdm=0)               ! unused 
-      parameter (lelx=3,lely=8,lelz=1) ! global tensor mesh dimensions
+      parameter (lelx=1,lely=1,lelz=1) ! global tensor mesh dimensions
 
       parameter (lbelt=1)              ! lelt for mhd
       parameter (lpelt=1)              ! lelt for linear stability
