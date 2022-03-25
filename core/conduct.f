@@ -138,16 +138,15 @@ c     mass matrix on the Gauss-Lobatto mesh.
       include 'SOLN'
       include 'TSTEP'
 
-      real bqint(lx1,ly1,lz1,lelt)
       n = lx1*ly1*lz1*nelfld(ifield)
 
       if (.not.ifcvfld(ifield)) time = time-dt ! Set time to t^n-1 for user function
 
       if (nio.eq.0.and.loglevel.gt.2) 
      $   write(6,*) 'makeuq', ifield, time
-      call srb_setqvol(bq(1,1,1,1,ifield-1),bqint(1,1,1,1))
+      call srb_setqvol(bq(1,1,1,1,ifield-1),bqint(1,1,1,1,ifield-1))
       call col2   (bq(1,1,1,1,ifield-1) ,bm1,n)
-      call add2 (bq(1,1,1,1,ifield-1),bqint(1,1,1,1),n)
+      call add2   (bq(1,1,1,1,ifield-1),bqint(1,1,1,1,ifield-1),n)
 
       if (.not.ifcvfld(ifield)) time = time+dt ! Restore time
 
@@ -200,7 +199,7 @@ C
       end
 C
 c-----------------------------------------------------------------------
-      subroutine srb_setqvol(bql,bqint)
+      subroutine srb_setqvol(bql,bqintl)
 
 c     Set user specified volumetric forcing function (e.g. heat source).
 
@@ -211,7 +210,7 @@ c     Set user specified volumetric forcing function (e.g. heat source).
       include 'CTIMER'
 
       real bql(lx1*ly1*lz1,lelt)
-      real bqint(lx1*ly1*lz1,lelt)
+      real bqintl(lx1*ly1*lz1,lelt)
 
 #ifdef TIMER
       etime1=dnekclock()
@@ -223,7 +222,7 @@ c     Set user specified volumetric forcing function (e.g. heat source).
 
       do iel=1,nel
 
-         call srb_nekuq (bql,bqint,iel) ! ONLY SUPPORT USERQ - pff, 3/08/16
+         call srb_nekuq (bql,bqintl,iel) ! ONLY SUPPORT USERQ - pff, 3/08/16
 
 c        igrp = igroup(iel)
 c        if (matype(igrp,ifield).eq.1) then ! constant source within a group
@@ -275,7 +274,7 @@ c
       return
       end
 
-      subroutine srb_nekuq (bql,bqint,iel)
+      subroutine srb_nekuq (bql,bqintl,iel)
 C------------------------------------------------------------------
 C
 C     Generate user-specified volumetric source term (temp./p.s.)
@@ -290,7 +289,7 @@ C------------------------------------------------------------------
       include 'INPUT'
 c
       real bql(lx1,ly1,lz1,lelt)
-      real bqint(lx1,ly1,lz1,lelt)
+      real bqintl(lx1,ly1,lz1,lelt)
 c
       ielg = lglel(iel)
       do 10 k=1,lz1
@@ -300,8 +299,9 @@ c
          qvol = 0.0
          call userq   (i,j,k,ielg)
          bql(i,j,k,iel) = qvol
+         qint = 0.0
          call userqint(i,j,k,ielg)
-         bqint(i,j,k,ielg) = qint
+         bqintl(i,j,k,ielg) = qint
  10   continue
 
       return

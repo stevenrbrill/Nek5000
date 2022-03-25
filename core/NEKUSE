@@ -5,6 +5,7 @@ c
      $    ,p0,ffx,ffy,ffz,temp,flux,hc,hrad,tinf,qvol,udiff,utrans
      $    ,si2,si3,sigma,turbk,turbe,ps(ldimt)
      $    ,ffintx,ffinty,ffintz,rhsx,rhsy,rhsz
+     $    ,qint
       common /nekuse/ x  ,y  ,z  ,r  ,theta
      $              , ux ,uy ,uz
      $              , un ,u1 ,u2
@@ -18,6 +19,7 @@ c
      $              , si2,si3,sigma
      $              , turbk,turbe
      $              , ps
+     $              , qint
 
       character*3     cbu
       common /nekusc/ cbu
