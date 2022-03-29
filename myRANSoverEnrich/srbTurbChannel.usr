@@ -2463,9 +2463,12 @@ C C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 -
               call col3(tz_d(1,1,1,iel),srb_temp_d(1,1,1,iel),
      $                  gpsix_z_d(1,1,1,iel),nq)
 
-              call mxm(dpdx(1,1,iel) ,nb,tx_d(1,1,1,iel),nq,w1(1,1,1,iel),1)
-              call mxm(dpdy(1,1,iel) ,nb,ty_d(1,1,1,iel),nq,w2(1,1,1,iel),1)
-              call mxm(dpdz(1,1,iel) ,nb,tz_d(1,1,1,iel),nq,w3(1,1,1,iel),1)
+              call mxm(dpdx(1,1,iel) ,nb,tx_d(1,1,1,iel),nq,
+     $                  w1(1,1,1,iel),1)
+              call mxm(dpdy(1,1,iel) ,nb,ty_d(1,1,1,iel),nq,
+     $                  w2(1,1,1,iel),1)
+              call mxm(dpdz(1,1,iel) ,nb,tz_d(1,1,1,iel),nq,
+     $                  w3(1,1,1,iel),1)
 
               call cmult (w1(1,1,1,iel),-1.,nb)
               call cmult (w2(1,1,1,iel),-1.,nb)
