@@ -453,6 +453,12 @@ C       real psix(lx1,ly1,lz1,lelv)
       real gpsiy_y(lxd,lyd,lzd,lelv), gpsiy_z(lxd,lyd,lzd,lelv)
       real gpsiz_x(lxd,lyd,lzd,lelv), gpsiz_y(lxd,lyd,lzd,lelv)
       real gpsiz_z(lxd,lyd,lzd,lelv)
+      real gpsix_x1(lx1,ly1,lz1,lelv), gpsix_y1(lx1,ly1,lz1,lelv)
+      real gpsix_z1(lx1,ly1,lz1,lelv), gpsiy_x1(lx1,ly1,lz1,lelv)
+      real gpsiy_y1(lx1,ly1,lz1,lelv), gpsiy_z1(lx1,ly1,lz1,lelv)
+      real gpsiz_x1(lx1,ly1,lz1,lelv), gpsiz_y1(lx1,ly1,lz1,lelv)
+      real gpsiz_z1(lx1,ly1,lz1,lelv)
+      real phi_temp1(lx1,ly1,lz1,lelv)
       real psi_trans(lx1,lz1,lyd,lelv), psi_trans2(lxd,lzd,lyd,lelv)
 C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv) 
       real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
@@ -619,6 +625,9 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
           call oprzero_d(gpsix_x,gpsix_y,gpsix_z)
           call oprzero_d(gpsiy_x,gpsiy_y,gpsiy_z)
           call oprzero_d(gpsiz_x,gpsiz_y,gpsiz_z)
+          call oprzero(gpsix_x1,gpsix_y1,gpsix_z1)
+          call oprzero(gpsiy_x1,gpsiy_y1,gpsiy_z1)
+          call oprzero(gpsiz_x1,gpsiz_y1,gpsiz_z1)
           call rzero(taunew,n)
          call rzero(uti,n)
          do iel = 1, nelv
@@ -675,6 +684,22 @@ C       if (time.lt.50) then
               vx_d(i,1,1,iel) = 0.0
               vy_d(i,1,1,iel) = 0.0
               vz_d(i,1,1,iel) = 0.0
+            enddo
+          endif
+        enddo
+
+        do iel = 1,nelv
+          if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+            do i = 1,lx1*ly1*lz1 
+              gpsix_x1(i,1,1,iel) = 0.0
+              gpsix_y1(i,1,1,iel) = 0.0
+              gpsix_z1(i,1,1,iel) = 0.0
+              gpsiy_x1(i,1,1,iel) = 0.0
+              gpsiy_y1(i,1,1,iel) = 0.0
+              gpsiy_z1(i,1,1,iel) = 0.0
+              gpsiz_x1(i,1,1,iel) = 0.0
+              gpsiz_y1(i,1,1,iel) = 0.0
+              gpsiz_z1(i,1,1,iel) = 0.0
             enddo
           endif
         enddo
@@ -796,6 +821,10 @@ C                     do iy = 1,ly1
                       psix(ix,iy,iz,iel) = calc_psi(xm1(ix,iy,iz,iel),
      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
      $                   ut_param,param(2))
+                      gpsix_y1(ix,iy,iz,iel) = 
+     $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
+     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+     $                   ut_param,param(2))
                     enddo
                   enddo
                 enddo
@@ -841,8 +870,10 @@ C                     do iy = 1,ly1
              endif
           enddo
 
+
+
           ! Assume SEM basis in X and Z. Use analytical grad in y
-C           call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
+          call gradm1(gpsix_x1,phi_temp1,gpsix_z1,psix)
           do iel = 1, nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
             call grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
@@ -1078,7 +1109,55 @@ C           enddo
                 tr4z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
               enddo
             endif
-          enddo      
+          enddo    
+
+          do iel = 1,nelv
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+              do i = 1,lx1*ly1*lz1 
+                ! T2x
+                w1(i,1,1,iel) = vx(i,1,1,iel)*gpsix_x1(i,1,1,iel)
+     $                          + vy(i,1,1,iel)*gpsix_y1(i,1,1,iel)
+     $                          + vz(i,1,1,iel)*gpsix_z1(i,1,1,iel)
+C                 wsx(i,1,1,iel) = wsx(i,1,1,iel) + w1(i,1,1,iel)
+                tr2x1(i,1,1,iel) = -1.0*w1(i,1,1,iel)
+                
+                ! T4x
+                w1(i,1,1,iel) = psix(i,1,1,iel)*gpsix_x1(i,1,1,iel)
+     $                          + psiy(i,1,1,iel)*gpsix_y1(i,1,1,iel)
+     $                          + psiz(i,1,1,iel)*gpsix_z1(i,1,1,iel)
+C                 wsx(i,1,1,iel) = wsx(i,1,1,iel) + w1(i,1,1,iel)
+                tr4x1(i,1,1,iel) = -1.0*w1(i,1,1,iel)
+
+                ! T2y
+                w1(i,1,1,iel) = vx(i,1,1,iel)*gpsiy_x1(i,1,1,iel)
+     $                          + vy(i,1,1,iel)*gpsiy_y1(i,1,1,iel)
+     $                          + vz(i,1,1,iel)*gpsiy_z1(i,1,1,iel)
+C                 wsy(i,1,1,iel) = wsy(i,1,1,iel) + w1(i,1,1,iel)
+                tr2y1(i,1,1,iel) = -1.0*w1(i,1,1,iel)
+                
+                ! T4y
+                w1(i,1,1,iel) = psix(i,1,1,iel)*gpsiy_x1(i,1,1,iel)
+     $                          + psiy(i,1,1,iel)*gpsiy_y1(i,1,1,iel)
+     $                          + psiz(i,1,1,iel)*gpsiy_z1(i,1,1,iel)
+C                 wsy(i,1,1,iel) = wsy(i,1,1,iel) + w1(i,1,1,iel)
+                tr4y1(i,1,1,iel) = -1.0*w1(i,1,1,iel)
+
+                ! T2z
+                w1(i,1,1,iel) = vx(i,1,1,iel)*gpsiz_x1(i,1,1,iel)
+     $                          + vy(i,1,1,iel)*gpsiz_y1(i,1,1,iel)
+     $                          + vz(i,1,1,iel)*gpsiz_z1(i,1,1,iel)
+C                 wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
+                tr2z1(i,1,1,iel) = -1.0*w1(i,1,1,iel)
+                
+                ! T4z
+                w1(i,1,1,iel) = psix(i,1,1,iel)*gpsiz_x1(i,1,1,iel)
+     $                          + psiy(i,1,1,iel)*gpsiz_y1(i,1,1,iel)
+     $                          + psiz(i,1,1,iel)*gpsiz_z1(i,1,1,iel)
+C                 wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
+                tr4z1(i,1,1,iel) = -1.0*w1(i,1,1,iel)
+              enddo
+            endif
+          enddo     
 
           ! ----------------------------------------------------------------
           ! Term 3: -rho*dot(psi,gradient(u0))   S^psi
@@ -1213,8 +1292,8 @@ C           enddo
           call gradm1 (tx,ty,tz,vx)
           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
-          call copy   (tr4x1,w1,n)
-          call cmult  (tr4x1,-1.0,n)
+          call copy   (tr3x1,w1,n)
+          call cmult  (tr3x1,-1.0,n)
 C           call col2   (tr4x1,bm1,n)
           ! Add to total forcing
 C           call add2   (wsx,w1,n)
@@ -1226,8 +1305,8 @@ C           call add2   (wsx,w1,n)
           call gradm1 (tx,ty,tz,vy)
           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
-          call copy   (tr4y1,w1,n)
-          call cmult  (tr4y1,-1.0,n)
+          call copy   (tr3y1,w1,n)
+          call cmult  (tr3y1,-1.0,n)
 C           call col2   (tr4y1,bm1,n)
           ! Add to total forcing
 C           call add2   (wsy,w1,n)
@@ -1239,8 +1318,8 @@ C           call add2   (wsy,w1,n)
           call gradm1 (tx,ty,tz,vz)
           if (ldim == 2) call vdot2  (w1,psix,psiy,tx,ty,n) 
           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
-          call copy   (tr4z1,w1,n)
-          call cmult  (tr4z1,-1.0,n)
+          call copy   (tr3z1,w1,n)
+          call cmult  (tr3z1,-1.0,n)
 C           call col2   (tr4z1,bm1,n)
           ! Add to total forcing
 C           call add2   (wsz,w1,n)
@@ -1264,28 +1343,28 @@ C           call invcol2(wintx,bm1,n)
 C           call invcol2(winty,bm1,n)
 C           call invcol2(wintz,bm1,n)
 
-C           if (istep.eq.0 .or. ifoutfld) then
-          do iel = 1,nelv
-            call intp_rstd(tr2x1(1,1,1,iel),tr2x(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(tr2y1(1,1,1,iel),tr2y(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(tr2z1(1,1,1,iel),tr2z(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(tr3x1(1,1,1,iel),tr3x(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(tr3y1(1,1,1,iel),tr3y(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-            call intp_rstd(tr3z1(1,1,1,iel),tr3z(1,1,1,iel),
-     $             lx1,lxd,if3d,1)
-C             call intp_rstd(tr4x1(1,1,1,iel),tr4x(1,1,1,iel),
+C C           if (istep.eq.0 .or. ifoutfld) then
+C           do iel = 1,nelv
+C             call intp_rstd(tr2x1(1,1,1,iel),tr2x(1,1,1,iel),
 C      $             lx1,lxd,if3d,1)
-C             call intp_rstd(tr4y1(1,1,1,iel),tr4y(1,1,1,iel),
+C             call intp_rstd(tr2y1(1,1,1,iel),tr2y(1,1,1,iel),
 C      $             lx1,lxd,if3d,1)
-C             call intp_rstd(tr4z1(1,1,1,iel),tr4z(1,1,1,iel),
+C             call intp_rstd(tr2z1(1,1,1,iel),tr2z(1,1,1,iel),
 C      $             lx1,lxd,if3d,1)
-          enddo
-C           endif
+C             call intp_rstd(tr3x1(1,1,1,iel),tr3x(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(tr3y1(1,1,1,iel),tr3y(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C             call intp_rstd(tr3z1(1,1,1,iel),tr3z(1,1,1,iel),
+C      $             lx1,lxd,if3d,1)
+C C             call intp_rstd(tr4x1(1,1,1,iel),tr4x(1,1,1,iel),
+C C      $             lx1,lxd,if3d,1)
+C C             call intp_rstd(tr4y1(1,1,1,iel),tr4y(1,1,1,iel),
+C C      $             lx1,lxd,if3d,1)
+C C             call intp_rstd(tr4z1(1,1,1,iel),tr4z(1,1,1,iel),
+C C      $             lx1,lxd,if3d,1)
+C           enddo
+C C           endif
 C           call invcol2(tr3x1,bm1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
