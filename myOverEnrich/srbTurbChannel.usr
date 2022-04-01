@@ -1285,6 +1285,13 @@ C                 wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
             endif
           enddo
 
+          call col2   (tr2x1,bm1,n)
+          call col2   (tr2y1,bm1,n)
+          call col2   (tr2z1,bm1,n)
+          call col2   (tr4x1,bm1,n)
+          call col2   (tr4y1,bm1,n)
+          call col2   (tr4z1,bm1,n)
+
             ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for x
           ! S^psi * u
@@ -1294,7 +1301,7 @@ C                 wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
           call copy   (tr3x1,w1,n)
           call cmult  (tr3x1,-1.0,n)
-C           call col2   (tr4x1,bm1,n)
+          call col2   (tr4x1,bm1,n)
           ! Add to total forcing
 C           call add2   (wsx,w1,n)
 
@@ -1307,7 +1314,7 @@ C           call add2   (wsx,w1,n)
           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
           call copy   (tr3y1,w1,n)
           call cmult  (tr3y1,-1.0,n)
-C           call col2   (tr4y1,bm1,n)
+          call col2   (tr4y1,bm1,n)
           ! Add to total forcing
 C           call add2   (wsy,w1,n)
 
@@ -1320,7 +1327,7 @@ C           call add2   (wsy,w1,n)
           if (ldim == 3) call vdot3  (w1,psix,psiy,psiz,tx,ty,tz,n) 
           call copy   (tr3z1,w1,n)
           call cmult  (tr3z1,-1.0,n)
-C           call col2   (tr4z1,bm1,n)
+          call col2   (tr4z1,bm1,n)
           ! Add to total forcing
 C           call add2   (wsz,w1,n)
 
