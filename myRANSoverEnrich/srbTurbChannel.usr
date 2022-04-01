@@ -1284,7 +1284,7 @@ C                 wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
                   w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-C                   wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
+                  wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
                   tr3x(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
               enddo
             endif
@@ -1325,7 +1325,7 @@ C                   wsx_d(i,1,1,iel) = wsx_d(i,1,1,iel) + w1_d(i,1,1,iel)
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
                   w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-C                   wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
+                  wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
                   tr3y(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
               enddo
             endif
@@ -1366,7 +1366,7 @@ C                   wsy_d(i,1,1,iel) = wsy_d(i,1,1,iel) + w1_d(i,1,1,iel)
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
                   w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-C                   wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
+                  wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
                   tr3z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
               enddo
             endif
@@ -1407,7 +1407,7 @@ C                   wsz_d(i,1,1,iel) = wsz_d(i,1,1,iel) + w1_d(i,1,1,iel)
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
                   w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-C                   wsk_d(i,1,1,iel) = wsk_d(i,1,1,iel) + w1_d(i,1,1,iel)
+                  wsk_d(i,1,1,iel) = wsk_d(i,1,1,iel) + w1_d(i,1,1,iel)
               enddo
             endif
           enddo
