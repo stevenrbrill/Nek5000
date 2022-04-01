@@ -399,7 +399,7 @@ c-----------------------------------------------------------------------
       save xint, yint, zint
       save igs_x, igs_z
 
-      parameter(nstat=13)
+      parameter(nstat=22)
       real ravg(lx1*ly1*lz1*lelt,nstat)
       real stat(lx1*ly1*lz1*lelt,nstat)
       real stat_y(INTP_NMAX*nstat)
@@ -1265,26 +1265,26 @@ C           call invcol2(winty,bm1,n)
 C           call invcol2(wintz,bm1,n)
 
 C           if (istep.eq.0 .or. ifoutfld) then
-C           do iel = 1,nelv
-C C             call intp_rstd(tr2x1(1,1,1,iel),tr2x(1,1,1,iel),
-C C      $             lx1,lxd,if3d,1)
-C C             call intp_rstd(tr2y1(1,1,1,iel),tr2y(1,1,1,iel),
-C C      $             lx1,lxd,if3d,1)
-C C             call intp_rstd(tr2z1(1,1,1,iel),tr2z(1,1,1,iel),
-C C      $             lx1,lxd,if3d,1)
-C             call intp_rstd(tr3x1(1,1,1,iel),tr3x(1,1,1,iel),
+          do iel = 1,nelv
+            call intp_rstd(tr2x1(1,1,1,iel),tr2x(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(tr2y1(1,1,1,iel),tr2y(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(tr2z1(1,1,1,iel),tr2z(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(tr3x1(1,1,1,iel),tr3x(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(tr3y1(1,1,1,iel),tr3y(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+            call intp_rstd(tr3z1(1,1,1,iel),tr3z(1,1,1,iel),
+     $             lx1,lxd,if3d,1)
+C             call intp_rstd(tr4x1(1,1,1,iel),tr4x(1,1,1,iel),
 C      $             lx1,lxd,if3d,1)
-C             call intp_rstd(tr3y1(1,1,1,iel),tr3y(1,1,1,iel),
+C             call intp_rstd(tr4y1(1,1,1,iel),tr4y(1,1,1,iel),
 C      $             lx1,lxd,if3d,1)
-C             call intp_rstd(tr3z1(1,1,1,iel),tr3z(1,1,1,iel),
+C             call intp_rstd(tr4z1(1,1,1,iel),tr4z(1,1,1,iel),
 C      $             lx1,lxd,if3d,1)
-C C             call intp_rstd(tr4x1(1,1,1,iel),tr4x(1,1,1,iel),
-C C      $             lx1,lxd,if3d,1)
-C C             call intp_rstd(tr4y1(1,1,1,iel),tr4y(1,1,1,iel),
-C C      $             lx1,lxd,if3d,1)
-C C             call intp_rstd(tr4z1(1,1,1,iel),tr4z(1,1,1,iel),
-C C      $             lx1,lxd,if3d,1)
-C           enddo
+          enddo
 C           endif
 C           call invcol2(tr3x1,bm1,n)
 
@@ -1432,11 +1432,11 @@ C C           call intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 -
         call add2 (winty,T1_rhs_y,n)
         call add2 (wintz,T1_rhs_z,n)
 
-        if (istep.eq.0 .or. ifoutfld) then
+C         if (istep.eq.0 .or. ifoutfld) then
         call copy   (tr1x1,T1_rhs_x,n)
         call copy   (tr1y1,T1_rhs_y,n)
         call copy   (tr1z1,T1_rhs_z,n)
-        endif
+C         endif
 
       ! SRB REMOVE THIS TO ACTUALLY USE THE ENRICHMENT. THIS IS FOR TESTING
 C       call oprzero(psix,psiy,psiz)
@@ -1554,6 +1554,16 @@ c
         call avg1(ravg(1,12),uti ,alpha,beta,n,'utia',ifverbose)
         call avg1(ravg(1,13),taunew ,alpha,beta,n,'taua',ifverbose)
 
+        call avg1(ravg(1,14),tr2x1,alpha,beta,n,'t2x1',ifverbose)
+        call avg1(ravg(1,15),tr2y1,alpha,beta,n,'t2y1',ifverbose)
+        call avg1(ravg(1,16),tr2z1,alpha,beta,n,'t2z1',ifverbose)
+        call avg1(ravg(1,17),tr3x1,alpha,beta,n,'t3x1',ifverbose)
+        call avg1(ravg(1,18),tr3y1,alpha,beta,n,'t3y1',ifverbose)
+        call avg1(ravg(1,19),tr3z1,alpha,beta,n,'t3z1',ifverbose)
+        call avg1(ravg(1,20),tr1x1,alpha,beta,n,'t1x1',ifverbose)
+        call avg1(ravg(1,21),tr1y1,alpha,beta,n,'t1y1',ifverbose)
+        call avg1(ravg(1,22),tr1z1,alpha,beta,n,'t1z1',ifverbose)
+
         call torque_calc(1.0,x0,.false.,.false.) ! compute wall shear
         dragx_avg = alpha*dragx_avg + beta*dragx(iobj_wall)
 
@@ -1564,7 +1574,17 @@ c
 c        write(6,*) 'dragx(iobj_wall) = ', dragx(iobj_wall)
         call avg1(ravg(1,11),vx   ,alpha,beta,n,'upol',ifverbose)
       endif
-      
+
+      if (istep.eq.0 .or. ifoutfld) then
+         call outpost(ravg(1,20),ravg(1,21),ravg(1,22),vx_,t,'aT1')
+         call outpost(ravg(1,14),ravg(1,15),ravg(1,16),vx_,t,'aT2')
+         call outpost(ravg(1,17),ravg(1,18),ravg(1,19),vx_,t,'aT3')
+      endif
+
+C          call outpost(tr1x1,tr1y1,tr1z1,vx_,t,'Tr1')
+C          call outpost(tr2x1,tr2y1,tr2z1,vx_,t,'Tr2')
+C          call outpost(tr3x1,tr3y1,tr3z1,vx_,t,'Tr3')
+C          call outpost(tr4x1,tr4y1,tr4z1,vx_,t,'Tr4')
 c      write(6,*) 'dragx_avg = ', dragx_avg
 
       timel = time
@@ -1717,6 +1737,18 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          write(57,'(A)') 
      $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   Ucomb'
 
+         open(unit=58,file='en_terms.dat')
+         write(58,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', ut_param, 
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(58,'(A)(A)') 
+     $'%  y    y+    t2x    t2y    t2z    t3x    t3y    t3z    ',
+     $'t1x    t1y    t1z    '
          do i = 1,nint
             yy = 1+yint(i)
             write(56,3) 
@@ -1738,10 +1770,24 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
      &           u_tau_out,
      &           stat_y(10*nint+i)+psix_int(i)
 
+            write(58,3) 
+     &           yy,
+     &           yy*Re_tau, 
+     &           stat_y(13*nint+i),
+     &           stat_y(14*nint+i),
+     &           stat_y(15*nint+i),
+     &           stat_y(16*nint+i),
+     &           stat_y(17*nint+i),
+     &           stat_y(18*nint+i),
+     &           stat_y(19*nint+i),
+     &           stat_y(20*nint+i),
+     &           stat_y(21*nint+i)
+
   3         format(1p15e17.9)
          enddo
          close(56)
          close(57)
+         close(58)
 
  998  endif
 
