@@ -12,6 +12,9 @@
 *.zip
 *.re2
 *.ma2
+*SESSION.NAME
+*.fld01
+*/obj/
 
 # tool executables built by running maketools
 bin/cgns2nek
@@ -34,3 +37,9 @@ myEnrich/*.out
 myEnrich/*.slurm
 myEnrich/*.dat
 myEnrich/*.txt
+my*/makefile
+my*/nek5000
+my*/.state
+tools/cgns2nek/*
+tools/exo2nek/*
+tools/nekamg_setup/*
