@@ -1447,7 +1447,7 @@ C                 wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
                   w1_d(i,1,1,iel) = w1_d(i,1,1,iel)*bmd(i,1,1,iel)
-C                wsomg_d(i,1,1,iel) = wsomg_d(i,1,1,iel) + w1_d(i,1,1,iel)
+               wsomg_d(i,1,1,iel) = wsomg_d(i,1,1,iel) + w1_d(i,1,1,iel)
               enddo
             endif
           enddo
