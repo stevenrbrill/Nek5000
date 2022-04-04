@@ -631,7 +631,7 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       ! Start enrichment at time 50
 C       if (time.lt.50) then
-      if (time.lt.50) then
+      if (time.lt.60) then
         call oprzero(psix,psiy,psiz)
         call oprzero_d(psix_d,psiy_d,psiz_d)
         call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
@@ -944,6 +944,7 @@ C           enddo
 
           call oprzero_d(tx_d,ty_d,tz_d)
           call rzero(w1_d,n_d)
+          call rzero(w2_d,n_d)
           call oprzero_d(txx,txy,txz)
 
           call oprzero_d(tr1x,tr1y,tr1z)
@@ -1022,6 +1023,10 @@ C           enddo
           call add2   (wintx,w1,n)
 C           call add2   (wsx,w1,n)
 
+          print *, "Print t2x"
+          call srbprint(w1)
+
+
           ! T^psi,2 or dot(psi,gpsi_x)
           ! Should be zero in the simple case
           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) !Term 4
@@ -1037,6 +1042,9 @@ C           call add2   (wsx,w1,n)
           ! Add to total forcing
           call add2   (wintx,w1,n)
 C           call add2   (wsx,w1,n)
+
+            print *, "Print t4x"
+          call srbprint(w1)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! M and T2 for y
@@ -1059,6 +1067,9 @@ C           call add2   (wsx,w1,n)
           call add2   (winty,w1,n)
 C           call add2   (wsy,w1,n)
 
+            print *, "Print t2y"
+          call srbprint(w1)
+
           ! T^psi,2 or dot(psi,gpsi_y)
           ! Should be zero in the simple case
           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) !Term 4
@@ -1074,6 +1085,9 @@ C           call add2   (wsy,w1,n)
           ! Add to total forcing
           call add2   (winty,w1,n)
 C           call add2   (wsy,w1,n)
+
+            print *, "Print t4y"
+          call srbprint(w1)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! M and T2 for z
@@ -1097,6 +1111,9 @@ C           call add2   (wsy,w1,n)
           call add2   (wintz,w1,n)
 C           call add2   (wsz,w1,n)
 
+            print *, "Print t2z"
+          call srbprint(w1)
+
           ! T^psi,2 or dot(psi,gpsi_z)
           ! Should be zero in the simple case
           if (ldim == 2) call vdot2  (w1_d,psix_d,psiy_d,tx_d,ty_d,n_d) !Term 4
@@ -1112,6 +1129,9 @@ C           call add2   (wsz,w1,n)
           ! Add to total forcing
           call add2   (wintz,w1,n)
 C           call add2   (wsz,w1,n)
+
+            print *, "Print t4z"
+          call srbprint(w1)
 
           ! ----------------------------------------------------------------
           ! Term 3: -rho*dot(psi,gradient(u0))   S^psi
@@ -1177,6 +1197,9 @@ C           call gradm1 (tx,ty,tz,vx)
           do iel = 1,nelv
             call mxm(phis(1,1,1),nb,w1_d(1,1,1,iel),nq,w1(1,1,1,iel),1)
           enddo
+
+          print *, "Print t3x"
+          call srbprint(w1)
 
           call copy   (tr3x1,w1,n)
           call cmult  (tr3x1,-1.0,n)
@@ -1246,6 +1269,10 @@ C           call gradm1 (tx,ty,tz,vy)
             call mxm(phis(1,1,1),nb,w1_d(1,1,1,iel),nq,w1(1,1,1,iel),1)
           enddo
 
+          print *, "Print t3y"
+          call srbprint(w1)
+
+
           call copy   (tr3y1,w1,n)
           call cmult  (tr3y1,-1.0,n)
           ! Add to total forcing
@@ -1313,6 +1340,10 @@ C           call gradm1 (tx,ty,tz,vz)
           do iel = 1,nelv
             call mxm(phis(1,1,1),nb,w1_d(1,1,1,iel),nq,w1(1,1,1,iel),1)
           enddo
+          
+          print *, "Print t3z"
+          call srbprint(w1)
+
 
           call copy   (tr3z1,w1,n)
           call cmult  (tr3z1,-1.0,n)

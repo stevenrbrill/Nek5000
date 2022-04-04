@@ -13,9 +13,9 @@ c mesh dimensions
 #define PI (4.*atan(1.))
 #define XLEN (2.*PI)
 #define ZLEN PI
-#define NUMBER_ELEMENTS_X 10
-#define NUMBER_ELEMENTS_Y 10
-#define NUMBER_ELEMENTS_Z 10
+#define NUMBER_ELEMENTS_X 4
+#define NUMBER_ELEMENTS_Y 6
+#define NUMBER_ELEMENTS_Z 4
 
 c-----------------------------------------------------------------------
       subroutine projenrich ()

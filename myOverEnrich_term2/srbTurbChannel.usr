@@ -13,9 +13,9 @@ c mesh dimensions
 #define PI (4.*atan(1.))
 #define XLEN (2.*PI)
 #define ZLEN PI
-#define NUMBER_ELEMENTS_X 10
-#define NUMBER_ELEMENTS_Y 10
-#define NUMBER_ELEMENTS_Z 10
+#define NUMBER_ELEMENTS_X 4
+#define NUMBER_ELEMENTS_Y 6
+#define NUMBER_ELEMENTS_Z 4
 
 c-----------------------------------------------------------------------
       subroutine projenrich ()
@@ -625,7 +625,7 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       ! Start enrichment at time 50
 C       if (time.lt.50) then
-      if (time.lt.50) then
+      if (time.lt.0) then
         call oprzero(psix,psiy,psiz)
         call oprzero_d(psix_d,psiy_d,psiz_d)
         call oprzero(psix_rhs,psiy_rhs,psiz_rhs)

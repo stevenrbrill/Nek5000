@@ -321,7 +321,8 @@ c-----------------------------------------------------------------------
       endif
 
       ! Enrichment value
-      calc_psi = -y*y*y*y*y*y*y*y+1.
+C       calc_psi = -y*y*y*y*y*y*y*y+1.
+      calc_psi = sin((x+1.)/6.*2.*PI)
 
       return
       end
@@ -1858,7 +1859,8 @@ c-----------------------------------------------------------------------
       if (y.lt.0) yp = (1+y)*Re_tau
       
       ! Reichardt function
-      ux  = (x*x)+(-y*y*y*y*y*y*y*y+1.)
+C       ux  = (x*x)+(-y*y*y*y*y*y*y*y+1.)
+        ux  =  2.*sin((x+1.)/6.*2.*PI)
 C       print *, "Print ", x, y, ux
 
       ! add perturbation to trigger turbulence 

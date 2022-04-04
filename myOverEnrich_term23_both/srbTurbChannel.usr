@@ -1230,7 +1230,7 @@ C           call add2   (wsz,w1,n)
           call copy   (tr3x,w1,n)
           call cmult  (tr3x,-1.0,n)
           ! Add to total forcing
-C           call add2   (wsx,w1,n)
+          call add2   (wsx,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for y

@@ -603,7 +603,7 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
           call oprzero_d(gpsiy_x,gpsiy_y,gpsiy_z)
           call oprzero_d(gpsiz_x,gpsiz_y,gpsiz_z)
           call rzero(taunew,n)
-         call rzero(uti,n)
+          call rzero(uti,n)
           call oprzero(gpsix_x1,gpsix_y1,gpsix_z1)
           call oprzero(gpsiy_x1,gpsiy_y1,gpsiy_z1)
           call oprzero(gpsiz_x1,gpsiz_y1,gpsiz_z1)
