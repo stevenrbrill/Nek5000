@@ -146,6 +146,50 @@ c-----------------------------------------------------------------------
       end
 
 c-----------------------------------------------------------------------
+      subroutine srb_intp_rstd(ju,u,mx,md,if3d,idir) ! GLL->GL interpolation
+
+c     GLL interpolation from mx to md.
+
+c     If idir ^= 0, then apply transpose operator  (md to mx)
+
+      include 'SIZE'
+
+      real    ju(1),u(1)
+      logical if3d
+
+      parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
+      common /dgrad/ d(ldg),dt(ldg),dg(ldg),dgt(ldg),jgl(ldg),jgt(ldg)
+     $             , wkd(lwkd)
+      real jgl,jgt
+
+      parameter (ld=2*lxd)
+      common /ctmp0/ w(ld**(ldim-1),2)
+
+      call lim_chk(md,ld,'md   ','ld   ','grad_rstd ')
+      call lim_chk(mx,ld,'mx   ','ld   ','grad_rstd ')
+
+      ldw = 2*(ld**(ldim-1))
+
+      call get_int_ptr (i,mx,md)
+c
+      if (ldim .eq. 3) then
+         if (idir.eq.0) then
+           call specmpn(ju,md,u,mx,jgl(i),jgt(i),if3d,w,ldw)
+         else
+           call specmpn(ju,mx,u,md,jgt(i),jgl(i),if3d,w,ldw)
+         endif
+      else if (ldim .eq. 2) then
+          if (idir.eq.0) then
+            call mxm(jgl(i),md,u,mx,ju,1)  
+          else
+            call mxm(jgt(i),mx,u,md,ju,1)
+          endif
+      end if
+c
+      return
+      end
+
+c-----------------------------------------------------------------------
       subroutine oprzero_d (a,b,c)
       ! Zero overintegraded vectors
       include 'SIZE'
@@ -943,7 +987,7 @@ C                     do iy = 1,ly1
                   enddo
                   ! interpolate psi at overintegration points in y to
                   ! the overintegration points in x and z
-                  call intp_rstd(psi_trans2(1,1,iy,iel),
+                  call srb_intp_rstd(psi_trans2(1,1,iy,iel),
      $              psi_trans(1,1,iy,iel),lx1,lxd,0,0)
                 enddo
 
