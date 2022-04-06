@@ -1180,6 +1180,8 @@ C           enddo
                 wsx_d(i,1,1,iel) = 0.0
                 wsy_d(i,1,1,iel) = 0.0
                 wsz_d(i,1,1,iel) = 0.0
+                wsk_d(i,1,1,iel) = 0.0
+                wsomg_d(i,1,1,iel) = 0.0
                 tx_d(i,1,1,iel) = 0.0
                 ty_d(i,1,1,iel) = 0.0
                 tz_d(i,1,1,iel) = 0.0
