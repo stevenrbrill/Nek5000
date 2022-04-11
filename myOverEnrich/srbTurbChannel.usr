@@ -905,43 +905,43 @@ C                     do iy = 1,ly1
 
           ! Get enrichment values on boundary of enriched region
           ! Not currently used
-          call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
-          do iel = 1, nelv
-            if (flag(iel) .eq. 2) then  ! boundary element is above y=0
-                do ix = 1,lx1
-                  do iz = 1,lz1
-C                     do iy = 1,ly1
-                      iy = ly1
-                      ut_param = uti(ix,iy,iz,iel)
-                      if (use_default .eq. 1) then
-                        ut_param = utau_ref
-                      endif
-                      psix_rhs(ix,iy,iz,iel) = 
-     $                   calc_psi(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
-     $                   ut_param,param(2))
-C                     enddo
-                  enddo
-                enddo
+C           call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
+C           do iel = 1, nelv
+C             if (flag(iel) .eq. 2) then  ! boundary element is above y=0
+C                 do ix = 1,lx1
+C                   do iz = 1,lz1
+C C                     do iy = 1,ly1
+C                       iy = ly1
+C                       ut_param = uti(ix,iy,iz,iel)
+C                       if (use_default .eq. 1) then
+C                         ut_param = utau_ref
+C                       endif
+C                       psix_rhs(ix,iy,iz,iel) = 
+C      $                   calc_psi(xm1(ix,iy,iz,iel),
+C      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+C      $                   ut_param,param(2))
+C C                     enddo
+C                   enddo
+C                 enddo
 
-             else if (flag(iel) .eq. -2) then ! boundary element below y=0
-                 do ix = 1,lx1
-                  do iz = 1,lz1
-C                     do iy = 1,ly1
-                      iy = 1
-                      ut_param = uti(ix,iy,iz,iel)
-                      if (use_default .eq. 1) then
-                        ut_param = utau_ref
-                      endif
-                      psix_rhs(ix,iy,iz,iel) = 
-     $                   calc_psi(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
-     $                   ut_param,param(2))
-C                     enddo
-                  enddo
-                 enddo
-             endif
-          enddo
+C              else if (flag(iel) .eq. -2) then ! boundary element below y=0
+C                  do ix = 1,lx1
+C                   do iz = 1,lz1
+C C                     do iy = 1,ly1
+C                       iy = 1
+C                       ut_param = uti(ix,iy,iz,iel)
+C                       if (use_default .eq. 1) then
+C                         ut_param = utau_ref
+C                       endif
+C                       psix_rhs(ix,iy,iz,iel) = 
+C      $                   calc_psi(xm1(ix,iy,iz,iel),
+C      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+C      $                   ut_param,param(2))
+C C                     enddo
+C                   enddo
+C                  enddo
+C              endif
+C           enddo
 
 C           call rzero  (tau_w,n)
 C           do iel = 1, nelv
