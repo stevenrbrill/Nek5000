@@ -2097,6 +2097,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save comp_phi_grad
       real en_bound(lx1,ly1,lz1,lelv)
       common /enbound/ en_bound 
+      real sign
       integer nb, nq
       common /phigrad/ dpdr(lxd*lyd*lzd,lx1*ly1*lz1)
      $                ,dpds(lxd*lyd*lzd,lx1*ly1*lz1)
@@ -2564,12 +2565,14 @@ C                   call add2(T1_rhs_x(1,1,1,iel),w1(1,1,1,iel),nb)
 C               endif
               if (flag(iel) .eq. -1) then
                   iy_ut = 1
+                  sign = -1.0
               else
                   iy_ut = ly1
+                  sign = 1.0
               endif
               do iz = 1,lz1
                 do ix = 1,lx1
-                  en_bound(ix,iy_ut,iz,iel) = vdiff(ix,iy_ut,iz,iel,1)*
+              en_bound(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)*
      $                  gpsix_y(ix,iy_ut,iz,iel)       
                 enddo
               enddo
