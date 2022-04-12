@@ -610,6 +610,8 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save intp_h2
       integer comp_phi_grad
       save comp_phi_grad
+      real en_bound(lx1,ly1,lz1,lelv)
+      common /enbound/ en_bound 
       integer nb, nq
       common /phigrad/ dpdr(lxd*lyd*lzd,lx1*ly1*lz1)
      $                ,dpds(lxd*lyd*lzd,lx1*ly1*lz1)
@@ -780,6 +782,7 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
           call oprzero_d(gpsiy_x_d,gpsiy_y_d,gpsiy_z_d)
           call oprzero_d(gpsiz_x_d,gpsiz_y_d,gpsiz_z_d)
           call rzero(taunew,n)
+          call rzero(en_bound,n)
          call rzero(uti,n)
          do iel = 1, nelv
           if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
@@ -2092,6 +2095,8 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save intp_h2
       integer comp_phi_grad
       save comp_phi_grad
+      real en_bound(lx1,ly1,lz1,lelv)
+      common /enbound/ en_bound 
       integer nb, nq
       common /phigrad/ dpdr(lxd*lyd*lzd,lx1*ly1*lz1)
      $                ,dpds(lxd*lyd*lzd,lx1*ly1*lz1)
@@ -2531,26 +2536,43 @@ C           call oprzero(wintx,winty,wintz)
 
 
               ! Boundary terms
-              if (flag(iel) .eq. -1) then
-                  call rzero(srb_temp(1,1,1,iel),nb)
-                  call copy(srb_temp(1,1,1,iel),wxm1,lx1)
-                  call cmult(srb_temp(1,1,1,iel),0.5/3./2.,nb)
-                  call col2(srb_temp(1,1,1,iel),vdiff(1,1,1,iel,1),nb)
-                  call col3(w1(1,1,1,iel),srb_temp(1,1,1,iel),
-     $                   gpsix_y(1,1,1,iel),nb)
-                  call cmult (w1(1,1,1,iel),-1.,nb)
-                  call add2(T1_rhs_x(1,1,1,iel),w1(1,1,1,iel),nb)
-              else
-                  call rzero(srb_temp(1,1,1,iel),nb)
-                  call copy(srb_temp(1,ly1,1,iel),wxm1,lx1)
-                  call cmult(srb_temp(1,1,1,iel),0.5/3./2.,nb)
-                  call col2(srb_temp(1,1,1,iel),vdiff(1,1,1,iel,1),nb)
-                  call col3(w1(1,1,1,iel),srb_temp(1,1,1,iel),
-     $                   gpsix_y(1,1,1,iel),nb)
-                  call cmult (w1(1,1,1,iel),1.,nb)
-                  call add2(T1_rhs_x(1,1,1,iel),w1(1,1,1,iel),nb)
-              endif
+C               if (flag(iel) .eq. -1) then
+C                   call rzero(srb_temp(1,1,1,iel),nb)
+C                   call copy(srb_temp(1,1,1,iel),wxm1,lx1)
+C                   call cmult(srb_temp(1,1,1,iel),0.5/3./2.,nb)
+C                   call col2(srb_temp(1,1,1,iel),vdiff(1,1,1,iel,1),nb)
+C                   call col3(w1(1,1,1,iel),srb_temp(1,1,1,iel),
+C      $                   gpsix_y(1,1,1,iel),nb)
+C                   call cmult (w1(1,1,1,iel),-1.,nb)
+C                   call add2(T1_rhs_x(1,1,1,iel),w1(1,1,1,iel),nb)
 
+C                   print *, "Print srb_temp"
+C                   call srbprint(srb_temp)
+C                   print *, "Print gpsix_y"
+C                   call srbprint(gpsix_y)
+C                   print *, "Print w1"
+C                   call srbprint(w1)
+C               else
+C                   call rzero(srb_temp(1,1,1,iel),nb)
+C                   call copy(srb_temp(1,ly1,1,iel),wxm1,lx1)
+C                   call cmult(srb_temp(1,1,1,iel),0.5/3./2.,nb)
+C                   call col2(srb_temp(1,1,1,iel),vdiff(1,1,1,iel,1),nb)
+C                   call col3(w1(1,1,1,iel),srb_temp(1,1,1,iel),
+C      $                   gpsix_y(1,1,1,iel),nb)
+C                   call cmult (w1(1,1,1,iel),1.,nb)
+C                   call add2(T1_rhs_x(1,1,1,iel),w1(1,1,1,iel),nb)
+C               endif
+              if (flag(iel) .eq. -1) then
+                  iy_ut = 1
+              else
+                  iy_ut = ly1
+              endif
+              do iz = 1,lz1
+                do ix = 1,lx1
+                  en_bound(ix,iy_ut,iz,iel) = vdiff(ix,iy_ut,iz,iel,1)*
+     $                  gpsix_y(ix,iy_ut,iz,iel)       
+                enddo
+              enddo
             endif
           enddo
 
@@ -2709,6 +2731,8 @@ c-----------------------------------------------------------------------
 
       real taunew(lx1,ly1,lz1,lelv)
       common /wallshear/ taunew
+      real en_bound(lx1,ly1,lz1,lelv)
+      common /enbound/ en_bound 
 
 C      if (y.lt.0) temp = 1.0
 C      if (y.gt.0) temp = 0.0
@@ -2721,14 +2745,14 @@ C      if (y.gt.0) temp = 0.0
         UZ=0.0
         temp=0.0
         ! This isn't actually used
-        TRX=-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
+        TRX=en_bound(ix,iy,iz,e)-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
         TRY=0.0
         TRZ=0.0
       endif
 
 c     Imposing shear stress B.C.s
       if(cbc(iside,e,1).eq.'sh ') then
-        TRX=taunew(ix,iy,iz,e) !-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
+        TRX=en_bound(ix,iy,iz,e)+taunew(ix,iy,iz,e) !-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
         TRY=0.0
         TRZ=0.0
         temp=0.0
