@@ -2537,32 +2537,6 @@ C           call oprzero(wintx,winty,wintz)
 
 
               ! Boundary terms
-C               if (flag(iel) .eq. -1) then
-C                   call rzero(srb_temp(1,1,1,iel),nb)
-C                   call copy(srb_temp(1,1,1,iel),wxm1,lx1)
-C                   call cmult(srb_temp(1,1,1,iel),0.5/3./2.,nb)
-C                   call col2(srb_temp(1,1,1,iel),vdiff(1,1,1,iel,1),nb)
-C                   call col3(w1(1,1,1,iel),srb_temp(1,1,1,iel),
-C      $                   gpsix_y(1,1,1,iel),nb)
-C                   call cmult (w1(1,1,1,iel),-1.,nb)
-C                   call add2(T1_rhs_x(1,1,1,iel),w1(1,1,1,iel),nb)
-
-C                   print *, "Print srb_temp"
-C                   call srbprint(srb_temp)
-C                   print *, "Print gpsix_y"
-C                   call srbprint(gpsix_y)
-C                   print *, "Print w1"
-C                   call srbprint(w1)
-C               else
-C                   call rzero(srb_temp(1,1,1,iel),nb)
-C                   call copy(srb_temp(1,ly1,1,iel),wxm1,lx1)
-C                   call cmult(srb_temp(1,1,1,iel),0.5/3./2.,nb)
-C                   call col2(srb_temp(1,1,1,iel),vdiff(1,1,1,iel,1),nb)
-C                   call col3(w1(1,1,1,iel),srb_temp(1,1,1,iel),
-C      $                   gpsix_y(1,1,1,iel),nb)
-C                   call cmult (w1(1,1,1,iel),1.,nb)
-C                   call add2(T1_rhs_x(1,1,1,iel),w1(1,1,1,iel),nb)
-C               endif
               if (flag(iel) .eq. -1) then
                   iy_ut = 1
                   sign = -1.0
