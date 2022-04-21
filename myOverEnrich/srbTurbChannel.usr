@@ -1786,10 +1786,10 @@ c     WALL ENRICHMENT...END
          call add3 (vx_,vx,psix,n) !calculate actual velocity
          call outpost(psix,psiy,psiz,vx_,t,'enr')
 C          call outpost(psix,gpsix_y,psiz,vx_,t,'enr')
-C          call outpost(tr1x1,tr1y1,tr1z1,vx_,t,'Tr1')
-C          call outpost(tr2x1,tr2y1,tr2z1,vx_,t,'Tr2')
-C          call outpost(tr3x1,tr3y1,tr3z1,vx_,t,'Tr3')
-C          call outpost(tr4x1,tr4y1,tr4z1,vx_,t,'Tr4')
+         call outpost(tr1x1,tr1y1,tr1z1,vx_,t,'Tr1')
+         call outpost(tr2x1,tr2y1,tr2z1,vx_,t,'Tr2')
+         call outpost(tr3x1,tr3y1,tr3z1,vx_,t,'Tr3')
+         call outpost(tr4x1,tr4y1,tr4z1,vx_,t,'Tr4')
 C          ifto = .true.
 C          call outpost(wsx,wsy,wsz,term3x,convx,'src')
 C          ifto = .false.
