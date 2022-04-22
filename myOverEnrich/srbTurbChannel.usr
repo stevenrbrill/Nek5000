@@ -272,8 +272,8 @@ C
       save    ilstep
       data    ilstep /-1/
 
-      if (.not.ifgeom.and.ilstep.gt.1) return  ! already computed
-      if (ifgeom.and.ilstep.eq.istep)  return  ! already computed
+C       if (.not.ifgeom.and.ilstep.gt.1) return  ! already computed
+C       if (ifgeom.and.ilstep.eq.istep)  return  ! already computed
       ilstep = istep
 
       nxyz1 = lx1*ly1*lz1
