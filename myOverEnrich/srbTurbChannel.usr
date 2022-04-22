@@ -32,8 +32,7 @@ c-----------------------------------------------------------------------
       real myjgl,myjgt
 
       m0 = md-1
-      call get_dgll_ptr (ip,md,md)
-C       call get_dgl_ptr (ip,md,md)
+      call my_get_dgl_ptr (ip,md,md)
       if (if3d) then
          call local_grad3(ur,us,ut,u,m0,1,mydg(ip),mydgt(ip))
       else
@@ -59,14 +58,91 @@ c-----------------------------------------------------------------------
       call my_intp_rstd(ju,u,mx,md,if3d,0) ! 0 = forward
 
       m0 = md-1
-      call get_dgll_ptr (ip,md,md)
-C       call get_dgl_ptr (ip,md,md)
+      call my_get_dgl_ptr (ip,md,md)
       if (if3d) then
          call local_grad3(ur,us,ut,ju,m0,1,mydg(ip),mydgt(ip))
       else
          call local_grad2(ur,us   ,ju,m0,1,mydg(ip),mydgt(ip))
       endif
 
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine my_get_dgl_ptr (ip,mx,md)
+c
+c     Get pointer to GL-GL interpolation dgl() for pair (mx,md)
+c
+      include 'SIZE'
+c
+      parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
+      common /mydgrad/ myd(ldg),mydt(ldg),mydg(ldg),mydgt(ldg)
+     $             , myjgl(ldg),myjgt(ldg), wkd(lwkd)
+      real myjgl,myjgt
+c
+      parameter (ld=2*lxd)
+      common /jgrad/ pd    (0:ld*ld)
+     $             , pdg   (0:ld*ld)
+     $             , pjgl  (0:ld*ld)
+      integer pd , pdg , pjgl
+c
+      ij = md + ld*(mx-1)
+      ip = pdg (ij)
+
+      if (ip.eq.0) then
+
+         nstore   = pdg (0)
+         pdg (ij) = nstore+1
+         nstore   = nstore + md*mx
+         pdg (0)  = nstore
+         ip       = pdg (ij)
+c
+         nwrkd = mx + md
+         call lim_chk(nstore,ldg ,'dg   ','ldg  ','get_dgl_pt')
+         call lim_chk(nwrkd ,lwkd,'wkd  ','lwkd ','get_dgl_pt')
+c
+         call my_gen_dgl(mydg (ip),mydgt(ip),md,mx,wkd)
+      endif
+c
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine my_gen_dgl(dgl,dgt,mp,np,w)
+c
+c     Generate derivative from np GL points onto mp GL points
+c
+c        dgl  = interpolation matrix, mapping from velocity nodes to pressure
+c        dgt  = transpose of interpolation matrix
+c        w    = work array of size (3*np+mp)
+c
+c        np   = number of points on GLL grid
+c        mp   = number of points on GL  grid
+c
+c
+c
+      real dgl(mp,np),dgt(np*mp),w(1)
+c
+c
+      iz = 1
+      id = iz + np
+c
+      call zwgll  (w(iz),dgt,np)  ! GL points
+      call zwgll  (w(id),dgt,mp)  ! GL points
+C       call zwgl  (w(id),dgt,mp)  ! GL points
+c
+      ndgt = 2*np
+      ldgt = mp*np
+      call lim_chk(ndgt,ldgt,'ldgt ','dgt  ','gen_dgl   ')
+c
+      n  = np-1
+      do i=1,mp
+         call fd_weights_full(w(id+i-1),w(iz),n,1,dgt) ! 1=1st deriv.
+         do j=1,np
+            dgl(i,j) = dgt(np+j)                       ! Derivative matrix
+         enddo
+      enddo
+c
+      call transpose(dgt,np,dgl,mp)
+c
       return
       end
 c-----------------------------------------------------------------------
