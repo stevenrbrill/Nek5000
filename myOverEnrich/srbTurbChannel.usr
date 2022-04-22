@@ -193,21 +193,22 @@ c     Get pointer to jgl() for interpolation pair (mx,md)
       real myjgl,myjgt
 c
       parameter (ld=2*lxd)
-      common /igrad/ pd    (0:ld*ld)
-     $             , pdg   (0:ld*ld)
-     $             , pjgl  (0:ld*ld)
-      integer pd , pdg , pjgl
+      common /myigrad/ mypd    (0:ld*ld)
+     $             , mypdg   (0:ld*ld)
+     $             , mypjgl  (0:ld*ld)
+      integer mypd , mypdg , mypjgl
 c
       ij = md + ld*(mx-1)
-      ip = pjgl(ij)
+      ip = mypjgl(ij)
 c
       if (ip.eq.0) then
 c
-         nstore   = pjgl(0)
-         pjgl(ij) = nstore+1
+C        print *, "Here???"
+         nstore   = mypjgl(0)
+         mypjgl(ij) = nstore+1
          nstore   = nstore + md*mx
-         pjgl(0)  = nstore
-         ip       = pjgl(ij)
+         mypjgl(0)  = nstore
+         ip       = mypjgl(ij)
 c
          nwrkd = mx + md
          call lim_chk(nstore,ldg ,'jgl  ','ldg  ','get_int_pt')
@@ -451,6 +452,72 @@ c-----------------------------------------------------------------------
         enddo
       enddo
 
+      return
+      end
+
+c-----------------------------------------------------------------------
+      subroutine srbprint_diff (u,v)
+      ! Print the solution 
+      include 'SIZE'
+      include 'TOTAL'
+
+      real u(lx1, ly1, lz1, nelv), v(lx1,ly1,lz1,nelv)
+
+      do iel = 1, nelv
+        do ix = 1,lx1
+          do iy = 1,ly1
+            do iz = 1,lz1
+             print *, iel, ix, iy, iz, u(ix,iy,iz,iel), v(ix,iy,iz,iel),
+     $         u(ix,iy,iz,iel)-v(ix,iy,iz,iel)
+            enddo
+          enddo
+        enddo
+      enddo
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      subroutine srb_intp_rstd(ju,u,mx,md,if3d,idir) ! GLL->GL interpolation
+
+c     GLL interpolation from mx to md.
+
+c     If idir ^= 0, then apply transpose operator  (md to mx)
+
+      include 'SIZE'
+
+      real    ju(1),u(1)
+      logical if3d
+
+      parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
+      common /mydgrad/ myd(ldg),mydt(ldg),mydg(ldg),mydgt(ldg)
+     $             , myjgl(ldg),myjgt(ldg), wkd(lwkd)
+      real myjgl,myjgt
+
+      parameter (ld=2*lxd)
+      common /ctmp0/ w(ld**(ldim-1),2)
+
+      call lim_chk(md,ld,'md   ','ld   ','grad_rstd ')
+      call lim_chk(mx,ld,'mx   ','ld   ','grad_rstd ')
+
+      ldw = 2*(ld**(ldim-1))
+
+      call my_get_int_ptr (i,mx,md)
+c
+      if (ldim .eq. 3) then
+         if (idir.eq.0) then
+           call specmpn(ju,md,u,mx,myjgl(i),myjgt(i),if3d,w,ldw)
+         else
+           call specmpn(ju,mx,u,md,myjgt(i),myjgl(i),if3d,w,ldw)
+         endif
+      else if (ldim .eq. 2) then
+          if (idir.eq.0) then
+            call mxm(myjgl(i),md,u,mx,ju,1)  
+          else
+            call mxm(myjgt(i),mx,u,md,ju,1)
+          endif
+      end if
+c
       return
       end
 
@@ -830,7 +897,8 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
                                !(nb,nq)
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /y_ends/ bot_y, top_y
-      common /dealias1/ zd(lxd),wd(lxd)
+      common /mydealias1/ myzd(lxd),mywd(lxd)
+      real myzd, mywd
       common /scrns/ w1(lx1,ly1,lz1,lelv)
      $              ,w2(lx1,ly1,lz1,lelv)
      $              ,w3(lx1,ly1,lz1,lelv)
@@ -1044,9 +1112,9 @@ C           endif
                 do ix = 1,lxd
                   ib = (iz-1)*lxd*lyd + (iy-1)*(lxd) + ix
                   bmd(ix,iy,iz,iel) = 
-     $               jacmd(ib,iel)*wd(ix)*wd(iy)
+     $               jacmd(ib,iel)*mywd(ix)*mywd(iy)
                   if (ldim == 3) then
-                        bmd(ix,iy,iz,iel) = bmd(ix,iy,iz,iel)*wd(iz)
+                        bmd(ix,iy,iz,iel) = bmd(ix,iy,iz,iel)*mywd(iz)
                   endif
                 enddo
               enddo
@@ -1167,7 +1235,7 @@ C                     do iy = 1,ly1
                   enddo
                   ! interpolate psi at overintegration points in y to
                   ! the overintegration points in x and z
-                  call my_intp_rstd(psi_trans2(1,1,iy,iel),
+                  call srb_intp_rstd(psi_trans2(1,1,iy,iel),
      $              psi_trans(1,1,iy,iel),lx1,lxd,0,0)
                 enddo
 
