@@ -206,7 +206,6 @@ c
 c
       if (ip.eq.0) then
 c
-C        print *, "Here???"
          nstore   = mypjgl(0)
          mypjgl(ij) = nstore+1
          nstore   = nstore + md*mx
