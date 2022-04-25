@@ -81,21 +81,21 @@ c
       real myjgl,myjgt
 c
       parameter (ld=2*lxd)
-      common /jgrad/ pd    (0:ld*ld)
-     $             , pdg   (0:ld*ld)
-     $             , pjgl  (0:ld*ld)
-      integer pd , pdg , pjgl
+      common /myjgrad/ mypd    (0:ld*ld)
+     $             , mypdg   (0:ld*ld)
+     $             , mypjgl  (0:ld*ld)
+      integer mypd , mypdg , mypjgl
 c
       ij = md + ld*(mx-1)
-      ip = pdg (ij)
+      ip = mypdg (ij)
 
       if (ip.eq.0) then
 
-         nstore   = pdg (0)
-         pdg (ij) = nstore+1
+         nstore   = mypdg (0)
+         mypdg (ij) = nstore+1
          nstore   = nstore + md*mx
-         pdg (0)  = nstore
-         ip       = pdg (ij)
+         mypdg (0)  = nstore
+         ip       = mypdg (ij)
 c
          nwrkd = mx + md
          call lim_chk(nstore,ldg ,'dg   ','ldg  ','get_dgl_pt')
@@ -126,7 +126,10 @@ c
       iz = 1
       id = iz + np
 c
+      ! PickQuad
       call zwgll  (w(iz),dgt,np)  ! GL points
+C       call zwgl  (w(id),dgt,mp)  ! GL points
+      ! PickQuad
       call zwgll  (w(id),dgt,mp)  ! GL points
 C       call zwgl  (w(id),dgt,mp)  ! GL points
 c
@@ -164,7 +167,7 @@ c     If idir ^= 0, then apply transpose operator  (md to mx)
       real myjgl,myjgt
 
       parameter (ld=2*lxd)
-      common /ctmp0/ w(ld**ldim,2)
+      common /myctmp0/ myw(ld**ldim,2)
 
       call lim_chk(md,ld,'md   ','ld   ','grad_rstd ')
       call lim_chk(mx,ld,'mx   ','ld   ','grad_rstd ')
@@ -174,9 +177,9 @@ c     If idir ^= 0, then apply transpose operator  (md to mx)
       call my_get_int_ptr (i,mx,md)
 c
       if (idir.eq.0) then
-         call specmpn(ju,md,u,mx,myjgl(i),myjgt(i),if3d,w,ldw)
+         call specmpn(ju,md,u,mx,myjgl(i),myjgt(i),if3d,myw,ldw)
       else
-         call specmpn(ju,mx,u,md,myjgt(i),myjgl(i),if3d,w,ldw)
+         call specmpn(ju,mx,u,md,myjgt(i),myjgl(i),if3d,myw,ldw)
       endif
 c
       return
@@ -194,21 +197,21 @@ c     Get pointer to jgl() for interpolation pair (mx,md)
       real myjgl,myjgt
 c
       parameter (ld=2*lxd)
-      common /igrad/ pd    (0:ld*ld)
-     $             , pdg   (0:ld*ld)
-     $             , pjgl  (0:ld*ld)
-      integer pd , pdg , pjgl
+      common /myigrad/ mypd    (0:ld*ld)
+     $             , mypdg   (0:ld*ld)
+     $             , mypjgl  (0:ld*ld)
+      integer mypd , mypdg , mypjgl
 c
       ij = md + ld*(mx-1)
-      ip = pjgl(ij)
+      ip = mypjgl(ij)
 c
       if (ip.eq.0) then
 c
-         nstore   = pjgl(0)
-         pjgl(ij) = nstore+1
+         nstore   = mypjgl(0)
+         mypjgl(ij) = nstore+1
          nstore   = nstore + md*mx
-         pjgl(0)  = nstore
-         ip       = pjgl(ij)
+         mypjgl(0)  = nstore
+         ip       = mypjgl(ij)
 c
          nwrkd = mx + md
          call lim_chk(nstore,ldg ,'jgl  ','ldg  ','get_int_pt')
@@ -238,8 +241,9 @@ c
       id = iz + np
 c
       call zwgll (w(iz),jgt,np)
-      call zwgll  (w(id),jgt,mp)
-C       call zwgl  (w(id),jgt,mp)
+      ! PickQuad
+      call zwgll (w(id),jgt,mp)
+C       call zwgl (w(id),jgt,mp)
 c
       n  = np-1
       do i=1,mp
@@ -268,17 +272,18 @@ C
       integer e
       real myzd, mywd
 
-      integer ilstep
-      save    ilstep
-      data    ilstep /-1/
+      integer myilstep
+      save    myilstep
+      data    myilstep /-1/
 
-      if (.not.ifgeom.and.ilstep.gt.1) return  ! already computed
-      if (ifgeom.and.ilstep.eq.istep)  return  ! already computed
-      ilstep = istep
+      if (.not.ifgeom.and.myilstep.gt.1) return  ! already computed
+      if (ifgeom.and.myilstep.eq.istep)  return  ! already computed
+      myilstep = istep
 
       nxyz1 = lx1*ly1*lz1
       nxyzd = lxd*lyd*lzd
 
+      ! PickQuad
       call zwgll (myzd,mywd,lxd)  ! zwgl -- NOT zwgll!
 C       call zwgl (myzd,mywd,lxd)  ! zwgl -- NOT zwgll!
 
@@ -337,6 +342,49 @@ c           Interpolate z+ and z- into fine mesh, translate to r-s-t coords
 
       endif
 
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine srb_intp_rstd(ju,u,mx,md,if3d,idir) ! GLL->GL interpolation
+
+c     GLL interpolation from mx to md.
+
+c     If idir ^= 0, then apply transpose operator  (md to mx)
+
+      include 'SIZE'
+
+      real    ju(1),u(1)
+      logical if3d
+
+      parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
+      common /mydgrad/ myd(ldg),mydt(ldg),mydg(ldg),mydgt(ldg)
+     $             , myjgl(ldg),myjgt(ldg), wkd(lwkd)
+      real myjgl,myjgt
+
+      parameter (ld=2*lxd)
+      common /ctmp0/ w(ld**(ldim-1),2)
+
+      call lim_chk(md,ld,'md   ','ld   ','grad_rstd ')
+      call lim_chk(mx,ld,'mx   ','ld   ','grad_rstd ')
+
+      ldw = 2*(ld**(ldim-1))
+
+      call my_get_int_ptr (i,mx,md)
+c
+      if (ldim .eq. 3) then
+         if (idir.eq.0) then
+           call specmpn(ju,md,u,mx,myjgl(i),myjgt(i),if3d,w,ldw)
+         else
+           call specmpn(ju,mx,u,md,myjgt(i),myjgl(i),if3d,w,ldw)
+         endif
+      else if (ldim .eq. 2) then
+          if (idir.eq.0) then
+            call mxm(myjgl(i),md,u,mx,ju,1)  
+          else
+            call mxm(myjgt(i),mx,u,md,ju,1)
+          endif
+      end if
+c
       return
       end
 c-----------------------------------------------------------------------
@@ -487,51 +535,6 @@ c-----------------------------------------------------------------------
 
       return
       end
-
-c-----------------------------------------------------------------------
-      subroutine srb_intp_rstd(ju,u,mx,md,if3d,idir) ! GLL->GL interpolation
-
-c     GLL interpolation from mx to md.
-
-c     If idir ^= 0, then apply transpose operator  (md to mx)
-
-      include 'SIZE'
-
-      real    ju(1),u(1)
-      logical if3d
-
-      parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
-      common /mydgrad/ myd(ldg),mydt(ldg),mydg(ldg),mydgt(ldg)
-     $             , myjgl(ldg),myjgt(ldg), wkd(lwkd)
-      real myjgl,myjgt
-
-      parameter (ld=2*lxd)
-      common /ctmp0/ w(ld**(ldim-1),2)
-
-      call lim_chk(md,ld,'md   ','ld   ','grad_rstd ')
-      call lim_chk(mx,ld,'mx   ','ld   ','grad_rstd ')
-
-      ldw = 2*(ld**(ldim-1))
-
-      call my_get_int_ptr (i,mx,md)
-c
-      if (ldim .eq. 3) then
-         if (idir.eq.0) then
-           call specmpn(ju,md,u,mx,myjgl(i),myjgt(i),if3d,w,ldw)
-         else
-           call specmpn(ju,mx,u,md,myjgt(i),myjgl(i),if3d,w,ldw)
-         endif
-      else if (ldim .eq. 2) then
-          if (idir.eq.0) then
-            call mxm(myjgl(i),md,u,mx,ju,1)  
-          else
-            call mxm(myjgt(i),mx,u,md,ju,1)
-          endif
-      end if
-c
-      return
-      end
-
 c-----------------------------------------------------------------------
       subroutine oprzero_d (a,b,c)
       ! Zero overintegraded vectors
