@@ -80,21 +80,21 @@ c
       real myjgl,myjgt
 c
       parameter (ld=2*lxd)
-      common /jgrad/ pd    (0:ld*ld)
-     $             , pdg   (0:ld*ld)
-     $             , pjgl  (0:ld*ld)
-      integer pd , pdg , pjgl
+      common /myjgrad/ mypd    (0:ld*ld)
+     $             , mypdg   (0:ld*ld)
+     $             , mypjgl  (0:ld*ld)
+      integer mypd , mypdg , mypjgl
 c
       ij = md + ld*(mx-1)
-      ip = pdg (ij)
+      ip = mypdg (ij)
 
       if (ip.eq.0) then
 
-         nstore   = pdg (0)
-         pdg (ij) = nstore+1
+         nstore   = mypdg (0)
+         mypdg (ij) = nstore+1
          nstore   = nstore + md*mx
-         pdg (0)  = nstore
-         ip       = pdg (ij)
+         mypdg (0)  = nstore
+         ip       = mypdg (ij)
 c
          nwrkd = mx + md
          call lim_chk(nstore,ldg ,'dg   ','ldg  ','get_dgl_pt')
@@ -125,7 +125,10 @@ c
       iz = 1
       id = iz + np
 c
+      ! PickQuad
       call zwgll  (w(iz),dgt,np)  ! GL points
+C       call zwgl  (w(id),dgt,mp)  ! GL points
+      ! PickQuad
       call zwgll  (w(id),dgt,mp)  ! GL points
 C       call zwgl  (w(id),dgt,mp)  ! GL points
 c
@@ -163,7 +166,7 @@ c     If idir ^= 0, then apply transpose operator  (md to mx)
       real myjgl,myjgt
 
       parameter (ld=2*lxd)
-      common /ctmp0/ w(ld**ldim,2)
+      common /myctmp0/ myw(ld**ldim,2)
 
       call lim_chk(md,ld,'md   ','ld   ','grad_rstd ')
       call lim_chk(mx,ld,'mx   ','ld   ','grad_rstd ')
@@ -173,9 +176,9 @@ c     If idir ^= 0, then apply transpose operator  (md to mx)
       call my_get_int_ptr (i,mx,md)
 c
       if (idir.eq.0) then
-         call specmpn(ju,md,u,mx,myjgl(i),myjgt(i),if3d,w,ldw)
+         call specmpn(ju,md,u,mx,myjgl(i),myjgt(i),if3d,myw,ldw)
       else
-         call specmpn(ju,mx,u,md,myjgt(i),myjgl(i),if3d,w,ldw)
+         call specmpn(ju,mx,u,md,myjgt(i),myjgl(i),if3d,myw,ldw)
       endif
 c
       return
@@ -238,6 +241,7 @@ c
       id = iz + np
 c
       call zwgll (w(iz),jgt,np)
+      ! PickQuad
       call zwgll (w(id),jgt,mp)
 C       call zwgl (w(id),jgt,mp)
 c
@@ -268,17 +272,18 @@ C
       integer e
       real myzd, mywd
 
-      integer ilstep
-      save    ilstep
-      data    ilstep /-1/
+      integer myilstep
+      save    myilstep
+      data    myilstep /-1/
 
-C       if (.not.ifgeom.and.ilstep.gt.1) return  ! already computed
-C       if (ifgeom.and.ilstep.eq.istep)  return  ! already computed
-      ilstep = istep
+      if (.not.ifgeom.and.myilstep.gt.1) return  ! already computed
+      if (ifgeom.and.myilstep.eq.istep)  return  ! already computed
+      myilstep = istep
 
       nxyz1 = lx1*ly1*lz1
       nxyzd = lxd*lyd*lzd
 
+      ! PickQuad
       call zwgll (myzd,mywd,lxd)  ! zwgl -- NOT zwgll!
 C       call zwgl (myzd,mywd,lxd)  ! zwgl -- NOT zwgll!
 
