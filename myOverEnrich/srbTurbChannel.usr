@@ -344,6 +344,49 @@ c           Interpolate z+ and z- into fine mesh, translate to r-s-t coords
       return
       end
 c-----------------------------------------------------------------------
+      subroutine srb_intp_rstd(ju,u,mx,md,if3d,idir) ! GLL->GL interpolation
+
+c     GLL interpolation from mx to md.
+
+c     If idir ^= 0, then apply transpose operator  (md to mx)
+
+      include 'SIZE'
+
+      real    ju(1),u(1)
+      logical if3d
+
+      parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
+      common /mydgrad/ myd(ldg),mydt(ldg),mydg(ldg),mydgt(ldg)
+     $             , myjgl(ldg),myjgt(ldg), wkd(lwkd)
+      real myjgl,myjgt
+
+      parameter (ld=2*lxd)
+      common /ctmp0/ w(ld**(ldim-1),2)
+
+      call lim_chk(md,ld,'md   ','ld   ','grad_rstd ')
+      call lim_chk(mx,ld,'mx   ','ld   ','grad_rstd ')
+
+      ldw = 2*(ld**(ldim-1))
+
+      call my_get_int_ptr (i,mx,md)
+c
+      if (ldim .eq. 3) then
+         if (idir.eq.0) then
+           call specmpn(ju,md,u,mx,myjgl(i),myjgt(i),if3d,w,ldw)
+         else
+           call specmpn(ju,mx,u,md,myjgt(i),myjgl(i),if3d,w,ldw)
+         endif
+      else if (ldim .eq. 2) then
+          if (idir.eq.0) then
+            call mxm(myjgl(i),md,u,mx,ju,1)  
+          else
+            call mxm(myjgt(i),mx,u,md,ju,1)
+          endif
+      end if
+c
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine projenrich ()
       ! Removes enrichment components from polynomial solution
       include 'SIZE'
@@ -478,50 +521,6 @@ c-----------------------------------------------------------------------
         enddo
       enddo
 
-      return
-      end
-
-c-----------------------------------------------------------------------
-      subroutine srb_intp_rstd(ju,u,mx,md,if3d,idir) ! GLL->GL interpolation
-
-c     GLL interpolation from mx to md.
-
-c     If idir ^= 0, then apply transpose operator  (md to mx)
-
-      include 'SIZE'
-
-      real    ju(1),u(1)
-      logical if3d
-
-      parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
-      common /mydgrad/ myd(ldg),mydt(ldg),mydg(ldg),mydgt(ldg)
-     $             , myjgl(ldg),myjgt(ldg), wkd(lwkd)
-      real myjgl,myjgt
-
-      parameter (ld=2*lxd)
-      common /ctmp0/ w(ld**(ldim-1),2)
-
-      call lim_chk(md,ld,'md   ','ld   ','grad_rstd ')
-      call lim_chk(mx,ld,'mx   ','ld   ','grad_rstd ')
-
-      ldw = 2*(ld**(ldim-1))
-
-      call my_get_int_ptr (i,mx,md)
-c
-      if (ldim .eq. 3) then
-         if (idir.eq.0) then
-           call specmpn(ju,md,u,mx,myjgl(i),myjgt(i),if3d,w,ldw)
-         else
-           call specmpn(ju,mx,u,md,myjgt(i),myjgl(i),if3d,w,ldw)
-         endif
-      else if (ldim .eq. 2) then
-          if (idir.eq.0) then
-            call mxm(myjgl(i),md,u,mx,ju,1)  
-          else
-            call mxm(myjgt(i),mx,u,md,ju,1)
-          endif
-      end if
-c
       return
       end
 
