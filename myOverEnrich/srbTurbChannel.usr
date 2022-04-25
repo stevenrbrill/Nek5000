@@ -1863,10 +1863,10 @@ c     WALL ENRICHMENT...END
          call add3 (vx_,vx,psix,n) !calculate actual velocity
          call outpost(psix,psiy,psiz,vx_,t,'enr')
 C          call outpost(psix,gpsix_y,psiz,vx_,t,'enr')
-         call outpost(tr1x1,tr1y1,tr1z1,vx_,t,'Tr1')
-         call outpost(tr2x1,tr2y1,tr2z1,vx_,t,'Tr2')
-         call outpost(tr3x1,tr3y1,tr3z1,vx_,t,'Tr3')
-         call outpost(tr4x1,tr4y1,tr4z1,vx_,t,'Tr4')
+C          call outpost(tr1x1,tr1y1,tr1z1,vx_,t,'Tr1')
+C          call outpost(tr2x1,tr2y1,tr2z1,vx_,t,'Tr2')
+C          call outpost(tr3x1,tr3y1,tr3z1,vx_,t,'Tr3')
+C          call outpost(tr4x1,tr4y1,tr4z1,vx_,t,'Tr4')
 C          ifto = .true.
 C          call outpost(wsx,wsy,wsz,term3x,convx,'src')
 C          ifto = .false.
@@ -1984,11 +1984,11 @@ c        write(6,*) 'dragx(iobj_wall) = ', dragx(iobj_wall)
         call avg1(ravg(1,11),vx   ,alpha,beta,n,'upol',ifverbose)
       endif
 
-      if (istep.eq.0 .or. ifoutfld) then
-         call outpost(ravg(1,20),ravg(1,21),ravg(1,22),vx_,t,'aT1')
-         call outpost(ravg(1,14),ravg(1,15),ravg(1,16),vx_,t,'aT2')
-         call outpost(ravg(1,17),ravg(1,18),ravg(1,19),vx_,t,'aT3')
-      endif
+C       if (istep.eq.0 .or. ifoutfld) then
+C          call outpost(ravg(1,20),ravg(1,21),ravg(1,22),vx_,t,'aT1')
+C          call outpost(ravg(1,14),ravg(1,15),ravg(1,16),vx_,t,'aT2')
+C          call outpost(ravg(1,17),ravg(1,18),ravg(1,19),vx_,t,'aT3')
+C       endif
 
 C          call outpost(tr1x1,tr1y1,tr1z1,vx_,t,'Tr1')
 C          call outpost(tr2x1,tr2y1,tr2z1,vx_,t,'Tr2')
