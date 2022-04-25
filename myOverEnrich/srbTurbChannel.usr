@@ -127,7 +127,7 @@ c
 c
       ! PickQuad
       call zwgll  (w(iz),dgt,np)  ! GL points
-C       call zwgl  (w(id),dgt,mp)  ! GL points
+C       call zwgl  (w(iz),dgt,np)  ! GL points
       ! PickQuad
       call zwgll  (w(id),dgt,mp)  ! GL points
 C       call zwgl  (w(id),dgt,mp)  ! GL points
