@@ -76,7 +76,7 @@ c
 c
       parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
       common /mydgrad/ myd(ldg),mydt(ldg),mydg(ldg),mydgt(ldg)
-     $             , myjgl(ldg),myjgt(ldg), wkd(lwkd)
+     $             , myjgl(ldg),myjgt(ldg), mywkd(lwkd)
       real myjgl,myjgt
 c
       parameter (ld=2*lxd)
@@ -100,7 +100,7 @@ c
          call lim_chk(nstore,ldg ,'dg   ','ldg  ','get_dgl_pt')
          call lim_chk(nwrkd ,lwkd,'wkd  ','lwkd ','get_dgl_pt')
 c
-         call my_gen_dgl(mydg (ip),mydgt(ip),md,mx,wkd)
+         call my_gen_dgl(mydg (ip),mydgt(ip),md,mx,mywkd)
       endif
 c
       return
@@ -162,7 +162,7 @@ c     If idir ^= 0, then apply transpose operator  (md to mx)
 
       parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
       common /mydgrad/ myd(ldg),mydt(ldg),mydg(ldg),mydgt(ldg)
-     $             , myjgl(ldg),myjgt(ldg), wkd(lwkd)
+     $             , myjgl(ldg),myjgt(ldg), mywkd(lwkd)
       real myjgl,myjgt
 
       parameter (ld=2*lxd)
@@ -192,7 +192,7 @@ c     Get pointer to jgl() for interpolation pair (mx,md)
 
       parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
       common /mydgrad/ myd(ldg),mydt(ldg),mydg(ldg),mydgt(ldg)
-     $             , myjgl(ldg),myjgt(ldg), wkd(lwkd)
+     $             , myjgl(ldg),myjgt(ldg), mywkd(lwkd)
       real myjgl,myjgt
 c
       parameter (ld=2*lxd)
@@ -216,7 +216,7 @@ c
          call lim_chk(nstore,ldg ,'jgl  ','ldg  ','get_int_pt')
          call lim_chk(nwrkd ,lwkd,'wkd  ','lwkd ','get_int_pt')
 c
-         call my_gen_int(myjgl(ip),myjgt(ip),md,mx,wkd)
+         call my_gen_int(myjgl(ip),myjgt(ip),md,mx,mywkd)
       endif
 c
       return
@@ -357,7 +357,7 @@ c     If idir ^= 0, then apply transpose operator  (md to mx)
 
       parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
       common /mydgrad/ myd(ldg),mydt(ldg),mydg(ldg),mydgt(ldg)
-     $             , myjgl(ldg),myjgt(ldg), wkd(lwkd)
+     $             , myjgl(ldg),myjgt(ldg), mywkd(lwkd)
       real myjgl,myjgt
 
       parameter (ld=2*lxd)
