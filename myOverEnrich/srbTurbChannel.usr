@@ -890,6 +890,8 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save intp_h2
       integer comp_phi_grad
       save comp_phi_grad
+      real en_bound(lx1,ly1,lz1,lelv)
+      common /enbound/ en_bound 
       integer nb, nq
       common /phigrad/ dpdr(lxd*lyd*lzd,lx1*ly1*lz1)
      $                ,dpds(lxd*lyd*lzd,lx1*ly1*lz1)
@@ -1021,6 +1023,7 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
           call oprzero(gpsiy_x1,gpsiy_y1,gpsiy_z1)
           call oprzero(gpsiz_x1,gpsiz_y1,gpsiz_z1)
           call rzero(taunew,n)
+          call rzero(en_bound,n)
          call rzero(uti,n)
          do iel = 1, nelv
           if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
@@ -1826,6 +1829,21 @@ C C           call my_intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 
 
               call add2(T1_rhs_y(1,1,1,iel),w1,nb)
               call add2(T1_rhs_z(1,1,1,iel),w2,nb)
+
+              ! Boundary terms
+              if (flag(iel) .eq. -1) then
+                  iy_ut = 1
+                  sign = -1.0
+              else
+                  iy_ut = ly1
+                  sign = 1.0
+              endif
+              do iz = 1,lz1
+                do ix = 1,lx1
+              en_bound(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)*
+     $                  gpsix_y(ix,iy_ut,iz,iel)       
+                enddo
+              enddo
             endif
           enddo
           
@@ -2316,6 +2334,8 @@ c-----------------------------------------------------------------------
 
       real taunew(lx1,ly1,lz1,lelv)
       common /wallshear/ taunew
+      real en_bound(lx1,ly1,lz1,lelv)
+      common /enbound/ en_bound 
 
       if (y.lt.0) temp = 1.0
       if (y.gt.0) temp = 0.0
@@ -2327,14 +2347,14 @@ c-----------------------------------------------------------------------
         UY=0.0
         UZ=0.0
         ! This isn't actually used
-        TRX=-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
+        TRX=en_bound(ix,iy,iz,e)-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
         TRY=0.0
         TRZ=0.0
       endif
 
 c     Imposing shear stress B.C.s
       if(cbc(iside,e,1).eq.'sh ') then
-        TRX=taunew(ix,iy,iz,e) !-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
+        TRX=en_bound(ix,iy,iz,e)+taunew(ix,iy,iz,e) !-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
         TRY=0.0
         TRZ=0.0
       endif
