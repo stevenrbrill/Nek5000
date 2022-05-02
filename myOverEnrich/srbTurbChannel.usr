@@ -503,6 +503,25 @@ c-----------------------------------------------------------------------
       end
 
 c-----------------------------------------------------------------------
+      subroutine srbprint_face (u)
+      ! Print overintegrated solution
+      include 'SIZE'
+      include 'TOTAL'
+
+      real u(lxd, lzd, nelv)
+
+      do iel = 1, nelv
+        do ix = 1,lxd
+            do iz = 1,lzd
+                  print *, iel, ix, iz, u(ix,iz,iel)
+            enddo
+        enddo
+      enddo
+
+      return
+      end
+
+c-----------------------------------------------------------------------
       subroutine srbprint_diff (u,v)
       ! Print the solution 
       include 'SIZE'
@@ -893,6 +912,20 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real en_bound(lx1,ly1,lz1,lelv)
       common /enbound/ en_bound 
       integer nb, nq
+      integer use_weak_bc, comp_phi_grad_face, i_face, nq_face
+      save comp_phi_grad_face
+      common /phigradface/ dpdx_face(lx1*ly1*lz1,lxd*lzd,lelv)
+     $                ,dpdy_face(lx1*ly1*lz1,lxd*lzd,lelv)
+     $                ,dpdz_face(lx1*ly1*lz1,lxd*lzd,lelv)
+     $                ,w_face(lxd,lzd,lelv)
+      real tx_face(lxd,lzd,lelv), ty_face(lxd,lzd,lelv), 
+     $     tz_face(lxd,lzd,lelv) 
+      real gam_ip
+      real vx_bc, vy_bc, vz_bc
+      common vx_bc, vy_bc, vz_bc
+      real ip_term_x(lx1,ly1,lz1,lelv), ip_term_y(lx1,ly1,lz1,lelv)
+     $    ,ip_term_z(lx1,ly1,lz1,lelv)
+      common /enbound/ ip_term_x, ip_term_y, ip_term_z
       common /phigrad/ dpdr(lxd*lyd*lzd,lx1*ly1*lz1)
      $                ,dpds(lxd*lyd*lzd,lx1*ly1*lz1)
      $                ,dpdt(lxd*lyd*lzd,lx1*ly1*lz1)
@@ -1870,6 +1903,131 @@ C       call oprzero(wintx,winty,wintz)
 
       endif
 
+      use_weak_bc = 1
+
+      if (use_weak_bc .eq. 1) then
+         if (comp_phi_grad .ne. 1) then
+            call rzero(srb_temp,lx1*ly1*lz1)
+            call rzero(srb_temp_d,lxd*lyd*lzd)
+            iz_end = lz1
+            if (ldim .eq. 2) then
+              iz_end = 1
+            endif
+            do iz = 1,iz_end
+              do iy = 1,ly1
+                do ix = 1,lx1
+                  ib = (iz-1)*lx1*ly1 + (iy-1)*(lx1) + ix
+                  srb_temp(ix,iy,iz,1) = 1
+                  call my_intp_rstd(srb_temp_d,srb_temp,lx1,lxd,if3d,0)
+                  call my_grad_rst(dpdr(1,ib),dpds(1,ib),dpdt(1,ib),
+     $                   srb_temp_d,lxd,if3d)
+                  srb_temp(ix,iy,iz,1) = 0   
+                enddo
+              enddo
+            enddo
+          endif   
+
+          nb = lx1*ly1
+          nq = lxd*lyd
+          nq_face = lxd
+          if (ldim .eq. 3) then
+            nb = nb*lz1
+            nq = nq*lzd
+            nq_face = nq_face*lzd
+          endif
+          do iel = 1,nelv 
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+              ! Compute phi grad
+              if (comp_phi_grad .ne. 1) then
+C           call my_intp_rstd(rxmd(1,1,1,iel),rxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call my_intp_rstd(rymd(1,1,1,iel),rym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call my_intp_rstd(rzmd(1,1,1,iel),rzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call my_intp_rstd(sxmd(1,1,1,iel),sxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call my_intp_rstd(symd(1,1,1,iel),sym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call my_intp_rstd(szmd(1,1,1,iel),szm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call my_intp_rstd(txmd(1,1,1,iel),txm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call my_intp_rstd(tymd(1,1,1,iel),tym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C           call my_intp_rstd(tzmd(1,1,1,iel),tzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+C C           call my_intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
+                do j=1,nb ! actually nb
+                  do i=1,nq ! actually nq
+                dpdx(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rxmd(i,1,1,iel)
+     $                                     + dpds(i,j)*sxmd(i,1,1,iel)
+     $                                     + dpdt(i,j)*txmd(i,1,1,iel) )
+                dpdy(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rymd(i,1,1,iel)
+     $                                     + dpds(i,j)*symd(i,1,1,iel)
+     $                                     + dpdt(i,j)*tymd(i,1,1,iel) )
+                dpdz(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rzmd(i,1,1,iel)
+     $                                     + dpds(i,j)*szmd(i,1,1,iel)
+     $                                     + dpdt(i,j)*tzmd(i,1,1,iel) )
+                  enddo
+                enddo
+              endif
+
+
+              if (flag(iel) .eq. -1) then
+                  iy_ut = 1
+                  sign = -1.0
+              else
+                  iy_ut = lyd
+                  sign = 1.0
+              endif
+
+              if (comp_phi_grad_face .ne. 1) then
+                do j = 1,nb
+                  ! nq
+                  do iz = 1,lzd
+                    do ix = 1,lxd
+                i = ix + (iy_ut-1)*lxd + (iz-1)*lxd*lyd
+                i_face = ix + (iz-1)*lxd
+                dpdx_face(j,i_face,iel) = dpdx(j,i,iel)
+                dpdy_face(j,i_face,iel) = dpdy(j,i,iel)
+                dpdz_face(j,i_face,iel) = dpdz(j,i,iel)
+                ! Specialized for channel flow. Need to generalize
+                w_face(ix,iz,iel) = mywd(ix)/rxmd(ix,iy_ut,iz,iel)
+     &                              *mywd(iz)/tzmd(ix,iy_ut,iz,iel)
+                    enddo
+                  enddo
+                enddo  
+              endif
+
+              gam_ip = -1.0
+              ! Copy to faces
+              do iz = 1,lzd
+                do ix = 1,lxd
+                  i = ix + (iy_ut-1)*lxd + (iz-1)*lxd*lyd
+                  i_face = ix + (iz-1)*lxd
+                  tx_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
+     $                   vdiff_d(ix,iy_ut,iz,iel)*
+     $                   (vx_d(ix,iy_ut,iz,iel)-vx_bc)
+                  ty_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
+     $                   vdiff_d(ix,iy_ut,iz,iel)*
+     $                   (vy_d(ix,iy_ut,iz,iel)-vy_bc)
+                  tz_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
+     $                   vdiff_d(ix,iy_ut,iz,iel)*
+     $                   (vz_d(ix,iy_ut,iz,iel)-vz_bc)
+                enddo
+              enddo
+
+          call mxm(dpdx_face(1,1,iel) ,nb,tx_face(1,1,iel),
+     $       nq_face,ip_term_x(1,1,1,iel),1)
+          call mxm(dpdy_face(1,1,iel) ,nb,ty_face(1,1,iel),
+     $       nq_face,ip_term_y(1,1,1,iel),1)
+          call mxm(dpdz_face(1,1,iel) ,nb,tz_face(1,1,iel),
+     $       nq_face,ip_term_z(1,1,1,iel),1)
+
+            endif
+          enddo
+          
+          ! only compute phi grads once
+          if (comp_phi_grad .ne. 1) then
+            comp_phi_grad = 1
+          endif
+          if (comp_phi_grad_face .ne. 1) then
+            comp_phi_grad_face = 1
+          endif
+      endif
+
 c     WALL ENRICHMENT...END
 
       ifxyo = .true.
@@ -2336,11 +2494,26 @@ c-----------------------------------------------------------------------
       common /wallshear/ taunew
       real en_bound(lx1,ly1,lz1,lelv)
       common /enbound/ en_bound 
+      real vx_bc, vy_bc, vz_bc
+      common vx_bc, vy_bc, vz_bc
+      real sbl, hb
+      real sip_x, sip_y, sip_z
 
       if (y.lt.0) temp = 1.0
       if (y.gt.0) temp = 0.0
 
       e = gllel(ieg)
+
+      ub_x = 0.0
+      ub_y = 0.0
+      ub_z = 0.0
+
+      hb = XLEN / NUMBER_ELEMENTS_X * ZLEN / NUMBER_ELEMENTS_Z
+      cbl = 1.0
+
+      sip_x = cbl*param(1)/hb*(vx(ix,iy,iz,e)-vx_bc)
+      sip_y = cbl*param(1)/hb*(vy(ix,iy,iz,e)-vy_bc)
+      sip_z = cbl*param(1)/hb*(vz(ix,iy,iz,e)-vz_bc)
 
       if((cbc(iside,e,1).eq.'v  ') .or. (cbc(iside,e,1).eq.'V  ')) then
         UX=0.0
