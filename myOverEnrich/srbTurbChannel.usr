@@ -2518,9 +2518,12 @@ c-----------------------------------------------------------------------
       hb = XLEN / NUMBER_ELEMENTS_X * ZLEN / NUMBER_ELEMENTS_Z
       cbl = 1.0
 
-      sip_x = ip_term_x-cbl*param(1)/hb*(vx(ix,iy,iz,e)-vx_bc)
-      sip_y = ip_term_y-cbl*param(1)/hb*(vy(ix,iy,iz,e)-vy_bc)
-      sip_z = ip_term_z-cbl*param(1)/hb*(vz(ix,iy,iz,e)-vz_bc)
+      sip_x = ip_term_x(ix,iy,iz,e)
+     $           -cbl*param(1)/hb*(vx(ix,iy,iz,e)-vx_bc)
+      sip_y = ip_term_y(ix,iy,iz,e)
+     $           -cbl*param(1)/hb*(vy(ix,iy,iz,e)-vy_bc)
+      sip_z = ip_term_z(ix,iy,iz,e)
+     $           -cbl*param(1)/hb*(vz(ix,iy,iz,e)-vz_bc)
 
       if((cbc(iside,e,1).eq.'v  ') .or. (cbc(iside,e,1).eq.'V  ')) then
         UX=0.0
