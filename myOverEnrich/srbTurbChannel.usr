@@ -925,7 +925,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       common vx_bc, vy_bc, vz_bc
       real ip_term_x(lx1,ly1,lz1,lelv), ip_term_y(lx1,ly1,lz1,lelv)
      $    ,ip_term_z(lx1,ly1,lz1,lelv)
-      common /enbound/ ip_term_x, ip_term_y, ip_term_z
+      common /ipterms/ ip_term_x, ip_term_y, ip_term_z
       common /phigrad/ dpdr(lxd*lyd*lzd,lx1*ly1*lz1)
      $                ,dpds(lxd*lyd*lzd,lx1*ly1*lz1)
      $                ,dpdt(lxd*lyd*lzd,lx1*ly1*lz1)
@@ -1905,6 +1905,10 @@ C       call oprzero(wintx,winty,wintz)
 
       use_weak_bc = 1
 
+      vx_bc = 0.0
+      vy_bc = 0.0
+      vz_bc = 0.0
+
       if (use_weak_bc .eq. 1) then
          if (comp_phi_grad .ne. 1) then
             call rzero(srb_temp,lx1*ly1*lz1)
@@ -1998,22 +2002,22 @@ C C           call my_intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 
                   i = ix + (iy_ut-1)*lxd + (iz-1)*lxd*lyd
                   i_face = ix + (iz-1)*lxd
                   tx_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
-     $                   vdiff_d(ix,iy_ut,iz,iel)*
+     $                   vdiff_d(ix,iy_ut,iz,iel)*sign*
      $                   (vx_d(ix,iy_ut,iz,iel)-vx_bc)
                   ty_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
-     $                   vdiff_d(ix,iy_ut,iz,iel)*
+     $                   vdiff_d(ix,iy_ut,iz,iel)*sign*
      $                   (vy_d(ix,iy_ut,iz,iel)-vy_bc)
                   tz_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
-     $                   vdiff_d(ix,iy_ut,iz,iel)*
+     $                   vdiff_d(ix,iy_ut,iz,iel)*sign*
      $                   (vz_d(ix,iy_ut,iz,iel)-vz_bc)
                 enddo
               enddo
 
-          call mxm(dpdx_face(1,1,iel) ,nb,tx_face(1,1,iel),
+          call mxm(dpdy_face(1,1,iel) ,nb,tx_face(1,1,iel),
      $       nq_face,ip_term_x(1,1,1,iel),1)
           call mxm(dpdy_face(1,1,iel) ,nb,ty_face(1,1,iel),
      $       nq_face,ip_term_y(1,1,1,iel),1)
-          call mxm(dpdz_face(1,1,iel) ,nb,tz_face(1,1,iel),
+          call mxm(dpdy_face(1,1,iel) ,nb,tz_face(1,1,iel),
      $       nq_face,ip_term_z(1,1,1,iel),1)
 
             endif
@@ -2494,6 +2498,9 @@ c-----------------------------------------------------------------------
       common /wallshear/ taunew
       real en_bound(lx1,ly1,lz1,lelv)
       common /enbound/ en_bound 
+      real ip_term_x(lx1,ly1,lz1,lelv), ip_term_y(lx1,ly1,lz1,lelv)
+     $    ,ip_term_z(lx1,ly1,lz1,lelv)
+      common /ipterms/ ip_term_x, ip_term_y, ip_term_z
       real vx_bc, vy_bc, vz_bc
       common vx_bc, vy_bc, vz_bc
       real sbl, hb
@@ -2504,16 +2511,16 @@ c-----------------------------------------------------------------------
 
       e = gllel(ieg)
 
-      ub_x = 0.0
-      ub_y = 0.0
-      ub_z = 0.0
+      vx_bc = 0.0
+      vy_bc = 0.0
+      vz_bc = 0.0
 
       hb = XLEN / NUMBER_ELEMENTS_X * ZLEN / NUMBER_ELEMENTS_Z
       cbl = 1.0
 
-      sip_x = cbl*param(1)/hb*(vx(ix,iy,iz,e)-vx_bc)
-      sip_y = cbl*param(1)/hb*(vy(ix,iy,iz,e)-vy_bc)
-      sip_z = cbl*param(1)/hb*(vz(ix,iy,iz,e)-vz_bc)
+      sip_x = ip_term_x-cbl*param(1)/hb*(vx(ix,iy,iz,e)-vx_bc)
+      sip_y = ip_term_y-cbl*param(1)/hb*(vy(ix,iy,iz,e)-vy_bc)
+      sip_z = ip_term_z-cbl*param(1)/hb*(vz(ix,iy,iz,e)-vz_bc)
 
       if((cbc(iside,e,1).eq.'v  ') .or. (cbc(iside,e,1).eq.'V  ')) then
         UX=0.0
