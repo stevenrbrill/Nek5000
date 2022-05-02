@@ -1074,18 +1074,24 @@ c     WALL ENRICHMENT...END
 
       if (use_weak_bc .eq. 1) then
          if (comp_phi_grad .ne. 1) then
-            call rzero(srb_temp,lx1*ly1*lz1)
             iz_end = lz1
             if (ldim .eq. 2) then
               iz_end = 1
             endif
-            do iz = 1,iz_end
+            do iz = 1,lz1
               do iy = 1,ly1
                 do ix = 1,lx1
                   ib = (iz-1)*lx1*ly1 + (iy-1)*(lx1) + ix
+                  call rzero(srb_temp,lx1*ly1*lz1*nelev)
                   srb_temp(ix,iy,iz,1) = 1
-                  call grad_rst(dpdr(1,ib),dpds(1,ib),dpdt(1,ib),
-     $                   srb_temp,lx1,if3d)
+                  if (ldim .eq. 2) then           
+                    call local_grad2(dpdr(1,ib),
+     $                   dpds(1,ib),srb_temp,lx1-1,1,dxm1,dxtm1)
+                  elseif (ldim .eq. 3) then
+                    call local_grad3(dpdr(1,ib),
+     $                   dpds(1,ib),dpdt(1,ib),
+     $                   srb_temp,lx1-1,1,dxm1,dxtm1)
+                  endif
                   srb_temp(ix,iy,iz,1) = 0   
                 enddo
               enddo
@@ -1771,12 +1777,14 @@ c-----------------------------------------------------------------------
       do iel=1,nelt
       do ifc=1,2*ndim
          if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $       (cbc(ifc,iel,1) .eq. 'ww ') .or. 
      $       (cbc(ifc,iel,1) .eq. 'W  ') .or. 
      $       (cbc(ifc,iel,1) .eq. 'V  ')) then 
            boundaryID(ifc,iel) = 1
          endif 
          cbc(ifc,iel,2) = cbc(ifc,iel,1) 
          if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $       (cbc(ifc,iel,1) .eq. 'ww ') .or.        
      $       (cbc(ifc,iel,1) .eq. 'W  ') .or.
      $       (cbc(ifc,iel,1) .eq. 'V  ')) then 
            cbc(ifc,iel,2) = 't  '
@@ -1792,12 +1800,14 @@ c-----------------------------------------------------------------------
       do iel=1,nelv
          do ifc=1,2*ldim
            if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $          (cbc(ifc,iel,1) .eq. 'ww ') .or.        
      $          (cbc(ifc,iel,1) .eq. 'W  ') .or.
      $          (cbc(ifc,iel,1) .eq. 'V  ')).AND.(ym1(1,1,1,iel).gt.0)) 
      $          then
               flag(iel) = 1
               top_y = ym1(1,1,1,iel)
            else if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $               (cbc(ifc,iel,1) .eq. 'ww ') .or.        
      $               (cbc(ifc,iel,1) .eq. 'W  ') .or.
      $               (cbc(ifc,iel,1) .eq. 'V  ')).AND.
      $               (ym1(1,1,1,iel).lt.0)) then
