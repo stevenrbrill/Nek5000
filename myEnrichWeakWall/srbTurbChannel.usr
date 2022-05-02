@@ -118,6 +118,25 @@ c-----------------------------------------------------------------------
       end
 
 c-----------------------------------------------------------------------
+      subroutine srbprint_face (u)
+      ! Print overintegrated solution
+      include 'SIZE'
+      include 'TOTAL'
+
+      real u(lx1, lz1, nelv)
+
+      do iel = 1, nelv
+        do ix = 1,lx1
+            do iz = 1,lz1
+                  print *, iel, ix, iz, u(ix,iz,iel)
+            enddo
+        enddo
+      enddo
+
+      return
+      end
+
+c-----------------------------------------------------------------------
       subroutine userhack (ix,iy,iz,ieg)
       ! Access to the RHS hacks for continuity enforcement
       include 'SIZE'
@@ -475,7 +494,21 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save comp_phi_grad
       real en_bound(lx1,ly1,lz1,lelv)
       common /enbound/ en_bound 
-      integer nb
+      integer nb, nq
+      integer use_weak_bc, comp_phi_grad_face, i_face, nq_face
+      save comp_phi_grad_face
+      common /phigradface/ dpdx_face(lx1*ly1*lz1,lx1*lz1,lelv)
+     $                ,dpdy_face(lx1*ly1*lz1,lx1*lz1,lelv)
+     $                ,dpdz_face(lx1*ly1*lz1,lx1*lz1,lelv)
+     $                ,w_face(lx1,lz1,lelv)
+      real tx_face(lx1,lz1,lelv), ty_face(lx1,lz1,lelv), 
+     $     tz_face(lx1,lz1,lelv) 
+      real gam_ip
+      real vx_bc, vy_bc, vz_bc
+      common vx_bc, vy_bc, vz_bc
+      real ip_term_x(lx1,ly1,lz1,lelv), ip_term_y(lx1,ly1,lz1,lelv)
+     $    ,ip_term_z(lx1,ly1,lz1,lelv)
+      common /ipterms/ ip_term_x, ip_term_y, ip_term_z
       common /phigrad/ dpdr(lx1*ly1*lz1,lx1*ly1*lz1)
      $                ,dpds(lx1*ly1*lz1,lx1*ly1*lz1)
      $                ,dpdt(lx1*ly1*lz1,lx1*ly1*lz1)
@@ -1032,6 +1065,124 @@ C       call oprzero(wintx,winty,wintz)
 
 c     WALL ENRICHMENT...END
 
+      ! Weak BC
+      use_weak_bc = 1
+
+      vx_bc = 0.0
+      vy_bc = 0.0
+      vz_bc = 0.0
+
+      if (use_weak_bc .eq. 1) then
+         if (comp_phi_grad .ne. 1) then
+            call rzero(srb_temp,lx1*ly1*lz1)
+            iz_end = lz1
+            if (ldim .eq. 2) then
+              iz_end = 1
+            endif
+            do iz = 1,iz_end
+              do iy = 1,ly1
+                do ix = 1,lx1
+                  ib = (iz-1)*lx1*ly1 + (iy-1)*(lx1) + ix
+                  srb_temp(ix,iy,iz,1) = 1
+                  call grad_rst(dpdr(1,ib),dpds(1,ib),dpdt(1,ib),
+     $                   srb_temp,lx1,if3d)
+                  srb_temp(ix,iy,iz,1) = 0   
+                enddo
+              enddo
+            enddo
+          endif   
+
+          nb = lx1*ly1
+          nq = lx1*ly1
+          nq_face = lx1
+          if (ldim .eq. 3) then
+            nb = nb*lz1
+            nq = nq*lz1
+            nq_face = nq_face*lz1
+          endif
+          do iel = 1,nelv 
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+              ! Compute phi grad
+              if (comp_phi_grad .ne. 1) then
+                do j=1,nb ! actually nb
+                  do i=1,nq ! actually nq
+                dpdx(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rxm1(i,1,1,iel)
+     $                                     + dpds(i,j)*sxm1(i,1,1,iel)
+     $                                     + dpdt(i,j)*txm1(i,1,1,iel) )
+                dpdy(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rym1(i,1,1,iel)
+     $                                     + dpds(i,j)*sym1(i,1,1,iel)
+     $                                     + dpdt(i,j)*tym1(i,1,1,iel) )
+                dpdz(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rzm1(i,1,1,iel)
+     $                                     + dpds(i,j)*szm1(i,1,1,iel)
+     $                                     + dpdt(i,j)*tzm1(i,1,1,iel) )
+                  enddo
+                enddo
+              endif
+
+
+              if (flag(iel) .eq. -1) then
+                  iy_ut = 1
+                  sign = -1.0
+              else
+                  iy_ut = ly1
+                  sign = 1.0
+              endif
+
+              if (comp_phi_grad_face .ne. 1) then
+                do j = 1,nb
+                  ! nq
+                  do iz = 1,lz1
+                    do ix = 1,lx1
+                i = ix + (iy_ut-1)*lx1 + (iz-1)*lx1*ly1
+                i_face = ix + (iz-1)*lx1
+                dpdx_face(j,i_face,iel) = dpdx(j,i,iel)
+                dpdy_face(j,i_face,iel) = dpdy(j,i,iel)
+                dpdz_face(j,i_face,iel) = dpdz(j,i,iel)
+                ! Specialized for channel flow. Need to generalize
+                w_face(ix,iz,iel) = wxm1(ix)/rxm1(ix,iy_ut,iz,iel)
+     &                              *wxm1(iz)/tzm1(ix,iy_ut,iz,iel)
+                    enddo
+                  enddo
+                enddo  
+              endif
+
+              gam_ip = -1.0
+              ! Copy to faces
+              do iz = 1,lz1
+                do ix = 1,lx1
+                  i = ix + (iy_ut-1)*lx1 + (iz-1)*lx1*ly1
+                  i_face = ix + (iz-1)*lx1
+                  tx_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
+     $                   vdiff(ix,iy_ut,iz,iel,1)*sign*
+     $                   (vx(ix,iy_ut,iz,iel)-vx_bc)
+                  ty_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
+     $                   vdiff(ix,iy_ut,iz,iel,1)*sign*
+     $                   (vy(ix,iy_ut,iz,iel)-vy_bc)
+                  tz_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
+     $                   vdiff(ix,iy_ut,iz,iel,1)*sign*
+     $                   (vz(ix,iy_ut,iz,iel)-vz_bc)
+                enddo
+              enddo
+
+          call mxm(dpdy_face(1,1,iel) ,nb,tx_face(1,1,iel),
+     $       nq_face,ip_term_x(1,1,1,iel),1)
+          call mxm(dpdy_face(1,1,iel) ,nb,ty_face(1,1,iel),
+     $       nq_face,ip_term_y(1,1,1,iel),1)
+          call mxm(dpdy_face(1,1,iel) ,nb,tz_face(1,1,iel),
+     $       nq_face,ip_term_z(1,1,1,iel),1)
+
+            endif
+          enddo
+
+          ! only compute phi grads once
+          if (comp_phi_grad .ne. 1) then
+            comp_phi_grad = 1
+          endif
+          if (comp_phi_grad_face .ne. 1) then
+            comp_phi_grad_face = 1
+          endif
+      endif
+
       ifxyo = .true.
       if (istep.eq.0) call outpost(vx,vy,vz,pr,t,'   ')
       if (istep.eq.0 .or. ifoutfld) then
@@ -1460,11 +1611,29 @@ c-----------------------------------------------------------------------
       common /wallshear/ taunew
       real en_bound(lx1,ly1,lz1,lelv)
       common /enbound/ en_bound 
+      real ip_term_x(lx1,ly1,lz1,lelv), ip_term_y(lx1,ly1,lz1,lelv)
+     $    ,ip_term_z(lx1,ly1,lz1,lelv)
+      common /ipterms/ ip_term_x, ip_term_y, ip_term_z
+      real vx_bc, vy_bc, vz_bc
+      common vx_bc, vy_bc, vz_bc
+      real sbl, hb
+      real sip_x, sip_y, sip_z
 
       if (y.lt.0) temp = 1.0
       if (y.gt.0) temp = 0.0
 
       e = gllel(ieg)
+
+      vx_bc = 0.0
+      vy_bc = 0.0
+      vz_bc = 0.0
+
+      hb = XLEN / NUMBER_ELEMENTS_X * ZLEN / NUMBER_ELEMENTS_Z
+      cbl = 1.0
+
+      sip_x = -cbl*param(1)/hb*(vx(ix,iy,iz,e)-vx_bc)
+      sip_y = -cbl*param(1)/hb*(vy(ix,iy,iz,e)-vy_bc)
+      sip_z = -cbl*param(1)/hb*(vz(ix,iy,iz,e)-vz_bc)
 
       if((cbc(iside,e,1).eq.'v  ') .or. (cbc(iside,e,1).eq.'V  ')) then
         UX=0.0
@@ -1478,7 +1647,7 @@ c-----------------------------------------------------------------------
 
 c     Imposing shear stress B.C.s
       if(cbc(iside,e,1).eq.'sh ') then
-        TRX=en_bound(ix,iy,iz,e)+taunew(ix,iy,iz,e) !-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
+        TRX=sip_x+en_bound(ix,iy,iz,e) !-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
         TRY=0.0
         TRZ=0.0
       endif
