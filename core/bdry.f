@@ -292,7 +292,8 @@ C     Laplacian formulation only
      $     CB.EQ.'SL ' .OR.  CB.EQ.'sl ' .OR.
      $     CB.EQ.'MM ' .OR.  CB.EQ.'mm ' .OR.
      $     CB.EQ.'MS ' .OR.  CB.EQ.'ms ' .OR.
-     $     CB.EQ.'MSI' .OR.  CB.EQ.'msi'    )                GOTO 9001
+     $     CB.EQ.'MSI' .OR.  CB.EQ.'msi' .OR.
+     $     CB.EQ.'WW ' .OR.  CB.EQ.'ww '    )                GOTO 9001
 
        IF ( .NOT.IFALGN .AND.
      $    (CB.EQ.'ON ' .OR.  CB.EQ.'on ' .OR. CB.EQ.'SYM') ) GOTO 9010
@@ -770,6 +771,11 @@ c     write(6,*) 'BCDIRV: ifield',ifield
                CALL FACEV (TMP2,IE,IFACE,0.0,lx1,ly1,lz1)
                IF (IF3D) CALL FACEV (TMP3,IE,IFACE,0.0,lx1,ly1,lz1)
             ENDIF
+            IF (CBC(IFACE,IE,IFIELD).EQ.'ww ') THEN
+               CALL FACEV (TMP1,IE,IFACE,0.0,lx1,ly1,lz1)
+               CALL FACEV (TMP2,IE,IFACE,0.0,lx1,ly1,lz1)
+               IF (IF3D) CALL FACEV (TMP3,IE,IFACE,0.0,lx1,ly1,lz1)
+            ENDIF
  2010    CONTINUE
 C
 C        Take care of Neumann-Dirichlet shared edges...
@@ -1217,6 +1223,61 @@ C
             V3(IX,IY,IZ) = 0.0
   270    CONTINUE
 C
+        ELSEIF (CB.EQ.'ww ') THEN
+C
+         DO 290 IZ=KZ1,KZ2
+         DO 290 IY=KY1,KY2
+         DO 290 IX=KX1,KX2
+            if (optlevel.le.2) CALL NEKASGN (IX,IY,IZ,IEL)
+            CALL USERBC  (IX,IY,IZ,IFACE,IEG)
+            V1(IX,IY,IZ) = TRX
+            V2(IX,IY,IZ) = TRY
+            V3(IX,IY,IZ) = TRZ
+  290    CONTINUE
+         RETURN   
+C
+      ENDIF
+C
+      RETURN
+      END
+
+c-----------------------------------------------------------------------
+      SUBROUTINE FACEINT (CB,V1,V2,V3,IEL,IFACE,NX,NY,NZ)
+C
+C     Assign fortran function boundary conditions to 
+C     face IFACE of element IEL for vector (V1,V2,V3).
+C
+      INCLUDE 'SIZE'
+      INCLUDE 'NEKUSE'
+      INCLUDE 'PARALLEL'
+C
+      dimension v1(nx,ny,nz),v2(nx,ny,nz),v3(nx,ny,nz)
+      character cb*3
+c
+      character*1 cb1(3)
+c
+      common  /nekcb/ cb3
+      character*3 cb3
+      cb3 = cb
+c
+      call chcopy(cb1,cb,3)
+c
+      ieg = lglel(iel)
+      CALL FACIND (KX1,KX2,KY1,KY2,KZ1,KZ2,NX,NY,NZ,IFACE)
+C
+      IF (CB.EQ.'ww ') THEN
+C
+         DO 800 IZ=KZ1,KZ2
+         DO 800 IY=KY1,KY2
+         DO 800 IX=KX1,KX2
+            if (optlevel.le.2) CALL NEKASGN (IX,IY,IZ,IEL)
+            CALL USERBCINT  (IX,IY,IZ,IFACE,IEG)
+            V1(IX,IY,IZ) = V1(IX,IY,IZ)+TRX
+            V2(IX,IY,IZ) = V2(IX,IY,IZ)+TRY
+            V3(IX,IY,IZ) = V3(IX,IY,IZ)+TRZ
+  800    CONTINUE
+         RETURN   
+C
       ENDIF
 C
       RETURN
@@ -1386,6 +1447,13 @@ C
      $       CB.EQ.'sh ' .OR. CB.EQ.'shl' ) THEN
              CALL FACEIV (CB,TRX,TRY,TRZ,IEL,IFC,lx1,ly1,lz1)
              CALL FACCVS (TRX,TRY,TRZ,AREA(1,1,IFC,IEL),IFC)
+             IF (IFQINP(IFC,IEL)) CALL GLOBROT (TRX,TRY,TRZ,IEL,IFC)
+             GOTO 120
+         ENDIF
+         IF (CB.EQ.'ww ') THEN
+             CALL FACEIV (CB,TRX,TRY,TRZ,IEL,IFC,lx1,ly1,lz1)
+             CALL FACCVS (TRX,TRY,TRZ,AREA(1,1,IFC,IEL),IFC)
+             CALL FACEINT (CB,TRX,TRY,TRZ,IEL,IFC,lx1,ly1,lz1)
              IF (IFQINP(IFC,IEL)) CALL GLOBROT (TRX,TRY,TRZ,IEL,IFC)
              GOTO 120
          ENDIF

@@ -849,6 +849,7 @@ c     ibc = 2  <==>  Neumann,
          if (cbc(ied,e,ifield).eq.'A  ') ibc = 2
          if (cbc(ied,e,ifield).eq.'S  ') ibc = 2
          if (cbc(ied,e,ifield).eq.'s  ') ibc = 2
+         if (cbc(ied,e,ifield).eq.'ww ') ibc = 2
          if (cbc(ied,e,ifield).eq.'J  ') ibc = 0
          if (cbc(ied,e,ifield).eq.'SP ') ibc = 0
 

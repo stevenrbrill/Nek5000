@@ -1655,6 +1655,27 @@ c     Imposing shear stress B.C.s
       return
       end
 c-----------------------------------------------------------------------
+      subroutine userbcint (ix,iy,iz,iside,ieg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      real ip_term_x(lx1,ly1,lz1,lelv), ip_term_y(lx1,ly1,lz1,lelv)
+     $    ,ip_term_z(lx1,ly1,lz1,lelv)
+      common /ipterms/ ip_term_x, ip_term_y, ip_term_z
+
+      e = gllel(ieg)
+
+c     Imposing weak wall B.C.s
+      if(cbc(iside,e,1).eq.'ww ') then
+        TRX=ip_term_x(ix,iy,iz,e)
+        TRY=ip_term_y(ix,iy,iz,e)
+        TRZ=ip_term_z(ix,iy,iz,e)
+      endif
+      
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine useric (ix,iy,iz,ieg)
       include 'SIZE'
       include 'TOTAL'

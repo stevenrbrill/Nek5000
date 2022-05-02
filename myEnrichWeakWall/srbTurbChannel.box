@@ -7,4 +7,4 @@ Box
 0 1 1.                                          x0,x1,gain
 0 1 1.                                          y0,y1,gain
 0 1 1.                                          z0,z1,gain
-P  ,P  ,sh ,sh ,P  ,P                           bc's  (3 chars each!)
+P  ,P  ,ww ,ww ,P  ,P                           bc's  (3 chars each!)
