@@ -503,7 +503,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $                ,w_face(lx1,lz1,lelv)
       real tx_face(lx1,lz1,lelv), ty_face(lx1,lz1,lelv), 
      $     tz_face(lx1,lz1,lelv) 
-      real gam_ip
+      real gam_ip, hb, cbl
       real vx_bc, vy_bc, vz_bc
       common vx_bc, vy_bc, vz_bc
       real ip_term_x(lx1,ly1,lz1,lelv), ip_term_y(lx1,ly1,lz1,lelv)
@@ -1073,6 +1073,12 @@ c     WALL ENRICHMENT...END
       vz_bc = 0.0
 
       if (use_weak_bc .eq. 1) then
+         call opzero(w1,w2,w3)
+
+         call gradm1 (txx,txy,txz,vx)
+         call gradm1 (tyx,tyy,tyz,vy)
+         call gradm1 (tzx,tzy,tzz,vz)
+
          if (comp_phi_grad .ne. 1) then
             iz_end = lz1
             if (ldim .eq. 2) then
@@ -1145,14 +1151,18 @@ c     WALL ENRICHMENT...END
                 dpdy_face(j,i_face,iel) = dpdy(j,i,iel)
                 dpdz_face(j,i_face,iel) = dpdz(j,i,iel)
                 ! Specialized for channel flow. Need to generalize
-                w_face(ix,iz,iel) = wxm1(ix)/rxm1(ix,iy_ut,iz,iel)
-     &                              *wxm1(iz)/tzm1(ix,iy_ut,iz,iel)
+                w_face(ix,iz,iel) = wxm1(ix)*rxm1(ix,iy_ut,iz,iel)
+     &                              *wxm1(iz)*tzm1(ix,iy_ut,iz,iel)
+C                 w_face(ix,iz,iel) = wxm1(ix)*(XLEN/NUMBER_ELEMENTS_X)/2.
+C      &                             *wxm1(iz)*(ZLEN/NUMBER_ELEMENTS_Z)/2.
                     enddo
                   enddo
                 enddo  
               endif
 
-              gam_ip = -1.0
+              gam_ip = -1
+              hb = XLEN / NUMBER_ELEMENTS_X * ZLEN / NUMBER_ELEMENTS_Z
+              cbl = 4.0
               ! Copy to faces
               do iz = 1,lz1
                 do ix = 1,lx1
@@ -1167,6 +1177,16 @@ c     WALL ENRICHMENT...END
                   tz_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
      $                   vdiff(ix,iy_ut,iz,iel,1)*sign*
      $                   (vz(ix,iy_ut,iz,iel)-vz_bc)
+
+                  w1(ix,iy_ut,iz,iel) = -w_face(ix,iz,iel)*cbl
+     $                       *vdiff(ix,iy_ut,iz,iel,1)
+     $                       /hb*(vx(ix,iy_ut,iz,iel)-vx_bc)
+                  w2(ix,iy_ut,iz,iel) = -w_face(ix,iz,iel)*cbl
+     $                       *vdiff(ix,iy_ut,iz,iel,1)
+     $                       /hb*(vy(ix,iy_ut,iz,iel)-vy_bc)
+                  w3(ix,iy_ut,iz,iel) = -w_face(ix,iz,iel)*cbl
+     $                       *vdiff(ix,iy_ut,iz,iel,1)
+     $                       /hb*(vz(ix,iy_ut,iz,iel)-vz_bc)
                 enddo
               enddo
 
