@@ -1635,11 +1635,11 @@ c-----------------------------------------------------------------------
       vz_bc = 0.0
 
       hb = XLEN / NUMBER_ELEMENTS_X * ZLEN / NUMBER_ELEMENTS_Z
-      cbl = 1.0
+      cbl = 4.0
 
-      sip_x = -cbl*param(1)/hb*(vx(ix,iy,iz,e)-vx_bc)
-      sip_y = -cbl*param(1)/hb*(vy(ix,iy,iz,e)-vy_bc)
-      sip_z = -cbl*param(1)/hb*(vz(ix,iy,iz,e)-vz_bc)
+      sip_x = -cbl*vdiff(ix,iy,iz,iel,1)/hb*(vx(ix,iy,iz,e)-vx_bc)
+      sip_y = -cbl*vdiff(ix,iy,iz,iel,1)/hb*(vy(ix,iy,iz,e)-vy_bc)
+      sip_z = -cbl*vdiff(ix,iy,iz,iel,1)/hb*(vz(ix,iy,iz,e)-vz_bc)
 
       if((cbc(iside,e,1).eq.'v  ') .or. (cbc(iside,e,1).eq.'V  ')) then
         UX=0.0
@@ -1656,6 +1656,12 @@ c     Imposing shear stress B.C.s
         TRX=sip_x+en_bound(ix,iy,iz,e) !-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
         TRY=0.0
         TRZ=0.0
+      endif
+
+      if(cbc(iside,e,1).eq.'ww ') then
+        TRX=0.0!sip_x + en_bound(ix,iy,iz,e) 
+        TRY=0.0
+        TRZ=0.0!sip_z
       endif
       
       return
@@ -1675,7 +1681,7 @@ c-----------------------------------------------------------------------
 c     Imposing weak wall B.C.s
       if(cbc(iside,e,1).eq.'ww ') then
         TRX=ip_term_x(ix,iy,iz,e)
-        TRY=ip_term_y(ix,iy,iz,e)
+        TRY=0.0 !ip_term_y(ix,iy,iz,e)
         TRZ=ip_term_z(ix,iy,iz,e)
       endif
       
