@@ -140,7 +140,7 @@ if ! cat $CASENAME.f | grep -qi "subroutine.*userbcint" ; then
 cat >> $CASENAME.f << _ACEOF
 
 c automatically added by makenek
-      subroutine userbc(ix,iy,iz,iside,eg)
+      subroutine userbcint(ix,iy,iz,iside,eg)
 
       return
       end
