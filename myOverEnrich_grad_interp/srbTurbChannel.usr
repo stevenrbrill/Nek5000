@@ -1531,35 +1531,38 @@ C                 wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
           call gradm1(txx_p,tyy_p,tzz_p,vx)
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-       call my_intp_rstd(txx(1,1,1,iel),txx_p(1,1,1,iel),lx1,lxd,if3d,0)
-       call my_intp_rstd(txy(1,1,1,iel),tyy_p(1,1,1,iel),lx1,lxd,if3d,0)
-       call my_intp_rstd(txz(1,1,1,iel),tzz_p(1,1,1,iel),lx1,lxd,if3d,0) 
+       call my_intp_rstd(tx_d(1,1,1,iel),txx_p(1,1,1,iel),lx1,lxd,
+     $       if3d,0)
+       call my_intp_rstd(ty_d(1,1,1,iel),tyy_p(1,1,1,iel),lx1,lxd,
+     $       if3d,0)
+       call my_intp_rstd(tz_d(1,1,1,iel),tzz_p(1,1,1,iel),lx1,lxd,
+     $       if3d,0) 
 C               call my_grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
 C      $                    txz(1,1,1,iel),vx_d(1,1,1,iel),lxd,if3d)    
               do i = 1,lxd*lyd*lzd 
                   ! Term 3x
-                  if (if3d) then
-                    tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +txmd(i,1,1,iel)*txz(i,1,1,iel))
-                    ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +symd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +tymd(i,1,1,iel)*txz(i,1,1,iel))
-                    tz_d(i,1,1,iel) = 1./jacmd(i,iel)*
-     $                       (rzmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +szmd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +tzmd(i,1,1,iel)*txz(i,1,1,iel))
-                  else
-                    tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel))
-                    ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
-                    tz_d(i,1,1,iel) = 0.0
-                  endif
+C                   if (if3d) then
+C                     tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +txmd(i,1,1,iel)*txz(i,1,1,iel))
+C                     ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +symd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +tymd(i,1,1,iel)*txz(i,1,1,iel))
+C                     tz_d(i,1,1,iel) = 1./jacmd(i,iel)*
+C      $                       (rzmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +szmd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +tzmd(i,1,1,iel)*txz(i,1,1,iel))
+C                   else
+C                     tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel))
+C                     ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
+C                     tz_d(i,1,1,iel) = 0.0
+C                   endif
                   w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
@@ -1576,35 +1579,38 @@ C      $                    txz(1,1,1,iel),vx_d(1,1,1,iel),lxd,if3d)
           call gradm1(txx_p,tyy_p,tzz_p,vy)
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-       call my_intp_rstd(txx(1,1,1,iel),txx_p(1,1,1,iel),lx1,lxd,if3d,0)
-       call my_intp_rstd(txy(1,1,1,iel),tyy_p(1,1,1,iel),lx1,lxd,if3d,0)
-       call my_intp_rstd(txz(1,1,1,iel),tzz_p(1,1,1,iel),lx1,lxd,if3d,0)             
+       call my_intp_rstd(tx_d(1,1,1,iel),txx_p(1,1,1,iel),lx1,lxd,
+     $       if3d,0)
+       call my_intp_rstd(ty_d(1,1,1,iel),tyy_p(1,1,1,iel),lx1,lxd,
+     $       if3d,0)
+       call my_intp_rstd(tz_d(1,1,1,iel),tzz_p(1,1,1,iel),lx1,lxd,
+     $       if3d,0) 
 C               call my_grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
-C      $                    txz(1,1,1,iel),vy_d(1,1,1,iel),lxd,if3d)    
+C      $                    txz(1,1,1,iel),vy_d(1,1,1,iel),lxd,if3d)        
               do i = 1,lxd*lyd*lzd 
                   ! Term 3x
-                  if (if3d) then
-                    tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +txmd(i,1,1,iel)*txz(i,1,1,iel))
-                    ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +symd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +tymd(i,1,1,iel)*txz(i,1,1,iel))
-                    tz_d(i,1,1,iel) = 1./jacmd(i,iel)*
-     $                       (rzmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +szmd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +tzmd(i,1,1,iel)*txz(i,1,1,iel))
-                  else
-                    tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel))
-                    ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
-                    tz_d(i,1,1,iel) = 0.0
-                  endif
+C                   if (if3d) then
+C                     tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +txmd(i,1,1,iel)*txz(i,1,1,iel))
+C                     ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +symd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +tymd(i,1,1,iel)*txz(i,1,1,iel))
+C                     tz_d(i,1,1,iel) = 1./jacmd(i,iel)*
+C      $                       (rzmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +szmd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +tzmd(i,1,1,iel)*txz(i,1,1,iel))
+C                   else
+C                     tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel))
+C                     ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
+C                     tz_d(i,1,1,iel) = 0.0
+C                   endif
                   w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
@@ -1621,35 +1627,38 @@ C      $                    txz(1,1,1,iel),vy_d(1,1,1,iel),lxd,if3d)
           call gradm1(txx_p,tyy_p,tzz_p,vz)
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-       call my_intp_rstd(txx(1,1,1,iel),txx_p(1,1,1,iel),lx1,lxd,if3d,0)
-       call my_intp_rstd(txy(1,1,1,iel),tyy_p(1,1,1,iel),lx1,lxd,if3d,0)
-       call my_intp_rstd(txz(1,1,1,iel),tzz_p(1,1,1,iel),lx1,lxd,if3d,0)             
+       call my_intp_rstd(tx_d(1,1,1,iel),txx_p(1,1,1,iel),lx1,lxd,
+     $       if3d,0)
+       call my_intp_rstd(ty_d(1,1,1,iel),tyy_p(1,1,1,iel),lx1,lxd,
+     $       if3d,0)
+       call my_intp_rstd(tz_d(1,1,1,iel),tzz_p(1,1,1,iel),lx1,lxd,
+     $       if3d,0) 
 C               call my_grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
-C      $                    txz(1,1,1,iel),vz_d(1,1,1,iel),lxd,if3d)    
+C      $                    txz(1,1,1,iel),vz_d(1,1,1,iel),lxd,if3d)       
               do i = 1,lxd*lyd*lzd 
                   ! Term 3x
-                  if (if3d) then
-                    tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +txmd(i,1,1,iel)*txz(i,1,1,iel))
-                    ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +symd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +tymd(i,1,1,iel)*txz(i,1,1,iel))
-                    tz_d(i,1,1,iel) = 1./jacmd(i,iel)*
-     $                       (rzmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +szmd(i,1,1,iel)*txy(i,1,1,iel)
-     $                       +tzmd(i,1,1,iel)*txz(i,1,1,iel))
-                  else
-                    tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel))
-                    ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
-     $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
-     $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
-                    tz_d(i,1,1,iel) = 0.0
-                  endif
+C                   if (if3d) then
+C                     tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +txmd(i,1,1,iel)*txz(i,1,1,iel))
+C                     ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +symd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +tymd(i,1,1,iel)*txz(i,1,1,iel))
+C                     tz_d(i,1,1,iel) = 1./jacmd(i,iel)*
+C      $                       (rzmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +szmd(i,1,1,iel)*txy(i,1,1,iel)
+C      $                       +tzmd(i,1,1,iel)*txz(i,1,1,iel))
+C                   else
+C                     tx_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rxmd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +sxmd(i,1,1,iel)*txy(i,1,1,iel))
+C                     ty_d(i,1,1,iel) = 1./jacmd(i,iel)* 
+C      $                       (rymd(i,1,1,iel)*txx(i,1,1,iel)
+C      $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
+C                     tz_d(i,1,1,iel) = 0.0
+C                   endif
                   w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
