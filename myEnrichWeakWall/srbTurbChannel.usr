@@ -530,6 +530,9 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,txy(lx1,ly1,lz1,lelv)
      $               ,tyz(lx1,ly1,lz1,lelv)
      $               ,txz(lx1,ly1,lz1,lelv)
+     $               ,tyx(lx1,ly1,lz1,lelv)
+     $               ,tzx(lx1,ly1,lz1,lelv)
+     $               ,tzy(lx1,ly1,lz1,lelv)
      $               ,tr1x(lx1,ly1,lz1,lelv)
      $               ,tr1y(lx1,ly1,lz1,lelv)
      $               ,tr1z(lx1,ly1,lz1,lelv)
@@ -1075,6 +1078,8 @@ c     WALL ENRICHMENT...END
       if (use_weak_bc .eq. 1) then
          call opzero(w1,w2,w3)
 
+         call opzero  (tx,ty,tz)
+
          call gradm1 (txx,txy,txz,vx)
          call gradm1 (tyx,tyy,tyz,vy)
          call gradm1 (tzx,tzy,tzz,vz)
@@ -1151,16 +1156,16 @@ c     WALL ENRICHMENT...END
                 dpdy_face(j,i_face,iel) = dpdy(j,i,iel)
                 dpdz_face(j,i_face,iel) = dpdz(j,i,iel)
                 ! Specialized for channel flow. Need to generalize
-                w_face(ix,iz,iel) = wxm1(ix)*rxm1(ix,iy_ut,iz,iel)
-     &                              *wxm1(iz)*tzm1(ix,iy_ut,iz,iel)
-C                 w_face(ix,iz,iel) = wxm1(ix)*(XLEN/NUMBER_ELEMENTS_X)/2.
-C      &                             *wxm1(iz)*(ZLEN/NUMBER_ELEMENTS_Z)/2.
+C                 w_face(ix,iz,iel) = wxm1(ix)*rxm1(ix,iy_ut,iz,iel)
+C      &                              *wxm1(iz)*tzm1(ix,iy_ut,iz,iel)
+                w_face(ix,iz,iel) = wxm1(ix)*(XLEN/NUMBER_ELEMENTS_X)/2.
+     &                             *wxm1(iz)*(ZLEN/NUMBER_ELEMENTS_Z)/2.
                     enddo
                   enddo
                 enddo  
               endif
 
-              gam_ip = -1
+              gam_ip = -1.0
               hb = XLEN / NUMBER_ELEMENTS_X * ZLEN / NUMBER_ELEMENTS_Z
               cbl = 4.0
               ! Copy to faces
@@ -1187,6 +1192,16 @@ C      &                             *wxm1(iz)*(ZLEN/NUMBER_ELEMENTS_Z)/2.
                   w3(ix,iy_ut,iz,iel) = -w_face(ix,iz,iel)*cbl
      $                       *vdiff(ix,iy_ut,iz,iel,1)
      $                       /hb*(vz(ix,iy_ut,iz,iel)-vz_bc)
+
+                  tx(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*sign*
+     $              vdiff(ix,iy_ut,iz,iel,1)*
+     $              (txy(ix,iy_ut,iz,iel)+tyx(ix,iy_ut,iz,iel))
+                  ty(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*sign*
+     $              vdiff(ix,iy_ut,iz,iel,1)*
+     $              (tyy(ix,iy_ut,iz,iel)+tyy(ix,iy_ut,iz,iel))
+                  tz(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*sign*
+     $              vdiff(ix,iy_ut,iz,iel,1)*
+     $              (tzy(ix,iy_ut,iz,iel)+tyz(ix,iy_ut,iz,iel))
                 enddo
               enddo
 
@@ -1200,6 +1215,10 @@ C      &                             *wxm1(iz)*(ZLEN/NUMBER_ELEMENTS_Z)/2.
             endif
           enddo
 
+          call opadd2(ip_term_x,ip_term_y,ip_term_z,w1,w2,w3)
+          call opadd2(ip_term_x,ip_term_y,ip_term_z,tx,ty,tz)
+C           call opcmult(ip_term_x,ip_term_y,ip_term_z,0.5)
+          
           ! only compute phi grads once
           if (comp_phi_grad .ne. 1) then
             comp_phi_grad = 1
