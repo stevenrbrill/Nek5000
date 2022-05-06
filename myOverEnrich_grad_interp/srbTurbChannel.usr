@@ -1009,6 +1009,9 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,psix_rhs(lx1,ly1,lz1,lelv)
      $               ,psiy_rhs(lx1,ly1,lz1,lelv)
      $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+      real txx_p(lx1,ly1,lz1,lelv)
+     $               ,tyy_p(lx1,ly1,lz1,lelv)
+     $               ,tzz_p(lx1,ly1,lz1,lelv)
 
 
 C       save psix, psiy, psiz
@@ -1377,6 +1380,9 @@ C                     do iy = 1,ly1
                 tr4x1(i,1,1,iel) = 0.0
                 tr4y1(i,1,1,iel) = 0.0
                 tr4z1(i,1,1,iel) = 0.0
+                txx_p(i,1,1,iel) = 0.0
+                tyy_p(i,1,1,iel) = 0.0
+                tzz_p(i,1,1,iel) = 0.0
               enddo
             endif
           enddo
@@ -1522,10 +1528,14 @@ C                 wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for x
           ! S^psi * u
+          call gradm1(txx_p,tyy_p,tzz_p,vx)
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-              call my_grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
-     $                    txz(1,1,1,iel),vx_d(1,1,1,iel),lxd,if3d)    
+       call my_intp_rstd(txx(1,1,1,iel),txx_p(1,1,1,iel),lx1,lxd,if3d,0)
+       call my_intp_rstd(txy(1,1,1,iel),tyy_p(1,1,1,iel),lx1,lxd,if3d,0)
+       call my_intp_rstd(txz(1,1,1,iel),tzz_p(1,1,1,iel),lx1,lxd,if3d,0) 
+C               call my_grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
+C      $                    txz(1,1,1,iel),vx_d(1,1,1,iel),lxd,if3d)    
               do i = 1,lxd*lyd*lzd 
                   ! Term 3x
                   if (if3d) then
@@ -1563,10 +1573,14 @@ C                 wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for y
           ! S^psi * v
+          call gradm1(txx_p,tyy_p,tzz_p,vy)
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-              call my_grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
-     $                    txz(1,1,1,iel),vy_d(1,1,1,iel),lxd,if3d)    
+       call my_intp_rstd(txx(1,1,1,iel),txx_p(1,1,1,iel),lx1,lxd,if3d,0)
+       call my_intp_rstd(txy(1,1,1,iel),tyy_p(1,1,1,iel),lx1,lxd,if3d,0)
+       call my_intp_rstd(txz(1,1,1,iel),tzz_p(1,1,1,iel),lx1,lxd,if3d,0)             
+C               call my_grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
+C      $                    txz(1,1,1,iel),vy_d(1,1,1,iel),lxd,if3d)    
               do i = 1,lxd*lyd*lzd 
                   ! Term 3x
                   if (if3d) then
@@ -1604,10 +1618,14 @@ C                 wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for z
           ! S^psi * w
+          call gradm1(txx_p,tyy_p,tzz_p,vz)
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-              call my_grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
-     $                    txz(1,1,1,iel),vz_d(1,1,1,iel),lxd,if3d)    
+       call my_intp_rstd(txx(1,1,1,iel),txx_p(1,1,1,iel),lx1,lxd,if3d,0)
+       call my_intp_rstd(txy(1,1,1,iel),tyy_p(1,1,1,iel),lx1,lxd,if3d,0)
+       call my_intp_rstd(txz(1,1,1,iel),tzz_p(1,1,1,iel),lx1,lxd,if3d,0)             
+C               call my_grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
+C      $                    txz(1,1,1,iel),vz_d(1,1,1,iel),lxd,if3d)    
               do i = 1,lxd*lyd*lzd 
                   ! Term 3x
                   if (if3d) then
