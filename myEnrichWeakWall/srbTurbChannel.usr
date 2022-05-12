@@ -456,6 +456,18 @@ c---------------------------------------------------------------
       integer bIDs(1)
       save iobj_wall
 
+c --------------------------------------------------------------
+c     Weak Wall terms
+      integer comp_ww_mats
+      save comp_ww_mats
+      real bmww(lx1,ly1,lz1,lelv), Cpen(lx1,ly1,lz1,lelv), 
+     $     Csym(lx1,ly1,lz1,lelv), Ccon(lx1,ly1,lz1,lelv) 
+      common /wwbc/ bmww,
+     $              Cpen, 
+     $              Csym, 
+     $              Ccon
+      
+
 c---------------------------------------------------------------
 c     VARIABLES DECLARED FOR ENRICHMENT METHOD
       integer secondcall
@@ -1076,8 +1088,46 @@ c     WALL ENRICHMENT...END
       vz_bc = 0.0
 
       if (use_weak_bc .eq. 1) then
-         call opzero(w1,w2,w3)
 
+         gam_ip = 1.0
+         hb = XLEN / NUMBER_ELEMENTS_X * ZLEN / NUMBER_ELEMENTS_Z
+         cbl = 4000.0
+
+         ! Compute weak wall matrices for implicit solve
+         if (comp_ww_mats .ne. 1) then
+            call rzero(bmww,n)
+            do iel = 1,nelv
+              if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+                if (flag(iel) .eq. -1) then
+                  iy_ut = 1
+                  sign = -1.0
+                else
+                  iy_ut = ly1
+                  sign = 1.0
+                endif
+
+                do iz = 1,lz1
+                  do ix = 1,lx1
+                bmww(ix,iy_ut,iz,iel) = 
+     &                  wxm1(ix)*(XLEN/NUMBER_ELEMENTS_X)/2.
+     &                 *wxm1(iz)*(ZLEN/NUMBER_ELEMENTS_Z)/2.
+                Cpen(ix,iy_ut,iz,iel) = cbl/hb*vdiff(ix,iy_ut,iz,iel,1)
+                Csym(ix,iy_ut,iz,iel) = gam_ip*sign
+     &                                        *vdiff(ix,iy_ut,iz,iel,1)
+                Ccon(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)
+                  enddo
+                enddo  
+              endif
+            enddo
+            
+            comp_ww_mats = 1
+         endif 
+
+
+         ! Forcing terms
+
+         call opzero(ip_term_x,ip_term_y,ip_term_z)   
+         call opzero(w1,w2,w3)
          call opzero  (tx,ty,tz)
 
          call gradm1 (txx,txy,txz,vx)
