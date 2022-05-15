@@ -2706,7 +2706,8 @@ c     Solve coupled Helmholtz equations (stress formulation)
          call chktcgs (r1,r2,r3,rmask1,rmask2,rmask3,rmult,binvm1
      $                ,vol,tol,nel)
 
-         call srb_strs_project_a(r1,r2,r3,h1,h2,rmult,ifield,ierr,matmod)
+         call srb_strs_project_a(
+     $       r1,r2,r3,h1,h2,rmult,ifield,ierr,matmod)
 
          call srb_cggosf  (u1,u2,u3,r1,r2,r3,h1,h2,rmult,binvm1
      $                ,vol,tol,maxit,matmod)
@@ -2839,6 +2840,9 @@ C     Helmholtz equations
       real u1(1),u2(1),u3(1),
      $     r1(1),r2(1),r3(1),h1(1),h2(1),rmult(1),binv(1)
 
+      real srb_ap1(lx1*ly1*lz1*lelt), srb_ap2(lx1*ly1*lz1*lelt),
+     $     srb_ap3(lx1*ly1*lz1*lelt)   
+
 
       logical iffdm,ifcrsl
 
@@ -2918,7 +2922,15 @@ c     call copy (dpc,binv,n)
 
       maxit=200
       do 1000 iter=1,maxit
-         call srb_axhmsf  (ap1,ap2,ap3,p1,p2,p3,h1,h2,matmod)
+         call axhmsf  (ap1,ap2,ap3,p1,p2,p3,h1,h2,matmod)
+         
+         ! Get BC contribution to H*u
+         call srb_axhmsf  (srb_ap1,srb_ap2,srb_ap3,p1,p2,p3,h1,h2,
+     $       matmod)
+         call col2(ap1,srb_ap1,n)
+         call col2(ap2,srb_ap2,n)
+         call col2(ap3,srb_ap3,n)
+
          call rmask   (ap1,ap2,ap3,nel)
          call opdssum (ap1,ap2,ap3)
          pap   = op_glsc2_wt(p1,p2,p3,ap1,ap2,ap3,rmult)
@@ -3039,26 +3051,6 @@ c     if (matmod.lt.0) icase=3 ! Block-diagonal Axhelm
         print *, "Call srb_axsf_fast"
         call srb_axsf_fast(au1,au2,au3,u1,u2,u3,h1,h2,ifield)
 
-      elseif (icase.eq.3) then
-
-        call axhelm(au1,u1,h1,h2,1,1)
-        call axhelm(au2,u2,h1,h2,1,2)
-        if (if3d) call axhelm(au3,u3,h1,h2,1,3)
-
-      else  !  calculate coupled  Aij Uj  products
-
-        if ( .not.ifsolv ) call setfast (h1,h2,imesh)
-
-        call stnrate (u1,u2,u3,nel,matmod)
-        call stress  (h1,h2,nel,matmod,ifaxis)
-        call aijuj   (au1,au2,au3,nel,ifaxis)
-
-        if (ifh2 .and. matmod.ge.0) then ! add Helmholtz contributions
-           call addcol4 (au1,bm1,h2,u1,ntot1)
-           call addcol4 (au2,bm1,h2,u2,ntot1)
-           if (ldim.eq.3) call addcol4 (au3,bm1,h2,u3,ntot1)
-        endif
-
       endif
 
       taxhm=taxhm+(dnekclock()-etime1)
@@ -3081,8 +3073,8 @@ c-----------------------------------------------------------------------
 
       if (if3d) then
         do e=1,nel
-          call srb_axsf_e_3d(au(1,e),av(1,e),aw(1,e),u(1,e),v(1,e),w(1,e)
-     $                                         ,h1(1,e),h2(1,e),ur,e)
+          call srb_axsf_e_3d(au(1,e),av(1,e),aw(1,e),u(1,e),v(1,e)
+     $                       ,w(1,e),h1(1,e),h2(1,e),ur,e)
         enddo
       else
         do e=1,nel
@@ -3109,6 +3101,14 @@ c
       real ur(l,ldim,ldim)
 
       integer e,p
+
+      real ucon(l),vcon(l),wcon(l)
+      real bmww(lx1,ly1,lz1,lelv), Cpen(lx1,ly1,lz1,lelv), 
+     $     Csym(lx1,ly1,lz1,lelv), Ccon(lx1,ly1,lz1,lelv) 
+      common /wwbc/ bmww,
+     $              Cpen, 
+     $              Csym, 
+     $              Ccon
 
       p = lx1-1      ! Polynomial degree
       n = lx1*ly1*lz1
@@ -3141,43 +3141,37 @@ c
          w3 = ur(i,1,3)*rzm1(i,1,1,e) + ur(i,2,3)*szm1(i,1,1,e)
      $                                + ur(i,3,3)*tzm1(i,1,1,e)
 
-         dj  = h1(i)*w3m1(i,1,1)*jacmi(i,e)
-         s11 = dj*(u1 + u1)! S_ij
-         s12 = dj*(u2 + v1)
-         s13 = dj*(u3 + w1)
-         s21 = dj*(v1 + u2)
-         s22 = dj*(v2 + v2)
-         s23 = dj*(v3 + w2)
-         s31 = dj*(w1 + u3)
-         s32 = dj*(w2 + v3)
-         s33 = dj*(w3 + w3)
+         ! Symmetric term
+         au(i) = Csym(i,1,1,e)*bmww(i,1,1,e)*(u2+v1)
+         av(i) = Csym(i,1,1,e)*bmww(i,1,1,e)*(v2+v2)
+         aw(i) = Csym(i,1,1,e)*bmww(i,1,1,e)*(w2+v3)
 
-c        Sum_j : (r_p/x_j) h1 J S_ij
+         ! Consistency term
+         ur(i,1,1)=rym1(i,1,1,e)*u(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
+         ur(i,2,1)=sym1(i,1,1,e)*u(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
+         ur(i,3,1)=tym1(i,1,1,e)*u(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
 
-         ur(i,1,1)=rxm1(i,1,1,e)*s11+rym1(i,1,1,e)*s12+rzm1(i,1,1,e)*s13
-         ur(i,2,1)=sxm1(i,1,1,e)*s11+sym1(i,1,1,e)*s12+szm1(i,1,1,e)*s13
-         ur(i,3,1)=txm1(i,1,1,e)*s11+tym1(i,1,1,e)*s12+tzm1(i,1,1,e)*s13
+         ur(i,1,2)=rym1(i,1,1,e)*v(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
+         ur(i,2,2)=sym1(i,1,1,e)*v(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
+         ur(i,3,2)=tym1(i,1,1,e)*v(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
 
-         ur(i,1,2)=rxm1(i,1,1,e)*s21+rym1(i,1,1,e)*s22+rzm1(i,1,1,e)*s23
-         ur(i,2,2)=sxm1(i,1,1,e)*s21+sym1(i,1,1,e)*s22+szm1(i,1,1,e)*s23
-         ur(i,3,2)=txm1(i,1,1,e)*s21+tym1(i,1,1,e)*s22+tzm1(i,1,1,e)*s23
-
-         ur(i,1,3)=rxm1(i,1,1,e)*s31+rym1(i,1,1,e)*s32+rzm1(i,1,1,e)*s33
-         ur(i,2,3)=sxm1(i,1,1,e)*s31+sym1(i,1,1,e)*s32+szm1(i,1,1,e)*s33
-         ur(i,3,3)=txm1(i,1,1,e)*s31+tym1(i,1,1,e)*s32+tzm1(i,1,1,e)*s33
+         ur(i,1,3)=rym1(i,1,1,e)*w(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
+         ur(i,2,3)=sym1(i,1,1,e)*w(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
+         ur(i,3,3)=tym1(i,1,1,e)*w(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
 
       enddo
       call local_grad3_t
-     $    (au,ur(1,1,1),ur(1,2,1),ur(1,3,1),p,1,dxm1,dxtm1,av)
+     $    (ucon,ur(1,1,1),ur(1,2,1),ur(1,3,1),p,1,dxm1,dxtm1,av)
       call local_grad3_t
-     $    (av,ur(1,1,2),ur(1,2,2),ur(1,3,2),p,1,dxm1,dxtm1,ur)
+     $    (vcon,ur(1,1,2),ur(1,2,2),ur(1,3,2),p,1,dxm1,dxtm1,ur)
       call local_grad3_t
-     $    (aw,ur(1,1,3),ur(1,2,3),ur(1,3,3),p,1,dxm1,dxtm1,ur)
+     $    (wcon,ur(1,1,3),ur(1,2,3),ur(1,3,3),p,1,dxm1,dxtm1,ur)
 
+      ! Add Penalty Term  
       do i=1,n
-         au(i)=au(i) + h2(i)*bm1(i,1,1,e)*u(i)
-         av(i)=av(i) + h2(i)*bm1(i,1,1,e)*v(i)
-         aw(i)=aw(i) + h2(i)*bm1(i,1,1,e)*w(i)
+         au(i)=au(i) + ucon(i) + Cpen(i,1,1,e)*bmww(i,1,1,e)*u(i)
+         av(i)=av(i) + vcon(i) + Cpen(i,1,1,e)*bmww(i,1,1,e)*v(i)
+         aw(i)=aw(i) + wcon(i) + Cpen(i,1,1,e)*bmww(i,1,1,e)*w(i)
       enddo
 
       return
