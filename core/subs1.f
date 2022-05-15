@@ -2661,4 +2661,581 @@ C
 
       return
       end
+
 c-----------------------------------------------------------------------
+      subroutine srb_hmhzsf (name,u1,u2,u3,r1,r2,r3,h1,h2,
+     $                   rmask1,rmask2,rmask3,rmult,
+     $                   tol,maxit,matmod)
+
+c     Solve coupled Helmholtz equations (stress formulation)
+
+
+      include 'SIZE'
+      include 'INPUT'
+      include 'MASS'
+      include 'SOLN'   ! For outpost diagnostic call
+      include 'TSTEP'
+      include 'ORTHOSTRS'
+      include 'CTIMER'
+
+      real u1(1),u2(1),u3(1),r1(1),r2(1),r3(1),h1(1),h2(1)
+      real rmask1(1),rmask2(1),rmask3(1),rmult(1)
+      character name*4
+
+#ifdef TIMER
+      nhmhz = nhmhz + 1
+      etime1 = dnekclock()
+#endif
+
+      nel = nelfld(ifield)
+      vol = volfld(ifield)
+      n   = lx1*ly1*lz1*nel
+
+      napproxstrs(1) = 0
+      iproj = 0
+      if (ifprojfld(ifield)) iproj = param(94)
+      if (iproj.gt.0.and.istep.ge.iproj) napproxstrs(1)=param(93)
+      napproxstrs(1)=min(napproxstrs(1),mxprev)
+
+      call rmask   (r1,r2,r3,nel)
+      call opdssum (r1,r2,r3)
+      call rzero3  (u1,u2,u3,n)
+
+      if (imesh.eq.1) then
+        print *, "Call This strs cg"
+         call chktcgs (r1,r2,r3,rmask1,rmask2,rmask3,rmult,binvm1
+     $                ,vol,tol,nel)
+
+         call srb_strs_project_a(r1,r2,r3,h1,h2,rmult,ifield,ierr,matmod)
+
+         call srb_cggosf  (u1,u2,u3,r1,r2,r3,h1,h2,rmult,binvm1
+     $                ,vol,tol,maxit,matmod)
+
+         call strs_project_b(u1,u2,u3,h1,h2,rmult,ifield,ierr)
+
+      else
+
+         call chktcgs (r1,r2,r3,rmask1,rmask2,rmask3,rmult,bintm1
+     $                ,vol,tol,nel)
+         call cggosf  (u1,u2,u3,r1,r2,r3,h1,h2,rmult,bintm1
+     $                ,vol,tol,maxit,matmod)
+
+      endif
+
+#ifdef TIMER
+      thmhz=thmhz+(dnekclock()-etime1)
+#endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine srb_strs_project_a(b1,b2,b3,h1,h2,wt,ifld,ierr,matmod)
+
+c     Assumes if uservp is true and thus reorthogonalizes every step
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'ORTHOSTRS'  ! Storage of approximation space
+      include 'CTIMER'
+
+      real b1(1),b2(1),b3(1),h1(1),h2(1),wt(1)
+      common /ctmp1/ w(lx1*ly1*lz1*lelt,ldim)
+      real l2a,l2b
+
+      kmax = napproxstrs(1)
+      k    = napproxstrs(2)
+      n    = lx1*ly1*lz1*nelv
+      m    = n*ldim
+
+      if (k.eq.0.or.kmax.eq.0) return
+
+      etime0 = dnekclock()
+
+      l2b=opnorm2w(b1,b2,b3,binvm1)
+
+c     Reorthogonalize basis
+
+      dh1max=difmax(bstrs(1  ),h1,n)
+      call col3(bstrs,h2,bm1,n)
+      dh2max=difmax(bstrs(1+n),bstrs,n)
+
+      if (dh1max.gt.0.or.dh2max.gt.0) then
+        call strs_ortho_all(xstrs(1+m),bstrs(1+m),n,k,h1,h2,wt,ifld,w
+     $                   ,ierr,matmod)
+      else
+        call strs_ortho_one(xstrs(1+m),bstrs(1+m),n,k,h1,h2,wt,ifld,w
+     $                   ,ierr,matmod)
+      endif
+
+      napproxstrs(2) = k
+
+      call opcopy(bstrs(1),bstrs(1+n),bstrs(1+2*n),b1,b2,b3)
+      call opzero(xstrs(1),xstrs(1+n),xstrs(1+2*n))
+
+      do i=1,k
+         i1 = 1 + 0*n + (i-1)*m + m
+         i2 = 1 + 1*n + (i-1)*m + m
+         i3 = 1 + 2*n + (i-1)*m + m
+         alpha=op_glsc2_wt(bstrs(1),bstrs(1+n),bstrs(1+2*n)
+     $                    ,xstrs(i1),xstrs(i2),xstrs(i3),wt)
+
+         alphm=-alpha
+         call opadds(bstrs(1),bstrs(1+n),bstrs(1+2*n)
+     $              ,bstrs(i1),bstrs(i2),bstrs(i3),alphm,n,2)
+
+         call opadds(xstrs(1),xstrs(1+n),xstrs(1+2*n)
+     $              ,xstrs(i1),xstrs(i2),xstrs(i3),alpha,n,2)
+
+
+      enddo
+
+      call opcopy(b1,b2,b3,bstrs(1),bstrs(1+n),bstrs(1+2*n))
+      l2a=opnorm2w(b1,b2,b3,binvm1)
+
+      call copy(bstrs(1  ),h1,n)  ! Save h1 and h2 for comparison
+      call col3(bstrs(1+n),bm1,h2,n)
+
+      ratio=l2b/l2a
+      if (nio.eq.0) write(6,1) istep,'  Project ' // 'HELM3 ',
+     $              l2a,l2b,ratio,k,kmax
+    1 format(i11,a,6x,1p3e13.4,i4,i4)
+
+c     if (ierr.ne.0) call exitti(' h3proj quit$',ierr)
+
+      tproj = tproj + dnekclock() - etime0
+
+      return
+      end      
+c-----------------------------------------------------------------------
+      subroutine srb_cggosf (u1,u2,u3,r1,r2,r3,h1,h2,rmult,binv,
+     $                   vol,tin,maxit,matmod)
+
+C     Conjugate gradient iteration for solution of coupled 
+C     Helmholtz equations 
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'DOMAIN'
+      include 'FDMH1'
+
+      common /screv/  dpc(lx1*ly1*lz1*lelt)
+     $     ,          p1 (lx1*ly1*lz1*lelt)
+      common /scrch/  p2 (lx1*ly1*lz1*lelt)
+     $     ,          p3 (lx1*ly1*lz1*lelt)
+      common /scrsl/  qq1(lx1*ly1*lz1*lelt)
+     $     ,          qq2(lx1*ly1*lz1*lelt)
+     $     ,          qq3(lx1*ly1*lz1*lelt)
+      common /scrmg/  pp1(lx1*ly1*lz1*lelt)
+     $     ,          pp2(lx1*ly1*lz1*lelt)
+     $     ,          pp3(lx1*ly1*lz1*lelt)
+     $     ,          wa (lx1*ly1*lz1*lelt)
+      real ap1(1),ap2(1),ap3(1)
+      equivalence (ap1,pp1),(ap2,pp2),(ap3,pp3)
+
+      common /fastmd/ ifdfrm(lelt), iffast(lelt), ifh2, ifsolv
+      common /cprint/ ifprint
+      logical ifdfrm, iffast, ifh2, ifsolv, ifprint
+
+      real u1(1),u2(1),u3(1),
+     $     r1(1),r2(1),r3(1),h1(1),h2(1),rmult(1),binv(1)
+
+
+      logical iffdm,ifcrsl
+
+      iffdm  = .true.
+      iffdm  = .false.
+c     ifcrsl = .true.
+      ifcrsl = .false.
+
+      nel   = nelfld(ifield)
+      nxyz  = lx1*ly1*lz1
+      n     = nxyz*nel
+
+      if (istep.le.1.and.iffdm) call set_fdm_prec_h1A
+
+      tol  = tin
+
+c     overrule input tolerance
+      if (restol(ifield).ne.0) tol=restol(ifield)
+
+      if (ifcrsl) call set_up_h1_crs_strs(h1,h2,ifield,matmod)
+
+c      if (nio.eq.0.and.istep.eq.1) write(6,6) ifield,tol,tin
+c   6  format(i3,1p2e12.4,' ifield, tol, tol_in')
+
+      if ( .not.ifsolv ) then           !     Set logical flags
+        print *, "Call ifsolv"
+         call setfast (h1,h2,imesh)
+         ifsolv = .true.
+      endif
+
+      call opdot (wa,r1,r2,r3,r1,r2,r3,n)
+      rbnorm = glsc3(wa,binv,rmult,n)
+      rbnorm = sqrt ( rbnorm / vol )
+      if (rbnorm .lt. tol**2) then
+         iter = 0
+         r0 = rbnorm
+c        if ( .not.ifprint )  goto 9999
+         if (matmod.ge.0.and.nio.eq.0) write (6,3000) 
+     $                                 istep,iter,rbnorm,r0,tol
+         if (matmod.lt.0.and.nio.eq.0) write (6,3010) 
+     $                                 istep,iter,rbnorm,r0,tol
+         goto 9999
+      endif
+
+C     Evaluate diagional pre-conidtioner for fluid solve
+        ! SRBMOD
+      call setprec (dpc,h1,h2,imesh,1)
+      call setprec (wa ,h1,h2,imesh,2)
+      call add2    (dpc,wa,n)
+      if (ldim.eq.3) then
+         call setprec (wa,h1,h2,imesh,3)
+         call add2    (dpc,wa,n)
+      endif
+c     call rone (dpc,n)
+c     call copy (dpc,binv,n)
+
+      if (iffdm) then
+         call set_fdm_prec_h1b(dpc,h1,h2,nel)
+         call fdm_h1a (pp1,r1,dpc,nel,ktype(1,1,1),wa)
+         call fdm_h1a (pp2,r2,dpc,nel,ktype(1,1,2),wa)
+         call fdm_h1a (pp3,r3,dpc,nel,ktype(1,1,3),wa)
+         call rmask   (pp1,pp2,pp3,nel)
+         call opdssum (pp1,pp2,pp3)
+      else
+         call col3 (pp1,dpc,r1,n)
+         call col3 (pp2,dpc,r2,n)
+         if (if3d) call col3 (pp3,dpc,r3,n)
+      endif
+      if (ifcrsl) then
+         call crs_strs(p1,p2,p3,r1,r2,r3)
+         call rmask   (p1,p2,p3,nel)
+      else
+         call opzero(p1,p2,p3)
+      endif
+      call opadd2       (p1,p2,p3,pp1,pp2,pp3)
+      rpp1 = op_glsc2_wt(p1,p2,p3,r1,r2,r3,rmult)
+
+      maxit=200
+      do 1000 iter=1,maxit
+         call srb_axhmsf  (ap1,ap2,ap3,p1,p2,p3,h1,h2,matmod)
+         call rmask   (ap1,ap2,ap3,nel)
+         call opdssum (ap1,ap2,ap3)
+         pap   = op_glsc2_wt(p1,p2,p3,ap1,ap2,ap3,rmult)
+         alpha = rpp1 / pap
+
+         call opadds (u1,u2,u3,p1 ,p2 ,p3 , alpha,n,2)
+         call opadds (r1,r2,r3,ap1,ap2,ap3,-alpha,n,2)
+
+         call opdot  (wa,r1,r2,r3,r1,r2,r3,n)
+         rbnorm = glsc3(wa,binv,rmult,n)
+         rbnorm = sqrt (rbnorm/vol)
+
+         if (iter.eq.1) r0 = rbnorm
+
+         if (rbnorm.lt.tol) then
+            ifin = iter
+            if (nio.eq.0) then
+               if (matmod.ge.0) write(6,3000) istep,ifin,rbnorm,r0,tol
+               if (matmod.lt.0) write(6,3010) istep,ifin,rbnorm,r0,tol
+            endif
+            goto 9999
+         endif
+
+         if (iffdm) then
+            call fdm_h1a (pp1,r1,dpc,nel,ktype(1,1,1),wa)
+            call fdm_h1a (pp2,r2,dpc,nel,ktype(1,1,2),wa)
+            call fdm_h1a (pp3,r3,dpc,nel,ktype(1,1,3),wa)
+            call rmask   (pp1,pp2,pp3,nel)
+            call opdssum (pp1,pp2,pp3)
+         else
+            call col3 (pp1,dpc,r1,n)
+            call col3 (pp2,dpc,r2,n)
+            if (if3d) call col3 (pp3,dpc,r3,n)
+         endif
+
+         if (ifcrsl) then
+           call crs_strs(qq1,qq2,qq3,r1,r2,r3)
+           call rmask   (qq1,qq2,qq3,nel)
+           call opadd2  (pp1,pp2,pp3,qq1,qq2,qq3)
+         endif
+
+         call opdot (wa,r1,r2,r3,pp1,pp2,pp3,n)
+
+         rpp2 = rpp1
+         rpp1 = glsc2(wa,rmult,n)
+         beta = rpp1/rpp2
+         call opadds (p1,p2,p3,pp1,pp2,pp3,beta,n,1)
+
+ 1000 continue
+      if (matmod.ge.0.and.nio.eq.0) write (6,3001) 
+     $                              istep,iter,rbnorm,r0,tol
+      if (matmod.lt.0.and.nio.eq.0) write (6,3011) 
+     $                              istep,iter,rbnorm,r0,tol
+
+ 9999 continue
+      ifsolv = .false.
+
+
+ 3000 format(i11,'srbHelmh3 fluid  ',I6,1p3E13.4)
+ 3010 format(i11,'srbHelmh3 mesh   ',I6,1p3E13.4)
+ 3001 format(i11,'srbHelmh3 fluid unconverged! ',I6,1p3E13.4)
+ 3011 format(i11,'srbHelmh3 mesh unconverged! ',I6,1p3E13.4)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine srb_axhmsf (au1,au2,au3,u1,u2,u3,h1,h2,matmod)
+
+C     Compute the coupled Helmholtz matrix-vector products
+
+C     Fluid (MATMOD .GE. 0) :  Hij Uj = Aij*Uj + H2*B*Ui 
+C     Solid (MATMOD .LT. 0) :  Hij Uj = Kij*Uj
+C
+C-----------------------------------------------------------------------
+      include 'SIZE'
+      include 'INPUT'
+      include 'GEOM'
+      include 'MASS'
+      include 'TSTEP'
+      include 'CTIMER'
+
+      common /fastmd/ ifdfrm(lelt), iffast(lelt), ifh2, ifsolv
+      logical ifdfrm, iffast, ifh2, ifsolv
+C
+      dimension au1(lx1,ly1,lz1,1)
+     $        , au2(lx1,ly1,lz1,1)
+     $        , au3(lx1,ly1,lz1,1)
+     $        , u1 (lx1*ly1*lz1*1)
+     $        , u2 (lx1*ly1*lz1*1)
+     $        , u3 (lx1*ly1*lz1*1)
+     $        , h1 (lx1,ly1,lz1,1)
+     $        , h2 (lx1,ly1,lz1,1)
+
+
+        print *, "Call srb_axhmsf"
+      naxhm = naxhm + 1
+      etime1 = dnekclock()
+
+      nel   = nelfld(ifield)
+      ntot1 = lx1*ly1*lz1*nel
+
+c      if (ifaxis.and.ifsplit) call exitti(
+c     $'Axisymmetric stress w/PnPn not yet supported.$',istep)
+
+c     icase = 1 --- axsf_fast (no axisymmetry)
+c     icase = 2 --- stress formulation and supports axisymmetry
+c     icase = 3 --- 3 separate axhelm calls
+
+      icase = 1                ! Fast mode for stress
+      if (ifaxis)      icase=2 ! Slow for stress, but supports axisymmetry
+      if (matmod.lt.0) icase=2 ! Elasticity case
+c     if (matmod.lt.0) icase=3 ! Block-diagonal Axhelm
+      if (matmod.lt.0) icase=1 ! Elasticity case (faster, 7/28/17,pff)
+      if (.not.ifstrs) icase=3 ! Block-diagonal Axhelm
+
+      if (icase.eq.1) then
+
+        print *, "Call srb_axsf_fast"
+        call srb_axsf_fast(au1,au2,au3,u1,u2,u3,h1,h2,ifield)
+
+      elseif (icase.eq.3) then
+
+        call axhelm(au1,u1,h1,h2,1,1)
+        call axhelm(au2,u2,h1,h2,1,2)
+        if (if3d) call axhelm(au3,u3,h1,h2,1,3)
+
+      else  !  calculate coupled  Aij Uj  products
+
+        if ( .not.ifsolv ) call setfast (h1,h2,imesh)
+
+        call stnrate (u1,u2,u3,nel,matmod)
+        call stress  (h1,h2,nel,matmod,ifaxis)
+        call aijuj   (au1,au2,au3,nel,ifaxis)
+
+        if (ifh2 .and. matmod.ge.0) then ! add Helmholtz contributions
+           call addcol4 (au1,bm1,h2,u1,ntot1)
+           call addcol4 (au2,bm1,h2,u2,ntot1)
+           if (ldim.eq.3) call addcol4 (au3,bm1,h2,u3,ntot1)
+        endif
+
+      endif
+
+      taxhm=taxhm+(dnekclock()-etime1)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine srb_axsf_fast(au,av,aw,u,v,w,h1,h2,ifld)
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (l=lx1*ly1*lz1)
+      real au(l,1),av(l,1),aw(l,1),u(l,1),v(l,1),w(l,1),h1(l,1),h2(l,1)
+
+      common /btmp0/ ur(l,ldim,ldim)
+
+      integer e
+
+      nel = nelfld(ifld)
+
+      if (if3d) then
+        do e=1,nel
+          call srb_axsf_e_3d(au(1,e),av(1,e),aw(1,e),u(1,e),v(1,e),w(1,e)
+     $                                         ,h1(1,e),h2(1,e),ur,e)
+        enddo
+      else
+        do e=1,nel
+          call srb_axsf_e_2d(au(1,e),av(1,e),u(1,e),v(1,e)
+     $                          ,h1(1,e),h2(1,e),ur,e)
+        enddo
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine srb_axsf_e_3d(au,av,aw,u,v,w,h1,h2,ur,e)
+c
+c                                         du_i
+c     Compute the gradient tensor G_ij := ----  ,  for element e
+c                                         du_j
+c
+      include 'SIZE'
+      include 'TOTAL'
+
+      real au(1),av(1),aw(1),u(1),v(1),w(1),h1(1),h2(1)
+
+      parameter (l=lx1*ly1*lz1)
+      real ur(l,ldim,ldim)
+
+      integer e,p
+
+      p = lx1-1      ! Polynomial degree
+      n = lx1*ly1*lz1
+
+      ! SRBMOD
+      call local_grad3(ur(1,1,1),ur(1,2,1),ur(1,3,1),u,p,1,dxm1,dxtm1)
+      call local_grad3(ur(1,1,2),ur(1,2,2),ur(1,3,2),v,p,1,dxm1,dxtm1)
+      call local_grad3(ur(1,1,3),ur(1,2,3),ur(1,3,3),w,p,1,dxm1,dxtm1)
+
+      do i=1,n
+
+         u1 = ur(i,1,1)*rxm1(i,1,1,e) + ur(i,2,1)*sxm1(i,1,1,e)
+     $                                + ur(i,3,1)*txm1(i,1,1,e)
+         u2 = ur(i,1,1)*rym1(i,1,1,e) + ur(i,2,1)*sym1(i,1,1,e)
+     $                                + ur(i,3,1)*tym1(i,1,1,e)
+         u3 = ur(i,1,1)*rzm1(i,1,1,e) + ur(i,2,1)*szm1(i,1,1,e)
+     $                                + ur(i,3,1)*tzm1(i,1,1,e)
+
+         v1 = ur(i,1,2)*rxm1(i,1,1,e) + ur(i,2,2)*sxm1(i,1,1,e)
+     $                                + ur(i,3,2)*txm1(i,1,1,e)
+         v2 = ur(i,1,2)*rym1(i,1,1,e) + ur(i,2,2)*sym1(i,1,1,e)
+     $                                + ur(i,3,2)*tym1(i,1,1,e)
+         v3 = ur(i,1,2)*rzm1(i,1,1,e) + ur(i,2,2)*szm1(i,1,1,e)
+     $                                + ur(i,3,2)*tzm1(i,1,1,e)
+
+         w1 = ur(i,1,3)*rxm1(i,1,1,e) + ur(i,2,3)*sxm1(i,1,1,e)
+     $                                + ur(i,3,3)*txm1(i,1,1,e)
+         w2 = ur(i,1,3)*rym1(i,1,1,e) + ur(i,2,3)*sym1(i,1,1,e)
+     $                                + ur(i,3,3)*tym1(i,1,1,e)
+         w3 = ur(i,1,3)*rzm1(i,1,1,e) + ur(i,2,3)*szm1(i,1,1,e)
+     $                                + ur(i,3,3)*tzm1(i,1,1,e)
+
+         dj  = h1(i)*w3m1(i,1,1)*jacmi(i,e)
+         s11 = dj*(u1 + u1)! S_ij
+         s12 = dj*(u2 + v1)
+         s13 = dj*(u3 + w1)
+         s21 = dj*(v1 + u2)
+         s22 = dj*(v2 + v2)
+         s23 = dj*(v3 + w2)
+         s31 = dj*(w1 + u3)
+         s32 = dj*(w2 + v3)
+         s33 = dj*(w3 + w3)
+
+c        Sum_j : (r_p/x_j) h1 J S_ij
+
+         ur(i,1,1)=rxm1(i,1,1,e)*s11+rym1(i,1,1,e)*s12+rzm1(i,1,1,e)*s13
+         ur(i,2,1)=sxm1(i,1,1,e)*s11+sym1(i,1,1,e)*s12+szm1(i,1,1,e)*s13
+         ur(i,3,1)=txm1(i,1,1,e)*s11+tym1(i,1,1,e)*s12+tzm1(i,1,1,e)*s13
+
+         ur(i,1,2)=rxm1(i,1,1,e)*s21+rym1(i,1,1,e)*s22+rzm1(i,1,1,e)*s23
+         ur(i,2,2)=sxm1(i,1,1,e)*s21+sym1(i,1,1,e)*s22+szm1(i,1,1,e)*s23
+         ur(i,3,2)=txm1(i,1,1,e)*s21+tym1(i,1,1,e)*s22+tzm1(i,1,1,e)*s23
+
+         ur(i,1,3)=rxm1(i,1,1,e)*s31+rym1(i,1,1,e)*s32+rzm1(i,1,1,e)*s33
+         ur(i,2,3)=sxm1(i,1,1,e)*s31+sym1(i,1,1,e)*s32+szm1(i,1,1,e)*s33
+         ur(i,3,3)=txm1(i,1,1,e)*s31+tym1(i,1,1,e)*s32+tzm1(i,1,1,e)*s33
+
+      enddo
+      call local_grad3_t
+     $    (au,ur(1,1,1),ur(1,2,1),ur(1,3,1),p,1,dxm1,dxtm1,av)
+      call local_grad3_t
+     $    (av,ur(1,1,2),ur(1,2,2),ur(1,3,2),p,1,dxm1,dxtm1,ur)
+      call local_grad3_t
+     $    (aw,ur(1,1,3),ur(1,2,3),ur(1,3,3),p,1,dxm1,dxtm1,ur)
+
+      do i=1,n
+         au(i)=au(i) + h2(i)*bm1(i,1,1,e)*u(i)
+         av(i)=av(i) + h2(i)*bm1(i,1,1,e)*v(i)
+         aw(i)=aw(i) + h2(i)*bm1(i,1,1,e)*w(i)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine srb_axsf_e_2d(au,av,u,v,h1,h2,ur,e)
+c
+c                                         du_i
+c     Compute the gradient tensor G_ij := ----  ,  for element e
+c                                         du_j
+c
+      include 'SIZE'
+      include 'TOTAL'
+
+      real au(1),av(1),u(1),v(1),h1(1),h2(1)
+
+      parameter (l=lx1*ly1*lz1)
+      real ur(l,ldim,ldim)
+
+      integer e,p
+
+      p = lx1-1      ! Polynomial degree
+      n = lx1*ly1*lz1
+
+
+      call local_grad2(ur(1,1,1),ur(1,2,1),u,p,1,dxm1,dxtm1)
+      call local_grad2(ur(1,1,2),ur(1,2,2),v,p,1,dxm1,dxtm1)
+
+      do i=1,n
+         dj = h1(i)*w3m1(i,1,1)*jacmi(i,e)
+
+         u1 = ur(i,1,1)*rxm1(i,1,1,e) + ur(i,2,1)*sxm1(i,1,1,e) !ux
+         u2 = ur(i,1,1)*rym1(i,1,1,e) + ur(i,2,1)*sym1(i,1,1,e) !uy
+         v1 = ur(i,1,2)*rxm1(i,1,1,e) + ur(i,2,2)*sxm1(i,1,1,e) !vx
+         v2 = ur(i,1,2)*rym1(i,1,1,e) + ur(i,2,2)*sym1(i,1,1,e) !vy
+
+         s11 = dj*( u1 + u1 ) ! h1*rho*S_ij
+         s12 = dj*( u2 + v1 )
+         s21 = dj*( v1 + u2 )
+         s22 = dj*( v2 + v2 )
+
+c        Sum_j : (r_k/x_j) h1 J S_ij
+
+         ur(i,1,1)=rxm1(i,1,1,e)*s11+rym1(i,1,1,e)*s12 ! i=1,k=1
+         ur(i,2,1)=sxm1(i,1,1,e)*s11+sym1(i,1,1,e)*s12 ! i=1,k=2
+
+         ur(i,1,2)=rxm1(i,1,1,e)*s21+rym1(i,1,1,e)*s22 ! i=2,k=1
+         ur(i,2,2)=sxm1(i,1,1,e)*s21+sym1(i,1,1,e)*s22 ! i=2,k=2
+
+      enddo
+
+      call local_grad2_t(au,ur(1,1,1),ur(1,2,1),p,1,dxm1,dxtm1,av)
+      call local_grad2_t(av,ur(1,1,2),ur(1,2,2),p,1,dxm1,dxtm1,ur)
+
+      do i=1,n
+         au(i)=au(i) + h2(i)*bm1(i,1,1,e)*u(i)
+         av(i)=av(i) + h2(i)*bm1(i,1,1,e)*v(i)
+      enddo
+
+      return
+      end
