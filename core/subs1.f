@@ -2718,7 +2718,7 @@ c     Solve coupled Helmholtz equations (stress formulation)
 
          call chktcgs (r1,r2,r3,rmask1,rmask2,rmask3,rmult,bintm1
      $                ,vol,tol,nel)
-         call cggosf  (u1,u2,u3,r1,r2,r3,h1,h2,rmult,bintm1
+         call srb_cggosf  (u1,u2,u3,r1,r2,r3,h1,h2,rmult,bintm1
      $                ,vol,tol,maxit,matmod)
 
       endif
@@ -2750,6 +2750,7 @@ c     Assumes if uservp is true and thus reorthogonalizes every step
 
       if (k.eq.0.or.kmax.eq.0) return
 
+      print *, "Call srb_strs_project_a - BC not implemented"
       etime0 = dnekclock()
 
       l2b=opnorm2w(b1,b2,b3,binvm1)
@@ -2889,17 +2890,18 @@ c        if ( .not.ifprint )  goto 9999
 
 C     Evaluate diagional pre-conidtioner for fluid solve
         ! SRBMOD
-      call setprec (dpc,h1,h2,imesh,1)
-      call setprec (wa ,h1,h2,imesh,2)
+      call srb_setprec (dpc,h1,h2,imesh,1)
+      call srb_setprec (wa ,h1,h2,imesh,2)
       call add2    (dpc,wa,n)
       if (ldim.eq.3) then
-         call setprec (wa,h1,h2,imesh,3)
+         call srb_setprec (wa,h1,h2,imesh,3)
          call add2    (dpc,wa,n)
       endif
 c     call rone (dpc,n)
 c     call copy (dpc,binv,n)
 
       if (iffdm) then
+
          call set_fdm_prec_h1b(dpc,h1,h2,nel)
          call fdm_h1a (pp1,r1,dpc,nel,ktype(1,1,1),wa)
          call fdm_h1a (pp2,r2,dpc,nel,ktype(1,1,2),wa)
@@ -2923,13 +2925,13 @@ c     call copy (dpc,binv,n)
       maxit=200
       do 1000 iter=1,maxit
          call axhmsf  (ap1,ap2,ap3,p1,p2,p3,h1,h2,matmod)
-         
+
          ! Get BC contribution to H*u
          call srb_axhmsf  (srb_ap1,srb_ap2,srb_ap3,p1,p2,p3,h1,h2,
      $       matmod)
-         call col2(ap1,srb_ap1,n)
-         call col2(ap2,srb_ap2,n)
-         call col2(ap3,srb_ap3,n)
+         call add2(ap1,srb_ap1,n)
+         call add2(ap2,srb_ap2,n)
+         call add2(ap3,srb_ap3,n)
 
          call rmask   (ap1,ap2,ap3,nel)
          call opdssum (ap1,ap2,ap3)
@@ -3196,6 +3198,7 @@ c
       p = lx1-1      ! Polynomial degree
       n = lx1*ly1*lz1
 
+      print *, "Call srb_axsf_e_2d - not implemented"
 
       call local_grad2(ur(1,1,1),ur(1,2,1),u,p,1,dxm1,dxtm1)
       call local_grad2(ur(1,1,2),ur(1,2,2),v,p,1,dxm1,dxtm1)
@@ -3233,3 +3236,163 @@ c        Sum_j : (r_k/x_j) h1 J S_ij
 
       return
       end
+
+c=======================================================================
+      subroutine srb_setprec (dpcm1,helm1,helm2,imsh,isd)
+C-------------------------------------------------------------------
+C
+C     Generate diagonal preconditioner for the Helmholtz operator.
+C
+C-------------------------------------------------------------------
+      include 'SIZE'
+      include 'WZ'
+      include 'DXYZ'
+      include 'GEOM'
+      include 'INPUT'
+      include 'TSTEP'
+      include 'MASS'
+      REAL            DPCM1 (LX1,LY1,LZ1,1)
+      COMMON /FASTMD/ IFDFRM(LELT), IFFAST(LELT), IFH2, IFSOLV
+      LOGICAL IFDFRM, IFFAST, IFH2, IFSOLV
+      REAL            HELM1(lx1,ly1,lz1,1), HELM2(lx1,ly1,lz1,1)
+      REAL YSM1(LY1)
+      real Ccomb(lx1,ly1,lz1,nelt)
+      real bmww(lx1,ly1,lz1,lelv), Cpen(lx1,ly1,lz1,lelv), 
+     $     Csym(lx1,ly1,lz1,lelv), Ccon(lx1,ly1,lz1,lelv) 
+      common /wwbc/ bmww,
+     $              Cpen, 
+     $              Csym, 
+     $              Ccon
+
+      nel=nelt
+      if (imsh.eq.1) nel=nelv
+
+      ntot = nel*lx1*ly1*lz1
+
+c     The following lines provide a convenient debugging option
+c     call rone(dpcm1,ntot)
+c     if (ifield.eq.1) call copy(dpcm1,binvm1,ntot)
+c     if (ifield.eq.2) call copy(dpcm1,bintm1,ntot)
+c     return
+
+      CALL RZERO(DPCM1,NTOT)
+      DO 1001 IE=1,NEL
+
+        IF (IFAXIS) CALL SETAXDY ( IFRZER(IE) )
+
+C         DO 321 IQ=1,lx1
+        DO 321 IZ=1,lz1
+        DO 321 IY=1,ly1
+        DO 321 IX=1,lx1
+           DPCM1(IX,IY,IZ,IE) = DPCM1(IX,IY,IZ,IE) + 
+     $                          rym1(IX,IY,IZ,IE) * DXTM1(IX,IX)
+  321   CONTINUE
+C         DO 341 IQ=1,ly1
+        DO 341 IZ=1,lz1
+        DO 341 IY=1,ly1
+        DO 341 IX=1,lx1
+           DPCM1(IX,IY,IZ,IE) = DPCM1(IX,IY,IZ,IE) + 
+     $                          sym1(IX,IY,IZ,IE) * DYTM1(IY,IY)
+  341   CONTINUE
+        IF (LDIM.EQ.3) THEN
+C            DO 360 IQ=1,lz1
+           DO 361 IZ=1,lz1
+           DO 361 IY=1,ly1
+           DO 361 IX=1,lx1
+              DPCM1(IX,IY,IZ,IE) = DPCM1(IX,IY,IZ,IE) + 
+     $                             tym1(IX,IY,IZ,IE) * DZTM1(IZ,IZ)
+  361      CONTINUE
+C
+C          Add cross terms if element is deformed.
+C
+C            IF (IFDFRM(IE)) THEN
+C                 print *, "Call if deformed"
+C               DO 601 IY=1,ly1,ly1-1
+C               DO 601 IZ=1,lz1,max(1,lz1-1)
+C               DPCM1(1,IY,IZ,IE) = DPCM1(1,IY,IZ,IE)
+C      $            + G4M1(1,IY,IZ,IE) * DXTM1(1,1)*DYTM1(IY,IY)
+C      $            + G5M1(1,IY,IZ,IE) * DXTM1(1,1)*DZTM1(IZ,IZ)
+C               DPCM1(lx1,IY,IZ,IE) = DPCM1(lx1,IY,IZ,IE)
+C      $            + G4M1(lx1,IY,IZ,IE) * DXTM1(lx1,lx1)*DYTM1(IY,IY)
+C      $            + G5M1(lx1,IY,IZ,IE) * DXTM1(lx1,lx1)*DZTM1(IZ,IZ)
+C   601         CONTINUE
+C               DO 701 IX=1,lx1,lx1-1
+C               DO 701 IZ=1,lz1,max(1,lz1-1)
+C                  DPCM1(IX,1,IZ,IE) = DPCM1(IX,1,IZ,IE)
+C      $            + G4M1(IX,1,IZ,IE) * DYTM1(1,1)*DXTM1(IX,IX)
+C      $            + G6M1(IX,1,IZ,IE) * DYTM1(1,1)*DZTM1(IZ,IZ)
+C                  DPCM1(IX,ly1,IZ,IE) = DPCM1(IX,ly1,IZ,IE)
+C      $            + G4M1(IX,ly1,IZ,IE) * DYTM1(ly1,ly1)*DXTM1(IX,IX)
+C      $            + G6M1(IX,ly1,IZ,IE) * DYTM1(ly1,ly1)*DZTM1(IZ,IZ)
+C   701         CONTINUE
+C               DO 801 IX=1,lx1,lx1-1
+C               DO 801 IY=1,ly1,ly1-1
+C                  DPCM1(IX,IY,1,IE) = DPCM1(IX,IY,1,IE)
+C      $                + G5M1(IX,IY,1,IE) * DZTM1(1,1)*DXTM1(IX,IX)
+C      $                + G6M1(IX,IY,1,IE) * DZTM1(1,1)*DYTM1(IY,IY)
+C                  DPCM1(IX,IY,lz1,IE) = DPCM1(IX,IY,lz1,IE)
+C      $                + G5M1(IX,IY,lz1,IE) * DZTM1(lz1,lz1)*DXTM1(IX,IX)
+C      $                + G6M1(IX,IY,lz1,IE) * DZTM1(lz1,lz1)*DYTM1(IY,IY)
+C   801         CONTINUE
+C            ENDIF
+
+        ELSE  ! 2D
+
+           IZ=1
+C            IF (IFDFRM(IE)) THEN
+C               DO 602 IY=1,ly1,ly1-1
+C                  DPCM1(1,IY,IZ,IE) = DPCM1(1,IY,IZ,IE)
+C      $                + G4M1(1,IY,IZ,IE) * DXTM1(1,1)*DYTM1(IY,IY)
+C                  DPCM1(lx1,IY,IZ,IE) = DPCM1(lx1,IY,IZ,IE)
+C      $                + G4M1(lx1,IY,IZ,IE) * DXTM1(lx1,lx1)*DYTM1(IY,IY)
+C   602         CONTINUE
+C               DO 702 IX=1,lx1,lx1-1
+C                  DPCM1(IX,1,IZ,IE) = DPCM1(IX,1,IZ,IE)
+C      $                + G4M1(IX,1,IZ,IE) * DYTM1(1,1)*DXTM1(IX,IX)
+C                  DPCM1(IX,ly1,IZ,IE) = DPCM1(IX,ly1,IZ,IE)
+C      $                + G4M1(IX,ly1,IZ,IE) * DYTM1(ly1,ly1)*DXTM1(IX,IX)
+C   702         CONTINUE
+C            ENDIF
+
+        ENDIF
+ 1001 CONTINUE
+C
+      CALL COL2    (DPCM1,bmww,NTOT)
+      call add3(Ccomb,Csym,Ccon,NTOT)
+      call col2(DPCM1,Ccomb,NTOT)
+      ! Penalty Term
+      CALL ADDCOL3 (DPCM1,Cpen,bmww,NTOT)
+C
+C     If axisymmetric, add a diagonal term in the radial direction (ISD=2)
+C
+      IF (IFAXIS.AND.(ISD.EQ.2)) THEN
+        print *, "Call if axis - no implemented"
+         DO 1201 IEL=1,NEL
+C
+            IF (IFRZER(IEL)) THEN
+               CALL MXM(YM1(1,1,1,IEL),lx1,DATM1,ly1,YSM1,1)
+            ENDIF
+C
+            DO 1191 J=1,ly1
+            DO 1191 I=1,lx1
+               IF (YM1(I,J,1,IEL).NE.0.) THEN
+                  TERM1 = BM1(I,J,1,IEL)/YM1(I,J,1,IEL)**2
+                  IF (IFRZER(IEL)) THEN
+                     TERM2 =  WXM1(I)*WAM1(1)*DAM1(1,J)
+     $                       *JACM1(I,1,1,IEL)/YSM1(I)
+                  ELSE
+                     TERM2 = 0.
+                  ENDIF
+                  DPCM1(I,J,1,IEL) = DPCM1(I,J,1,IEL)
+     $                             + HELM1(I,J,1,IEL)*(TERM1+TERM2)
+               ENDIF
+ 1191       CONTINUE
+ 1201    CONTINUE
+      ENDIF
+C
+      CALL DSSUM (DPCM1,lx1,ly1,lz1)
+      CALL INVCOL1 (DPCM1,NTOT)
+C
+      return
+      END
+C

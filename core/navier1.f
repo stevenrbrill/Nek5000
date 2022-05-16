@@ -4887,3 +4887,43 @@ c
       return
       end
 c-----------------------------------------------------------------------
+      subroutine srb_ophx (out1,out2,out3,inp1,inp2,inp3,h1,h2)
+C----------------------------------------------------------------------
+C
+C     OUT = (H1*A+H2*B) * INP  
+C
+C----------------------------------------------------------------------
+      include 'SIZE'
+      include 'INPUT'
+      include 'SOLN'
+      REAL OUT1 (LX1,LY1,LZ1,1)
+      REAL OUT2 (LX1,LY1,LZ1,1)
+      REAL OUT3 (LX1,LY1,LZ1,1)
+      REAL INP1 (LX1,LY1,LZ1,1)
+      REAL INP2 (LX1,LY1,LZ1,1)
+      REAL INP3 (LX1,LY1,LZ1,1)
+      REAL H1   (LX1,LY1,LZ1,1)
+      REAL H2   (LX1,LY1,LZ1,1)
+      REAL tmp1 (LX1,LY1,LZ1,1)
+      REAL tmp2 (LX1,LY1,LZ1,1)
+      REAL tmp3 (LX1,LY1,LZ1,1)
+C
+      IMESH = 1
+C
+      IF (IFSTRS) THEN
+         MATMOD = 0
+         CALL AXHMSF (OUT1,OUT2,OUT3,INP1,INP2,INP3,H1,H2,MATMOD)
+         call srb_axhmsf  (tmp1,tmp2,tmp3,INP1,INP2,INP3,H1,H2,MATMOD)
+         call add2(OUT1,tmp1,LX1*LY1*LZ1)
+         call add2(OUT2,tmp2,LX1*LY1*LZ1)
+         call add2(OUT3,tmp3,LX1*LY1*LZ1)
+      ELSE
+            print *, "Call axhelm - srb_ophx - no BC"
+         CALL AXHELM (OUT1,INP1,H1,H2,IMESH,1)
+         CALL AXHELM (OUT2,INP2,H1,H2,IMESH,2)
+         IF (ldim.EQ.3)
+     $   CALL AXHELM (OUT3,INP3,H1,H2,IMESH,3)
+      ENDIF
+C
+      return
+      END
