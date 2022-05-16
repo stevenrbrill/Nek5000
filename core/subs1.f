@@ -2702,7 +2702,6 @@ c     Solve coupled Helmholtz equations (stress formulation)
       call rzero3  (u1,u2,u3,n)
 
       if (imesh.eq.1) then
-        print *, "Call This strs cg"
          call chktcgs (r1,r2,r3,rmask1,rmask2,rmask3,rmult,binvm1
      $                ,vol,tol,nel)
 
@@ -2869,7 +2868,6 @@ c      if (nio.eq.0.and.istep.eq.1) write(6,6) ifield,tol,tin
 c   6  format(i3,1p2e12.4,' ifield, tol, tol_in')
 
       if ( .not.ifsolv ) then           !     Set logical flags
-        print *, "Call ifsolv"
          call setfast (h1,h2,imesh)
          ifsolv = .true.
       endif
@@ -2991,10 +2989,10 @@ c     call copy (dpc,binv,n)
       ifsolv = .false.
 
 
- 3000 format(i11,'srbHelmh3 fluid  ',I6,1p3E13.4)
- 3010 format(i11,'srbHelmh3 mesh   ',I6,1p3E13.4)
- 3001 format(i11,'srbHelmh3 fluid unconverged! ',I6,1p3E13.4)
- 3011 format(i11,'srbHelmh3 mesh unconverged! ',I6,1p3E13.4)
+ 3000 format(i11,'   sbHlm3 fluid  ',I6,1p3E13.4)
+ 3010 format(i11,'   sbHlm3 mesh   ',I6,1p3E13.4)
+ 3001 format(i11,'   sbHlm3 fluid unconverged! ',I6,1p3E13.4)
+ 3011 format(i11,'   sbHlm3 mesh unconverged! ',I6,1p3E13.4)
 
       return
       end
@@ -3027,7 +3025,6 @@ C
      $        , h2 (lx1,ly1,lz1,1)
 
 
-        print *, "Call srb_axhmsf"
       naxhm = naxhm + 1
       etime1 = dnekclock()
 
@@ -3050,7 +3047,6 @@ c     if (matmod.lt.0) icase=3 ! Block-diagonal Axhelm
 
       if (icase.eq.1) then
 
-        print *, "Call srb_axsf_fast"
         call srb_axsf_fast(au1,au2,au3,u1,u2,u3,h1,h2,ifield)
 
       endif
