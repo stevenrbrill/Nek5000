@@ -3256,7 +3256,7 @@ C-------------------------------------------------------------------
       LOGICAL IFDFRM, IFFAST, IFH2, IFSOLV
       REAL            HELM1(lx1,ly1,lz1,1), HELM2(lx1,ly1,lz1,1)
       REAL YSM1(LY1)
-      real Ccomb(lx1,ly1,lz1,nelt)
+      real Ccomb(lx1,ly1,lz1,nelt), DPCM1_WW (LX1,LY1,LZ1,nelt)
       real bmww(lx1,ly1,lz1,lelv), Cpen(lx1,ly1,lz1,lelv), 
      $     Csym(lx1,ly1,lz1,lelv), Ccon(lx1,ly1,lz1,lelv) 
       common /wwbc/ bmww,
@@ -3276,92 +3276,88 @@ c     if (ifield.eq.2) call copy(dpcm1,bintm1,ntot)
 c     return
 
       CALL RZERO(DPCM1,NTOT)
-      DO 1001 IE=1,NEL
+      DO 1002 IE=1,NEL
 
         IF (IFAXIS) CALL SETAXDY ( IFRZER(IE) )
 
-C         DO 321 IQ=1,lx1
-        DO 321 IZ=1,lz1
-        DO 321 IY=1,ly1
-        DO 321 IX=1,lx1
+        DO 322 IQ=1,lx1
+        DO 322 IZ=1,lz1
+        DO 322 IY=1,ly1
+        DO 322 IX=1,lx1
            DPCM1(IX,IY,IZ,IE) = DPCM1(IX,IY,IZ,IE) + 
-     $                          rym1(IX,IY,IZ,IE) * DXTM1(IX,IX)
-  321   CONTINUE
-C         DO 341 IQ=1,ly1
-        DO 341 IZ=1,lz1
-        DO 341 IY=1,ly1
-        DO 341 IX=1,lx1
+     $                          G1M1(IQ,IY,IZ,IE) * DXTM1(IX,IQ)**2
+  322   CONTINUE
+        DO 342 IQ=1,ly1
+        DO 342 IZ=1,lz1
+        DO 342 IY=1,ly1
+        DO 342 IX=1,lx1
            DPCM1(IX,IY,IZ,IE) = DPCM1(IX,IY,IZ,IE) + 
-     $                          sym1(IX,IY,IZ,IE) * DYTM1(IY,IY)
-  341   CONTINUE
+     $                          G2M1(IX,IQ,IZ,IE) * DYTM1(IY,IQ)**2
+  342   CONTINUE
         IF (LDIM.EQ.3) THEN
-C            DO 360 IQ=1,lz1
-           DO 361 IZ=1,lz1
-           DO 361 IY=1,ly1
-           DO 361 IX=1,lx1
+           DO 362 IQ=1,lz1
+           DO 362 IZ=1,lz1
+           DO 362 IY=1,ly1
+           DO 362 IX=1,lx1
               DPCM1(IX,IY,IZ,IE) = DPCM1(IX,IY,IZ,IE) + 
-     $                             tym1(IX,IY,IZ,IE) * DZTM1(IZ,IZ)
-  361      CONTINUE
+     $                             G3M1(IX,IY,IQ,IE) * DZTM1(IZ,IQ)**2
+  362      CONTINUE
 C
 C          Add cross terms if element is deformed.
 C
-C            IF (IFDFRM(IE)) THEN
-C                 print *, "Call if deformed"
-C               DO 601 IY=1,ly1,ly1-1
-C               DO 601 IZ=1,lz1,max(1,lz1-1)
-C               DPCM1(1,IY,IZ,IE) = DPCM1(1,IY,IZ,IE)
-C      $            + G4M1(1,IY,IZ,IE) * DXTM1(1,1)*DYTM1(IY,IY)
-C      $            + G5M1(1,IY,IZ,IE) * DXTM1(1,1)*DZTM1(IZ,IZ)
-C               DPCM1(lx1,IY,IZ,IE) = DPCM1(lx1,IY,IZ,IE)
-C      $            + G4M1(lx1,IY,IZ,IE) * DXTM1(lx1,lx1)*DYTM1(IY,IY)
-C      $            + G5M1(lx1,IY,IZ,IE) * DXTM1(lx1,lx1)*DZTM1(IZ,IZ)
-C   601         CONTINUE
-C               DO 701 IX=1,lx1,lx1-1
-C               DO 701 IZ=1,lz1,max(1,lz1-1)
-C                  DPCM1(IX,1,IZ,IE) = DPCM1(IX,1,IZ,IE)
-C      $            + G4M1(IX,1,IZ,IE) * DYTM1(1,1)*DXTM1(IX,IX)
-C      $            + G6M1(IX,1,IZ,IE) * DYTM1(1,1)*DZTM1(IZ,IZ)
-C                  DPCM1(IX,ly1,IZ,IE) = DPCM1(IX,ly1,IZ,IE)
-C      $            + G4M1(IX,ly1,IZ,IE) * DYTM1(ly1,ly1)*DXTM1(IX,IX)
-C      $            + G6M1(IX,ly1,IZ,IE) * DYTM1(ly1,ly1)*DZTM1(IZ,IZ)
-C   701         CONTINUE
-C               DO 801 IX=1,lx1,lx1-1
-C               DO 801 IY=1,ly1,ly1-1
-C                  DPCM1(IX,IY,1,IE) = DPCM1(IX,IY,1,IE)
-C      $                + G5M1(IX,IY,1,IE) * DZTM1(1,1)*DXTM1(IX,IX)
-C      $                + G6M1(IX,IY,1,IE) * DZTM1(1,1)*DYTM1(IY,IY)
-C                  DPCM1(IX,IY,lz1,IE) = DPCM1(IX,IY,lz1,IE)
-C      $                + G5M1(IX,IY,lz1,IE) * DZTM1(lz1,lz1)*DXTM1(IX,IX)
-C      $                + G6M1(IX,IY,lz1,IE) * DZTM1(lz1,lz1)*DYTM1(IY,IY)
-C   801         CONTINUE
-C            ENDIF
+           IF (IFDFRM(IE)) THEN
+              DO 602 IY=1,ly1,ly1-1
+              DO 602 IZ=1,lz1,max(1,lz1-1)
+              DPCM1(1,IY,IZ,IE) = DPCM1(1,IY,IZ,IE)
+     $            + G4M1(1,IY,IZ,IE) * DXTM1(1,1)*DYTM1(IY,IY)
+     $            + G5M1(1,IY,IZ,IE) * DXTM1(1,1)*DZTM1(IZ,IZ)
+              DPCM1(lx1,IY,IZ,IE) = DPCM1(lx1,IY,IZ,IE)
+     $            + G4M1(lx1,IY,IZ,IE) * DXTM1(lx1,lx1)*DYTM1(IY,IY)
+     $            + G5M1(lx1,IY,IZ,IE) * DXTM1(lx1,lx1)*DZTM1(IZ,IZ)
+  602         CONTINUE
+              DO 702 IX=1,lx1,lx1-1
+              DO 702 IZ=1,lz1,max(1,lz1-1)
+                 DPCM1(IX,1,IZ,IE) = DPCM1(IX,1,IZ,IE)
+     $            + G4M1(IX,1,IZ,IE) * DYTM1(1,1)*DXTM1(IX,IX)
+     $            + G6M1(IX,1,IZ,IE) * DYTM1(1,1)*DZTM1(IZ,IZ)
+                 DPCM1(IX,ly1,IZ,IE) = DPCM1(IX,ly1,IZ,IE)
+     $            + G4M1(IX,ly1,IZ,IE) * DYTM1(ly1,ly1)*DXTM1(IX,IX)
+     $            + G6M1(IX,ly1,IZ,IE) * DYTM1(ly1,ly1)*DZTM1(IZ,IZ)
+  702         CONTINUE
+              DO 802 IX=1,lx1,lx1-1
+              DO 802 IY=1,ly1,ly1-1
+                 DPCM1(IX,IY,1,IE) = DPCM1(IX,IY,1,IE)
+     $                + G5M1(IX,IY,1,IE) * DZTM1(1,1)*DXTM1(IX,IX)
+     $                + G6M1(IX,IY,1,IE) * DZTM1(1,1)*DYTM1(IY,IY)
+                 DPCM1(IX,IY,lz1,IE) = DPCM1(IX,IY,lz1,IE)
+     $                + G5M1(IX,IY,lz1,IE) * DZTM1(lz1,lz1)*DXTM1(IX,IX)
+     $                + G6M1(IX,IY,lz1,IE) * DZTM1(lz1,lz1)*DYTM1(IY,IY)
+  802         CONTINUE
+           ENDIF
 
         ELSE  ! 2D
 
            IZ=1
-C            IF (IFDFRM(IE)) THEN
-C               DO 602 IY=1,ly1,ly1-1
-C                  DPCM1(1,IY,IZ,IE) = DPCM1(1,IY,IZ,IE)
-C      $                + G4M1(1,IY,IZ,IE) * DXTM1(1,1)*DYTM1(IY,IY)
-C                  DPCM1(lx1,IY,IZ,IE) = DPCM1(lx1,IY,IZ,IE)
-C      $                + G4M1(lx1,IY,IZ,IE) * DXTM1(lx1,lx1)*DYTM1(IY,IY)
-C   602         CONTINUE
-C               DO 702 IX=1,lx1,lx1-1
-C                  DPCM1(IX,1,IZ,IE) = DPCM1(IX,1,IZ,IE)
-C      $                + G4M1(IX,1,IZ,IE) * DYTM1(1,1)*DXTM1(IX,IX)
-C                  DPCM1(IX,ly1,IZ,IE) = DPCM1(IX,ly1,IZ,IE)
-C      $                + G4M1(IX,ly1,IZ,IE) * DYTM1(ly1,ly1)*DXTM1(IX,IX)
-C   702         CONTINUE
-C            ENDIF
+           IF (IFDFRM(IE)) THEN
+              DO 603 IY=1,ly1,ly1-1
+                 DPCM1(1,IY,IZ,IE) = DPCM1(1,IY,IZ,IE)
+     $                + G4M1(1,IY,IZ,IE) * DXTM1(1,1)*DYTM1(IY,IY)
+                 DPCM1(lx1,IY,IZ,IE) = DPCM1(lx1,IY,IZ,IE)
+     $                + G4M1(lx1,IY,IZ,IE) * DXTM1(lx1,lx1)*DYTM1(IY,IY)
+  603         CONTINUE
+              DO 703 IX=1,lx1,lx1-1
+                 DPCM1(IX,1,IZ,IE) = DPCM1(IX,1,IZ,IE)
+     $                + G4M1(IX,1,IZ,IE) * DYTM1(1,1)*DXTM1(IX,IX)
+                 DPCM1(IX,ly1,IZ,IE) = DPCM1(IX,ly1,IZ,IE)
+     $                + G4M1(IX,ly1,IZ,IE) * DYTM1(ly1,ly1)*DXTM1(IX,IX)
+  703         CONTINUE
+           ENDIF
 
         ENDIF
- 1001 CONTINUE
-C
-      CALL COL2    (DPCM1,bmww,NTOT)
-      call add3(Ccomb,Csym,Ccon,NTOT)
-      call col2(DPCM1,Ccomb,NTOT)
-      ! Penalty Term
-      CALL ADDCOL3 (DPCM1,Cpen,bmww,NTOT)
+ 1002 CONTINUE
+
+      CALL COL2    (DPCM1,HELM1,NTOT)
+      CALL ADDCOL3 (DPCM1,HELM2,BM1,NTOT)
 C
 C     If axisymmetric, add a diagonal term in the radial direction (ISD=2)
 C
@@ -3389,6 +3385,100 @@ C
  1191       CONTINUE
  1201    CONTINUE
       ENDIF
+
+      ! WW-BC Terms
+
+      CALL RZERO(DPCM1_WW,NTOT) 
+      DO 1001 IE=1,NEL
+
+        IF (IFAXIS) CALL SETAXDY ( IFRZER(IE) )
+
+C         DO 321 IQ=1,lx1
+        DO 321 IZ=1,lz1
+        DO 321 IY=1,ly1
+        DO 321 IX=1,lx1
+           DPCM1_WW(IX,IY,IZ,IE) = DPCM1_WW(IX,IY,IZ,IE) + 
+     $                          rym1(IX,IY,IZ,IE) * DXTM1(IX,IX)
+  321   CONTINUE
+C         DO 341 IQ=1,ly1
+        DO 341 IZ=1,lz1
+        DO 341 IY=1,ly1
+        DO 341 IX=1,lx1
+           DPCM1_WW(IX,IY,IZ,IE) = DPCM1_WW(IX,IY,IZ,IE) + 
+     $                          sym1(IX,IY,IZ,IE) * DYTM1(IY,IY)
+  341   CONTINUE
+        IF (LDIM.EQ.3) THEN
+C            DO 360 IQ=1,lz1
+           DO 361 IZ=1,lz1
+           DO 361 IY=1,ly1
+           DO 361 IX=1,lx1
+              DPCM1_WW(IX,IY,IZ,IE) = DPCM1_WW(IX,IY,IZ,IE) + 
+     $                             tym1(IX,IY,IZ,IE) * DZTM1(IZ,IZ)
+  361      CONTINUE
+C
+C          Add cross terms if element is deformed.
+C
+C            IF (IFDFRM(IE)) THEN
+C                 print *, "Call if deformed"
+C               DO 601 IY=1,ly1,ly1-1
+C               DO 601 IZ=1,lz1,max(1,lz1-1)
+C               DPCM1_WW(1,IY,IZ,IE) = DPCM1_WW(1,IY,IZ,IE)
+C      $            + G4M1(1,IY,IZ,IE) * DXTM1(1,1)*DYTM1(IY,IY)
+C      $            + G5M1(1,IY,IZ,IE) * DXTM1(1,1)*DZTM1(IZ,IZ)
+C               DPCM1_WW(lx1,IY,IZ,IE) = DPCM1_WW(lx1,IY,IZ,IE)
+C      $            + G4M1(lx1,IY,IZ,IE) * DXTM1(lx1,lx1)*DYTM1(IY,IY)
+C      $            + G5M1(lx1,IY,IZ,IE) * DXTM1(lx1,lx1)*DZTM1(IZ,IZ)
+C   601         CONTINUE
+C               DO 701 IX=1,lx1,lx1-1
+C               DO 701 IZ=1,lz1,max(1,lz1-1)
+C                  DPCM1_WW(IX,1,IZ,IE) = DPCM1_WW(IX,1,IZ,IE)
+C      $            + G4M1(IX,1,IZ,IE) * DYTM1(1,1)*DXTM1(IX,IX)
+C      $            + G6M1(IX,1,IZ,IE) * DYTM1(1,1)*DZTM1(IZ,IZ)
+C                  DPCM1(IX,ly1,IZ,IE) = DPCM1(IX,ly1,IZ,IE)
+C      $            + G4M1(IX,ly1,IZ,IE) * DYTM1(ly1,ly1)*DXTM1(IX,IX)
+C      $            + G6M1(IX,ly1,IZ,IE) * DYTM1(ly1,ly1)*DZTM1(IZ,IZ)
+C   701         CONTINUE
+C               DO 801 IX=1,lx1,lx1-1
+C               DO 801 IY=1,ly1,ly1-1
+C                  DPCM1_WW(IX,IY,1,IE) = DPCM1_WW(IX,IY,1,IE)
+C      $                + G5M1(IX,IY,1,IE) * DZTM1(1,1)*DXTM1(IX,IX)
+C      $                + G6M1(IX,IY,1,IE) * DZTM1(1,1)*DYTM1(IY,IY)
+C                  DPCM1_WW(IX,IY,lz1,IE) = DPCM1_WW(IX,IY,lz1,IE)
+C      $                + G5M1(IX,IY,lz1,IE) * DZTM1(lz1,lz1)*DXTM1(IX,IX)
+C      $                + G6M1(IX,IY,lz1,IE) * DZTM1(lz1,lz1)*DYTM1(IY,IY)
+C   801         CONTINUE
+C            ENDIF
+
+        ELSE  ! 2D
+
+           IZ=1
+C            IF (IFDFRM(IE)) THEN
+C               DO 601 IY=1,ly1,ly1-1
+C                  DPCM1_WW(1,IY,IZ,IE) = DPCM1_WW(1,IY,IZ,IE)
+C      $                + G4M1(1,IY,IZ,IE) * DXTM1(1,1)*DYTM1(IY,IY)
+C                  DPCM1_WW(lx1,IY,IZ,IE) = DPCM1_WW(lx1,IY,IZ,IE)
+C      $                + G4M1(lx1,IY,IZ,IE) * DXTM1(lx1,lx1)*DYTM1(IY,IY)
+C   601         CONTINUE
+C               DO 701 IX=1,lx1,lx1-1
+C                  DPCM1_WW(IX,1,IZ,IE) = DPCM1_WW(IX,1,IZ,IE)
+C      $                + G4M1(IX,1,IZ,IE) * DYTM1(1,1)*DXTM1(IX,IX)
+C                  DPCM1_WW(IX,ly1,IZ,IE) = DPCM1_WW(IX,ly1,IZ,IE)
+C      $                + G4M1(IX,ly1,IZ,IE) * DYTM1(ly1,ly1)*DXTM1(IX,IX)
+C   701         CONTINUE
+C            ENDIF
+
+        ENDIF
+ 1001 CONTINUE
+C
+      CALL COL2    (DPCM1_WW,bmww,NTOT)
+      call add3(Ccomb,Csym,Ccon,NTOT)
+      call col2(DPCM1_WW,Ccomb,NTOT)
+      ! Penalty Term
+      CALL ADDCOL3 (DPCM1_WW,Cpen,bmww,NTOT)
+
+      ! Add terms together
+      call add2(DPCM1,DPCM1_WW,NTOT)
+
 C
       CALL DSSUM (DPCM1,lx1,ly1,lz1)
       CALL INVCOL1 (DPCM1,NTOT)
