@@ -1091,7 +1091,7 @@ c     WALL ENRICHMENT...END
 
          gam_ip = 1.0
          hb = XLEN / NUMBER_ELEMENTS_X * ZLEN / NUMBER_ELEMENTS_Z
-         cbl = 4000.0
+         cbl = 4.0
 
          ! Compute weak wall matrices for implicit solve
          if (comp_ww_mats .ne. 1) then

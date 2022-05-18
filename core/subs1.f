@@ -3140,22 +3140,31 @@ c
      $                                + ur(i,3,3)*tzm1(i,1,1,e)
 
          ! Symmetric term
-         au(i) = Csym(i,1,1,e)*bmww(i,1,1,e)*(u2+v1)
-         av(i) = Csym(i,1,1,e)*bmww(i,1,1,e)*(v2+v2)
-         aw(i) = Csym(i,1,1,e)*bmww(i,1,1,e)*(w2+v3)
+         au(i) = -1.0*Ccon(i,1,1,e)*bmww(i,1,1,e)*(u2+v1)*jacmi(i,e)
+         av(i) = -1.0*Ccon(i,1,1,e)*bmww(i,1,1,e)*(v2+v2)*jacmi(i,e)
+         aw(i) = -1.0*Ccon(i,1,1,e)*bmww(i,1,1,e)*(w2+v3)*jacmi(i,e)
 
          ! Consistency term
-         ur(i,1,1)=rym1(i,1,1,e)*u(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
-         ur(i,2,1)=sym1(i,1,1,e)*u(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
-         ur(i,3,1)=tym1(i,1,1,e)*u(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
+         ur(i,1,1)=-1.0*rym1(i,1,1,e)*u(i)*Csym(i,1,1,e)*bmww(i,1,1,e)
+     $               *jacmi(i,e)
+         ur(i,2,1)=-1.0*sym1(i,1,1,e)*u(i)*Csym(i,1,1,e)*bmww(i,1,1,e)
+     $               *jacmi(i,e)
+         ur(i,3,1)=-1.0*tym1(i,1,1,e)*u(i)*Csym(i,1,1,e)*bmww(i,1,1,e)
+     $               *jacmi(i,e)
 
-         ur(i,1,2)=rym1(i,1,1,e)*v(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
-         ur(i,2,2)=sym1(i,1,1,e)*v(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
-         ur(i,3,2)=tym1(i,1,1,e)*v(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
+         ur(i,1,2)=-1.0*rym1(i,1,1,e)*v(i)*Csym(i,1,1,e)*bmww(i,1,1,e)
+     $               *jacmi(i,e)
+         ur(i,2,2)=-1.0*sym1(i,1,1,e)*v(i)*Csym(i,1,1,e)*bmww(i,1,1,e)
+     $               *jacmi(i,e)
+         ur(i,3,2)=-1.0*tym1(i,1,1,e)*v(i)*Csym(i,1,1,e)*bmww(i,1,1,e)
+     $               *jacmi(i,e)
 
-         ur(i,1,3)=rym1(i,1,1,e)*w(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
-         ur(i,2,3)=sym1(i,1,1,e)*w(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
-         ur(i,3,3)=tym1(i,1,1,e)*w(i)*Ccon(i,1,1,e)*bmww(i,1,1,e)
+         ur(i,1,3)=-1.0*rym1(i,1,1,e)*w(i)*Csym(i,1,1,e)*bmww(i,1,1,e)
+     $               *jacmi(i,e)
+         ur(i,2,3)=-1.0*sym1(i,1,1,e)*w(i)*Csym(i,1,1,e)*bmww(i,1,1,e)
+     $               *jacmi(i,e)
+         ur(i,3,3)=-1.0*tym1(i,1,1,e)*w(i)*Csym(i,1,1,e)*bmww(i,1,1,e)
+     $               *jacmi(i,e)
 
       enddo
       call local_grad3_t
@@ -3393,14 +3402,14 @@ C         DO 321 IQ=1,lx1
         DO 321 IZ=1,lz1
         DO 321 IY=1,ly1
         DO 321 IX=1,lx1
-           DPCM1_WW(IX,IY,IZ,IE) = DPCM1_WW(IX,IY,IZ,IE) + 
+           DPCM1_WW(IX,IY,IZ,IE) = -1.0*DPCM1_WW(IX,IY,IZ,IE) + 
      $                          rym1(IX,IY,IZ,IE) * DXTM1(IX,IX)
   321   CONTINUE
 C         DO 341 IQ=1,ly1
         DO 341 IZ=1,lz1
         DO 341 IY=1,ly1
         DO 341 IX=1,lx1
-           DPCM1_WW(IX,IY,IZ,IE) = DPCM1_WW(IX,IY,IZ,IE) + 
+           DPCM1_WW(IX,IY,IZ,IE) = -1.0*DPCM1_WW(IX,IY,IZ,IE) + 
      $                          sym1(IX,IY,IZ,IE) * DYTM1(IY,IY)
   341   CONTINUE
         IF (LDIM.EQ.3) THEN
@@ -3408,7 +3417,7 @@ C            DO 360 IQ=1,lz1
            DO 361 IZ=1,lz1
            DO 361 IY=1,ly1
            DO 361 IX=1,lx1
-              DPCM1_WW(IX,IY,IZ,IE) = DPCM1_WW(IX,IY,IZ,IE) + 
+              DPCM1_WW(IX,IY,IZ,IE) = -1.0*DPCM1_WW(IX,IY,IZ,IE) + 
      $                             tym1(IX,IY,IZ,IE) * DZTM1(IZ,IZ)
   361      CONTINUE
 C

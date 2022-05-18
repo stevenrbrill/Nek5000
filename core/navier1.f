@@ -4904,9 +4904,9 @@ C----------------------------------------------------------------------
       REAL INP3 (LX1,LY1,LZ1,1)
       REAL H1   (LX1,LY1,LZ1,1)
       REAL H2   (LX1,LY1,LZ1,1)
-      REAL tmp1 (LX1,LY1,LZ1,1)
-      REAL tmp2 (LX1,LY1,LZ1,1)
-      REAL tmp3 (LX1,LY1,LZ1,1)
+      REAL tmp1 (LX1,LY1,LZ1,lelv)
+      REAL tmp2 (LX1,LY1,LZ1,lelv)
+      REAL tmp3 (LX1,LY1,LZ1,lelv)
 C
       IMESH = 1
 C
