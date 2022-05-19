@@ -1130,144 +1130,193 @@ c     WALL ENRICHMENT...END
          call opzero(w1,w2,w3)
          call opzero  (tx,ty,tz)
 
-         call gradm1 (txx,txy,txz,vx)
-         call gradm1 (tyx,tyy,tyz,vy)
-         call gradm1 (tzx,tzy,tzz,vz)
+C          call gradm1 (txx,txy,txz,vx)
+C          call gradm1 (tyx,tyy,tyz,vy)
+C          call gradm1 (tzx,tzy,tzz,vz)
 
-         if (comp_phi_grad .ne. 1) then
-            iz_end = lz1
-            if (ldim .eq. 2) then
-              iz_end = 1
-            endif
-            do iz = 1,lz1
-              do iy = 1,ly1
-                do ix = 1,lx1
-                  ib = (iz-1)*lx1*ly1 + (iy-1)*(lx1) + ix
-                  call rzero(srb_temp,lx1*ly1*lz1*nelev)
-                  srb_temp(ix,iy,iz,1) = 1
-                  if (ldim .eq. 2) then           
-                    call local_grad2(dpdr(1,ib),
-     $                   dpds(1,ib),srb_temp,lx1-1,1,dxm1,dxtm1)
-                  elseif (ldim .eq. 3) then
-                    call local_grad3(dpdr(1,ib),
-     $                   dpds(1,ib),dpdt(1,ib),
-     $                   srb_temp,lx1-1,1,dxm1,dxtm1)
-                  endif
-                  srb_temp(ix,iy,iz,1) = 0   
-                enddo
-              enddo
-            enddo
-          endif   
+C          if (comp_phi_grad .ne. 1) then
+C             iz_end = lz1
+C             if (ldim .eq. 2) then
+C               iz_end = 1
+C             endif
+C             do iz = 1,lz1
+C               do iy = 1,ly1
+C                 do ix = 1,lx1
+C                   ib = (iz-1)*lx1*ly1 + (iy-1)*(lx1) + ix
+C                   call rzero(srb_temp,lx1*ly1*lz1*nelev)
+C                   srb_temp(ix,iy,iz,1) = 1
+C                   if (ldim .eq. 2) then           
+C                     call local_grad2(dpdr(1,ib),
+C      $                   dpds(1,ib),srb_temp,lx1-1,1,dxm1,dxtm1)
+C                   elseif (ldim .eq. 3) then
+C                     call local_grad3(dpdr(1,ib),
+C      $                   dpds(1,ib),dpdt(1,ib),
+C      $                   srb_temp,lx1-1,1,dxm1,dxtm1)
+C                   endif
+C                   srb_temp(ix,iy,iz,1) = 0   
+C                 enddo
+C               enddo
+C             enddo
+C           endif   
 
-          nb = lx1*ly1
-          nq = lx1*ly1
-          nq_face = lx1
-          if (ldim .eq. 3) then
-            nb = nb*lz1
-            nq = nq*lz1
-            nq_face = nq_face*lz1
-          endif
-          do iel = 1,nelv 
-            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-              ! Compute phi grad
-              if (comp_phi_grad .ne. 1) then
-                do j=1,nb ! actually nb
-                  do i=1,nq ! actually nq
-                dpdx(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rxm1(i,1,1,iel)
-     $                                     + dpds(i,j)*sxm1(i,1,1,iel)
-     $                                     + dpdt(i,j)*txm1(i,1,1,iel) )
-                dpdy(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rym1(i,1,1,iel)
-     $                                     + dpds(i,j)*sym1(i,1,1,iel)
-     $                                     + dpdt(i,j)*tym1(i,1,1,iel) )
-                dpdz(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rzm1(i,1,1,iel)
-     $                                     + dpds(i,j)*szm1(i,1,1,iel)
-     $                                     + dpdt(i,j)*tzm1(i,1,1,iel) )
-                  enddo
-                enddo
-              endif
+C           nb = lx1*ly1
+C           nq = lx1*ly1
+C           nq_face = lx1
+C           if (ldim .eq. 3) then
+C             nb = nb*lz1
+C             nq = nq*lz1
+C             nq_face = nq_face*lz1
+C           endif
+C           do iel = 1,nelv 
+C             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+C               ! Compute phi grad
+C               if (comp_phi_grad .ne. 1) then
+C                 do j=1,nb ! actually nb
+C                   do i=1,nq ! actually nq
+C                 dpdx(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rxm1(i,1,1,iel)
+C      $                                     + dpds(i,j)*sxm1(i,1,1,iel)
+C      $                                     + dpdt(i,j)*txm1(i,1,1,iel) )
+C                 dpdy(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rym1(i,1,1,iel)
+C      $                                     + dpds(i,j)*sym1(i,1,1,iel)
+C      $                                     + dpdt(i,j)*tym1(i,1,1,iel) )
+C                 dpdz(j,i,iel)=jacmi(i,iel)*(dpdr(i,j)*rzm1(i,1,1,iel)
+C      $                                     + dpds(i,j)*szm1(i,1,1,iel)
+C      $                                     + dpdt(i,j)*tzm1(i,1,1,iel) )
+C                   enddo
+C                 enddo
+C               endif
 
 
-              if (flag(iel) .eq. -1) then
-                  iy_ut = 1
-                  sign = -1.0
-              else
-                  iy_ut = ly1
-                  sign = 1.0
-              endif
+C               if (flag(iel) .eq. -1) then
+C                   iy_ut = 1
+C                   sign = -1.0
+C               else
+C                   iy_ut = ly1
+C                   sign = 1.0
+C               endif
 
-              if (comp_phi_grad_face .ne. 1) then
-                do j = 1,nb
-                  ! nq
-                  do iz = 1,lz1
-                    do ix = 1,lx1
-                i = ix + (iy_ut-1)*lx1 + (iz-1)*lx1*ly1
-                i_face = ix + (iz-1)*lx1
-                dpdx_face(j,i_face,iel) = dpdx(j,i,iel)
-                dpdy_face(j,i_face,iel) = dpdy(j,i,iel)
-                dpdz_face(j,i_face,iel) = dpdz(j,i,iel)
-                ! Specialized for channel flow. Need to generalize
-C                 w_face(ix,iz,iel) = wxm1(ix)*rxm1(ix,iy_ut,iz,iel)
-C      &                              *wxm1(iz)*tzm1(ix,iy_ut,iz,iel)
-                w_face(ix,iz,iel) = wxm1(ix)*(XLEN/NUMBER_ELEMENTS_X)/2.
-     &                             *wxm1(iz)*(ZLEN/NUMBER_ELEMENTS_Z)/2.
-                    enddo
-                  enddo
-                enddo  
-              endif
+C               if (comp_phi_grad_face .ne. 1) then
+C                 do j = 1,nb
+C                   ! nq
+C                   do iz = 1,lz1
+C                     do ix = 1,lx1
+C                 i = ix + (iy_ut-1)*lx1 + (iz-1)*lx1*ly1
+C                 i_face = ix + (iz-1)*lx1
+C                 dpdx_face(j,i_face,iel) = dpdx(j,i,iel)
+C                 dpdy_face(j,i_face,iel) = dpdy(j,i,iel)
+C                 dpdz_face(j,i_face,iel) = dpdz(j,i,iel)
+C                 ! Specialized for channel flow. Need to generalize
+C C                 w_face(ix,iz,iel) = wxm1(ix)*rxm1(ix,iy_ut,iz,iel)
+C C      &                              *wxm1(iz)*tzm1(ix,iy_ut,iz,iel)
+C                 w_face(ix,iz,iel) = wxm1(ix)*(XLEN/NUMBER_ELEMENTS_X)/2.
+C      &                             *wxm1(iz)*(ZLEN/NUMBER_ELEMENTS_Z)/2.
+C C                 w_face(ix,iz,iel) = bm1(ix,iy_ut,iz,iel)  
+C                     enddo
+C                   enddo
+C                 enddo  
+C               endif
 
-              gam_ip = -1.0
-              hb = XLEN / NUMBER_ELEMENTS_X * ZLEN / NUMBER_ELEMENTS_Z
-              cbl = 4.0
-              ! Copy to faces
-              do iz = 1,lz1
-                do ix = 1,lx1
-                  i = ix + (iy_ut-1)*lx1 + (iz-1)*lx1*ly1
-                  i_face = ix + (iz-1)*lx1
-                  tx_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
-     $                   vdiff(ix,iy_ut,iz,iel,1)*sign*
-     $                   (vx(ix,iy_ut,iz,iel)-vx_bc)
-                  ty_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
-     $                   vdiff(ix,iy_ut,iz,iel,1)*sign*
-     $                   (vy(ix,iy_ut,iz,iel)-vy_bc)
-                  tz_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
-     $                   vdiff(ix,iy_ut,iz,iel,1)*sign*
-     $                   (vz(ix,iy_ut,iz,iel)-vz_bc)
+C C               gam_ip = 0.0
+C C               hb = XLEN / NUMBER_ELEMENTS_X * ZLEN / NUMBER_ELEMENTS_Z
+C C               cbl = 4.0
+C               ! Copy to faces
+C               do iz = 1,lz1
+C                 do ix = 1,lx1
+C                   i = ix + (iy_ut-1)*lx1 + (iz-1)*lx1*ly1
+C                   i_face = ix + (iz-1)*lx1
+C                   tx_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
+C      $                   vdiff(ix,iy_ut,iz,iel,1)*sign*
+C      $                   (vx(ix,iy_ut,iz,iel)-vx_bc)
+C                   ty_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
+C      $                   vdiff(ix,iy_ut,iz,iel,1)*sign*
+C      $                   (vy(ix,iy_ut,iz,iel)-vy_bc)
+C                   tz_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
+C      $                   vdiff(ix,iy_ut,iz,iel,1)*sign*
+C      $                   (vz(ix,iy_ut,iz,iel)-vz_bc)
 
-                  w1(ix,iy_ut,iz,iel) = -w_face(ix,iz,iel)*cbl
-     $                       *vdiff(ix,iy_ut,iz,iel,1)
-     $                       /hb*(vx(ix,iy_ut,iz,iel)-vx_bc)
-                  w2(ix,iy_ut,iz,iel) = -w_face(ix,iz,iel)*cbl
-     $                       *vdiff(ix,iy_ut,iz,iel,1)
-     $                       /hb*(vy(ix,iy_ut,iz,iel)-vy_bc)
-                  w3(ix,iy_ut,iz,iel) = -w_face(ix,iz,iel)*cbl
-     $                       *vdiff(ix,iy_ut,iz,iel,1)
-     $                       /hb*(vz(ix,iy_ut,iz,iel)-vz_bc)
+C                   w1(ix,iy_ut,iz,iel) = -w_face(ix,iz,iel)*cbl
+C      $                       *vdiff(ix,iy_ut,iz,iel,1)
+C      $                       /hb*(vx(ix,iy_ut,iz,iel)-vx_bc)
+C                   w2(ix,iy_ut,iz,iel) = -w_face(ix,iz,iel)*cbl
+C      $                       *vdiff(ix,iy_ut,iz,iel,1)
+C      $                       /hb*(vy(ix,iy_ut,iz,iel)-vy_bc)
+C                   w3(ix,iy_ut,iz,iel) = -w_face(ix,iz,iel)*cbl
+C      $                       *vdiff(ix,iy_ut,iz,iel,1)
+C      $                       /hb*(vz(ix,iy_ut,iz,iel)-vz_bc)
 
-                  tx(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*sign*
-     $              vdiff(ix,iy_ut,iz,iel,1)*
-     $              (txy(ix,iy_ut,iz,iel)+tyx(ix,iy_ut,iz,iel))
-                  ty(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*sign*
-     $              vdiff(ix,iy_ut,iz,iel,1)*
-     $              (tyy(ix,iy_ut,iz,iel)+tyy(ix,iy_ut,iz,iel))
-                  tz(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*sign*
-     $              vdiff(ix,iy_ut,iz,iel,1)*
-     $              (tzy(ix,iy_ut,iz,iel)+tyz(ix,iy_ut,iz,iel))
-                enddo
-              enddo
+C                   tx(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*sign*
+C      $              vdiff(ix,iy_ut,iz,iel,1)*
+C      $              (txy(ix,iy_ut,iz,iel)+tyx(ix,iy_ut,iz,iel))
+C                   ty(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*sign*
+C      $              vdiff(ix,iy_ut,iz,iel,1)*
+C      $              (tyy(ix,iy_ut,iz,iel)+tyy(ix,iy_ut,iz,iel))
+C                   tz(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*sign*
+C      $              vdiff(ix,iy_ut,iz,iel,1)*
+C      $              (tzy(ix,iy_ut,iz,iel)+tyz(ix,iy_ut,iz,iel))
+C                 enddo
+C               enddo
 
-          call mxm(dpdy_face(1,1,iel) ,nb,tx_face(1,1,iel),
-     $       nq_face,ip_term_x(1,1,1,iel),1)
-          call mxm(dpdy_face(1,1,iel) ,nb,ty_face(1,1,iel),
-     $       nq_face,ip_term_y(1,1,1,iel),1)
-          call mxm(dpdy_face(1,1,iel) ,nb,tz_face(1,1,iel),
-     $       nq_face,ip_term_z(1,1,1,iel),1)
+C           call mxm(dpdy_face(1,1,iel) ,nb,tx_face(1,1,iel),
+C      $       nq_face,ip_term_x(1,1,1,iel),1)
+C           call mxm(dpdy_face(1,1,iel) ,nb,ty_face(1,1,iel),
+C      $       nq_face,ip_term_y(1,1,1,iel),1)
+C           call mxm(dpdy_face(1,1,iel) ,nb,tz_face(1,1,iel),
+C      $       nq_face,ip_term_z(1,1,1,iel),1)
 
-            endif
-          enddo
+C             endif
+C           enddo
 
-          call opadd2(ip_term_x,ip_term_y,ip_term_z,w1,w2,w3)
-          call opadd2(ip_term_x,ip_term_y,ip_term_z,tx,ty,tz)
-C           call opcmult(ip_term_x,ip_term_y,ip_term_z,0.5)
+C C           call opcmult(ip_term_x,ip_term_y,ip_term_z,1.0)
+C C       print *, "Print symmetry"
+C C       call srbprint(ip_term_x)
+C           call opadd2(ip_term_x,ip_term_y,ip_term_z,w1,w2,w3)
+C           call opadd2(ip_term_x,ip_term_y,ip_term_z,tx,ty,tz)
+C           print *, "Print penalty"
+C       call srbprint(w1)
+C       print *, "Print consistency"
+C       call srbprint(tx)
+C       print *, "Print ip_term_x"
+C       call srbprint(ip_term_x)
+C       print *, "Print"
+
+
+C       print *, "Print vx"
+C       call srbprint(vx)
+C       print *, "Print ip_term_x"
+C       call srbprint(ip_term_x)
+C       print *, "Print ip_term_y"
+C       call srbprint(ip_term_y)
+C C       print *, "Print"
+C       print *, "Print ip_term_z"
+C       call srbprint(ip_term_z)
+C       print *, "Print jacm1"
+C       call srbprint(jacm1)
+C       print *, "Print"
+
+C       print *, "Print w_face"
+C       call srbprint_face(w_face)
+C       print *, "Print"
+C        print *, "Print tx_face"
+C        call srbprint_face(tx_face)
+C        print *, "Print dpdy_face"
+C        do i = 1,lx1*ly1*lz1
+C             do j = 1,lx1*lz1*ly1
+C                   print *, i, j, dpdy(i,j,1)
+C             enddo
+C       enddo
+C       print *, "Print dpds"
+C        do i = 1,lx1*ly1*lz1
+C             do j = 1,lx1*ly1*lz1
+C                   print *, i, j, dpdr(j,i), dpds(j,i), dpdt(j,i)
+C             enddo
+C       enddo
+C C        print *, "Print rxm1"
+C        call srbprint(rxm1)
+C        print *, "Print sym1"
+C        call srbprint(sym1)
+C        print *, "Print tzm1"
+C        call srbprint(tzm1)
+C        print *, "Print"
           
           ! only compute phi grads once
           if (comp_phi_grad .ne. 1) then
