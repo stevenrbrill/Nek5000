@@ -1111,10 +1111,10 @@ c     WALL ENRICHMENT...END
                 bmww(ix,iy_ut,iz,iel) = 
      &                  wxm1(ix)*(XLEN/NUMBER_ELEMENTS_X)/2.
      &                 *wxm1(iz)*(ZLEN/NUMBER_ELEMENTS_Z)/2.
-                Cpen(ix,iy_ut,iz,iel) = cbl/hb*vdiff(ix,iy_ut,iz,iel,1)
+             Cpen(ix,iy_ut,iz,iel) = cbl/hb*vdiff(ix,iy_ut,iz,iel,1)
                 Csym(ix,iy_ut,iz,iel) = gam_ip*sign
      &                                        *vdiff(ix,iy_ut,iz,iel,1)
-                Ccon(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)
+            Ccon(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)
                   enddo
                 enddo  
               endif
@@ -1866,6 +1866,25 @@ c-----------------------------------------------------------------------
         uy  =       eps  * sin(alpha*x)
         uz  = 0.
       endif
+
+      if (yp .lt. 0.0000001) then
+            ux = 0.
+            uy = 0.
+            uz = 0.
+      endif
+
+      ! Laminar channel
+C       if (ldim == 3) then
+C C         ux  = 1.0 !3./2*(1.-y*y)
+C C         ux  = 3./2*(1.-y*y)*0.5 + 0.5
+C         ux  = 9./8.*(1.-y*y*y*y*y*y*y*y)+0.1
+C         uy  = 0.0
+C         uz  = 0.0
+C       elseif (ldim == 2) then 
+C         ux  = 3./2*(1.-y*y)
+C         uy  = 0.0
+C         uz  = 0.
+C       endif
 
       ! thin boundary layer at the lower wall
       gamma = 5e-6 ! initial thickness
