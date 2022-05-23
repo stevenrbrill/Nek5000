@@ -1056,7 +1056,10 @@ c      endif
  
       if (ifstrs) then
          matmod = 0
-         call hmhzsf  ('NOMG',o1,o2,o3,i1,i2,i3,h1,h2,
+C          call hmhzsf  ('NOMG',o1,o2,o3,i1,i2,i3,h1,h2,
+C      $                  v1mask,v2mask,v3mask,vmult,
+C      $                  tolh,nmxhi,matmod)
+         call srb_hmhzsf  ('NOMG',o1,o2,o3,i1,i2,i3,h1,h2,
      $                  v1mask,v2mask,v3mask,vmult,
      $                  tolh,nmxhi,matmod)
       else

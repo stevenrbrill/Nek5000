@@ -358,7 +358,8 @@ C     Compute the residual for the velocity
 
       CALL SETHLM  (H1,H2,INTYPE)
 
-      CALL OPHX    (RESV1,RESV2,RESV3,VX,VY,VZ,H1,H2)
+      !CALL OPHX    (RESV1,RESV2,RESV3,VX,VY,VZ,H1,H2)
+      CALL srb_ophx    (RESV1,RESV2,RESV3,VX,VY,VZ,H1,H2)
       CALL OPCHSGN (RESV1,RESV2,RESV3)
 
       scale = -1./3.
