@@ -4914,9 +4914,9 @@ C
          MATMOD = 0
          CALL AXHMSF (OUT1,OUT2,OUT3,INP1,INP2,INP3,H1,H2,MATMOD)
          call srb_axhmsf  (tmp1,tmp2,tmp3,INP1,INP2,INP3,H1,H2,MATMOD)
-         call add2(OUT1,tmp1,LX1*LY1*LZ1)
-         call add2(OUT2,tmp2,LX1*LY1*LZ1)
-         call add2(OUT3,tmp3,LX1*LY1*LZ1)
+         call add2(OUT1,tmp1,LX1*LY1*LZ1*lelv)
+         call add2(OUT2,tmp2,LX1*LY1*LZ1*lelv)
+         call add2(OUT3,tmp3,LX1*LY1*LZ1*lelv)
       ELSE
             print *, "Call axhelm - srb_ophx - no BC"
          CALL AXHELM (OUT1,INP1,H1,H2,IMESH,1)
