@@ -1797,7 +1797,7 @@ c     Imposing shear stress B.C.s
       endif
 
       if(cbc(iside,e,1).eq.'ww ') then
-        TRX=0.0!sip_x + en_bound(ix,iy,iz,e) 
+        TRX=en_bound(ix,iy,iz,e) 
         TRY=0.0
         TRZ=0.0!sip_z
       endif
