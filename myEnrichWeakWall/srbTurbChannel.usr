@@ -1266,57 +1266,8 @@ C      $       nq_face,ip_term_z(1,1,1,iel),1)
 C             endif
 C           enddo
 
-C C           call opcmult(ip_term_x,ip_term_y,ip_term_z,1.0)
-C C       print *, "Print symmetry"
-C C       call srbprint(ip_term_x)
 C           call opadd2(ip_term_x,ip_term_y,ip_term_z,w1,w2,w3)
 C           call opadd2(ip_term_x,ip_term_y,ip_term_z,tx,ty,tz)
-C           print *, "Print penalty"
-C       call srbprint(w1)
-C       print *, "Print consistency"
-C       call srbprint(tx)
-C       print *, "Print ip_term_x"
-C       call srbprint(ip_term_x)
-C       print *, "Print"
-
-
-C       print *, "Print vx"
-C       call srbprint(vx)
-C       print *, "Print ip_term_x"
-C       call srbprint(ip_term_x)
-C       print *, "Print ip_term_y"
-C       call srbprint(ip_term_y)
-C C       print *, "Print"
-C       print *, "Print ip_term_z"
-C       call srbprint(ip_term_z)
-C       print *, "Print jacm1"
-C       call srbprint(jacm1)
-C       print *, "Print"
-
-C       print *, "Print w_face"
-C       call srbprint_face(w_face)
-C       print *, "Print"
-C        print *, "Print tx_face"
-C        call srbprint_face(tx_face)
-C        print *, "Print dpdy_face"
-C        do i = 1,lx1*ly1*lz1
-C             do j = 1,lx1*lz1*ly1
-C                   print *, i, j, dpdy(i,j,1)
-C             enddo
-C       enddo
-C       print *, "Print dpds"
-C        do i = 1,lx1*ly1*lz1
-C             do j = 1,lx1*ly1*lz1
-C                   print *, i, j, dpdr(j,i), dpds(j,i), dpdt(j,i)
-C             enddo
-C       enddo
-C C        print *, "Print rxm1"
-C        call srbprint(rxm1)
-C        print *, "Print sym1"
-C        call srbprint(sym1)
-C        print *, "Print tzm1"
-C        call srbprint(tzm1)
-C        print *, "Print"
           
           ! only compute phi grads once
           if (comp_phi_grad .ne. 1) then
