@@ -1224,35 +1224,35 @@ C               do iz = 1,lz1
 C                 do ix = 1,lx1
 C                   i = ix + (iy_ut-1)*lx1 + (iz-1)*lx1*ly1
 C                   i_face = ix + (iz-1)*lx1
-C                   tx_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
+C                   tx_face(ix,iz,iel) = -1.0*w_face(ix,iz,iel)*gam_ip*
 C      $                   vdiff(ix,iy_ut,iz,iel,1)*sign*
-C      $                   (vx(ix,iy_ut,iz,iel)-vx_bc)
-C                   ty_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
+C      $                   (vx_bc)
+C                   ty_face(ix,iz,iel) = -1.0*w_face(ix,iz,iel)*gam_ip*
 C      $                   vdiff(ix,iy_ut,iz,iel,1)*sign*
-C      $                   (vy(ix,iy_ut,iz,iel)-vy_bc)
-C                   tz_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
+C      $                   (vy_bc)
+C                   tz_face(ix,iz,iel) = -1.0*w_face(ix,iz,iel)*gam_ip*
 C      $                   vdiff(ix,iy_ut,iz,iel,1)*sign*
-C      $                   (vz(ix,iy_ut,iz,iel)-vz_bc)
+C      $                   (vz_bc)
 
-C                   w1(ix,iy_ut,iz,iel) = -w_face(ix,iz,iel)*cbl
+C                   w1(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*cbl
 C      $                       *vdiff(ix,iy_ut,iz,iel,1)
-C      $                       /hb*(vx(ix,iy_ut,iz,iel)-vx_bc)
-C                   w2(ix,iy_ut,iz,iel) = -w_face(ix,iz,iel)*cbl
+C      $                       /hb*(vx_bc)
+C                   w2(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*cbl
 C      $                       *vdiff(ix,iy_ut,iz,iel,1)
-C      $                       /hb*(vy(ix,iy_ut,iz,iel)-vy_bc)
-C                   w3(ix,iy_ut,iz,iel) = -w_face(ix,iz,iel)*cbl
+C      $                       /hb*(vy_bc)
+C                   w3(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*cbl
 C      $                       *vdiff(ix,iy_ut,iz,iel,1)
-C      $                       /hb*(vz(ix,iy_ut,iz,iel)-vz_bc)
+C      $                       /hb*(vz_bc)
 
-C                   tx(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*sign*
-C      $              vdiff(ix,iy_ut,iz,iel,1)*
-C      $              (txy(ix,iy_ut,iz,iel)+tyx(ix,iy_ut,iz,iel))
-C                   ty(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*sign*
-C      $              vdiff(ix,iy_ut,iz,iel,1)*
-C      $              (tyy(ix,iy_ut,iz,iel)+tyy(ix,iy_ut,iz,iel))
-C                   tz(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*sign*
-C      $              vdiff(ix,iy_ut,iz,iel,1)*
-C      $              (tzy(ix,iy_ut,iz,iel)+tyz(ix,iy_ut,iz,iel))
+C C                   tx(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*sign*
+C C      $              vdiff(ix,iy_ut,iz,iel,1)*
+C C      $              (txy(ix,iy_ut,iz,iel)+tyx(ix,iy_ut,iz,iel))
+C C                   ty(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*sign*
+C C      $              vdiff(ix,iy_ut,iz,iel,1)*
+C C      $              (tyy(ix,iy_ut,iz,iel)+tyy(ix,iy_ut,iz,iel))
+C C                   tz(ix,iy_ut,iz,iel) = w_face(ix,iz,iel)*sign*
+C C      $              vdiff(ix,iy_ut,iz,iel,1)*
+C C      $              (tzy(ix,iy_ut,iz,iel)+tyz(ix,iy_ut,iz,iel))
 C                 enddo
 C               enddo
 
