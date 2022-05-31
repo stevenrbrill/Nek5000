@@ -1269,13 +1269,13 @@ C           enddo
 C           call opadd2(ip_term_x,ip_term_y,ip_term_z,w1,w2,w3)
 C           call opadd2(ip_term_x,ip_term_y,ip_term_z,tx,ty,tz)
           
-          ! only compute phi grads once
-          if (comp_phi_grad .ne. 1) then
-            comp_phi_grad = 1
-          endif
-          if (comp_phi_grad_face .ne. 1) then
-            comp_phi_grad_face = 1
-          endif
+C           ! only compute phi grads once
+C           if (comp_phi_grad .ne. 1) then
+C             comp_phi_grad = 1
+C           endif
+C           if (comp_phi_grad_face .ne. 1) then
+C             comp_phi_grad_face = 1
+C           endif
       endif
 
       ifxyo = .true.
