@@ -1093,7 +1093,7 @@ c     WALL ENRICHMENT...END
 C          hb = XLEN / NUMBER_ELEMENTS_X * ZLEN / NUMBER_ELEMENTS_Z
 C          cbl = 400000.0
 
-         hb = YLEN / NUMBER_ELEMENTS_Y
+         hb = 2.0 / NUMBER_ELEMENTS_Y
          cbl = 2.*(lx1-1.)*lx1
 
          ! Compute weak wall matrices for implicit solve
