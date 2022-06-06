@@ -2846,6 +2846,21 @@ C C           call my_intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 
 
               call add2(T1_rhs_y(1,1,1,iel),w1(1,1,1,iel),nb)
               call add2(T1_rhs_z(1,1,1,iel),w2(1,1,1,iel),nb)
+
+              ! Boundary terms
+              if (flag(iel) .eq. -1) then
+                  iy_ut = 1
+                  sign = -1.0
+              else
+                  iy_ut = ly1
+                  sign = 1.0
+              endif
+              do iz = 1,lz1
+                do ix = 1,lx1
+              en_bound(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)*
+     $                  gpsix_y(ix,iy_ut,iz,iel)       
+                enddo
+              enddo
             endif
           enddo
           
