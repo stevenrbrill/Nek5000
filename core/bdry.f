@@ -1415,6 +1415,8 @@ C
      $             , TRZ(LX1,LY1,LZ1)
       COMMON /CTMP0/ STC(LX1,LY1,LZ1)
       REAL SIGST(LX1,LY1)
+      real srb_test(lx1,ly1,lz1)
+      integer ww_count
 C
       LOGICAL IFALGN,IFNORX,IFNORY,IFNORZ
       common  /nekcb/ cb

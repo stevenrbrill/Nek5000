@@ -3200,10 +3200,16 @@ c
 
       integer e,p
 
+      real ucon(l),vcon(l),wcon(l)
+      real bmww(lx1,ly1,lz1,lelv), Cpen(lx1,ly1,lz1,lelv), 
+     $     Csym(lx1,ly1,lz1,lelv), Ccon(lx1,ly1,lz1,lelv) 
+      common /wwbc/ bmww,
+     $              Cpen, 
+     $              Csym, 
+     $              Ccon
+
       p = lx1-1      ! Polynomial degree
       n = lx1*ly1*lz1
-
-      print *, "Call srb_axsf_e_2d - not implemented"
 
       call local_grad2(ur(1,1,1),ur(1,2,1),u,p,1,dxm1,dxtm1)
       call local_grad2(ur(1,1,2),ur(1,2,2),v,p,1,dxm1,dxtm1)
@@ -3216,27 +3222,30 @@ c
          v1 = ur(i,1,2)*rxm1(i,1,1,e) + ur(i,2,2)*sxm1(i,1,1,e) !vx
          v2 = ur(i,1,2)*rym1(i,1,1,e) + ur(i,2,2)*sym1(i,1,1,e) !vy
 
-         s11 = dj*( u1 + u1 ) ! h1*rho*S_ij
-         s12 = dj*( u2 + v1 )
-         s21 = dj*( v1 + u2 )
-         s22 = dj*( v2 + v2 )
+         ! Symmetric term
+         au(i) = -1.0*Ccon(i,1,1,e)*bmww(i,1,1,e)*(u2+v1)*jacmi(i,e)
+         av(i) = -1.0*Ccon(i,1,1,e)*bmww(i,1,1,e)*(v2+v2)*jacmi(i,e)
 
-c        Sum_j : (r_k/x_j) h1 J S_ij
+         ! Consistency term
+         ur(i,1,1)=-1.0*rym1(i,1,1,e)*u(i)*Csym(i,1,1,e)*bmww(i,1,1,e)
+     $               *jacmi(i,e)
+         ur(i,2,1)=-1.0*sym1(i,1,1,e)*u(i)*Csym(i,1,1,e)*bmww(i,1,1,e)
+     $               *jacmi(i,e)
 
-         ur(i,1,1)=rxm1(i,1,1,e)*s11+rym1(i,1,1,e)*s12 ! i=1,k=1
-         ur(i,2,1)=sxm1(i,1,1,e)*s11+sym1(i,1,1,e)*s12 ! i=1,k=2
-
-         ur(i,1,2)=rxm1(i,1,1,e)*s21+rym1(i,1,1,e)*s22 ! i=2,k=1
-         ur(i,2,2)=sxm1(i,1,1,e)*s21+sym1(i,1,1,e)*s22 ! i=2,k=2
+         ur(i,1,2)=-1.0*rym1(i,1,1,e)*v(i)*Csym(i,1,1,e)*bmww(i,1,1,e)
+     $               *jacmi(i,e)
+         ur(i,2,2)=-1.0*sym1(i,1,1,e)*v(i)*Csym(i,1,1,e)*bmww(i,1,1,e)
+     $               *jacmi(i,e)
 
       enddo
 
-      call local_grad2_t(au,ur(1,1,1),ur(1,2,1),p,1,dxm1,dxtm1,av)
-      call local_grad2_t(av,ur(1,1,2),ur(1,2,2),p,1,dxm1,dxtm1,ur)
+      call local_grad2_t(ucon,ur(1,1,1),ur(1,2,1),p,1,dxm1,dxtm1,av)
+      call local_grad2_t(vcon,ur(1,1,2),ur(1,2,2),p,1,dxm1,dxtm1,ur)
 
+      ! Add Penalty Term  
       do i=1,n
-         au(i)=au(i) + h2(i)*bm1(i,1,1,e)*u(i)
-         av(i)=av(i) + h2(i)*bm1(i,1,1,e)*v(i)
+         au(i)=au(i) + ucon(i) + Cpen(i,1,1,e)*bmww(i,1,1,e)*u(i)
+         av(i)=av(i) + vcon(i) + Cpen(i,1,1,e)*bmww(i,1,1,e)*v(i)
       enddo
 
       return
