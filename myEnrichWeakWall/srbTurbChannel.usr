@@ -516,6 +516,8 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real tx_face(lx1,lz1,lelv), ty_face(lx1,lz1,lelv), 
      $     tz_face(lx1,lz1,lelv) 
       real gam_ip, hb, cbl
+      real face_area
+      real srb_test
       real vx_bc, vy_bc, vz_bc
       common vx_bc, vy_bc, vz_bc
       real ip_term_x(lx1,ly1,lz1,lelv), ip_term_y(lx1,ly1,lz1,lelv)
@@ -1093,7 +1095,7 @@ c     WALL ENRICHMENT...END
 C          hb = XLEN / NUMBER_ELEMENTS_X * ZLEN / NUMBER_ELEMENTS_Z
 C          cbl = 400000.0
 
-         hb = 2.0 / NUMBER_ELEMENTS_Y
+C          hb = 2.0 / NUMBER_ELEMENTS_Y
          cbl = 2.*(lx1-1.)*lx1
 
          ! Compute weak wall matrices for implicit solve
@@ -1109,11 +1111,15 @@ C          cbl = 400000.0
                   sign = 1.0
                 endif
 
+                ! NOT GENERAL
+                hb = ym1(1,ly1,1,iel)-ym1(1,1,1,iel)
+                face_area = (xm1(lx1,1,1,iel)-xm1(1,1,1,iel))*
+     &                      (zm1(1,1,lz1,iel)-zm1(1,1,1,iel))
+                 
                 do iz = 1,lz1
                   do ix = 1,lx1
                 bmww(ix,iy_ut,iz,iel) = 
-     &                  wxm1(ix)*(XLEN/NUMBER_ELEMENTS_X)/2.
-     &                 *wxm1(iz)*(ZLEN/NUMBER_ELEMENTS_Z)/2.
+     &                  wxm1(ix)/2.*wxm1(iz)/2.*face_area
              Cpen(ix,iy_ut,iz,iel) = cbl/hb*vdiff(ix,iy_ut,iz,iel,1)
                 Csym(ix,iy_ut,iz,iel) = gam_ip*sign
      &                                        *vdiff(ix,iy_ut,iz,iel,1)
