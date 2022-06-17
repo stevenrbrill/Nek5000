@@ -727,6 +727,8 @@ c-----------------------------------------------------------------------
       real x, y, z, utau, nu ! Wall distance
       integer flag
       real Re_tau, ypb, yw, yp
+      real kap, beta, F, dF, hF, psi
+      integer iter
       
       ypb = 11.062299784340414
       yp = yw*utau/nu
@@ -739,8 +741,39 @@ C          lotw = utau*yp
 C       endif
 
       ! Reichardt law of the wall
-      lotw = utau*((1./0.41)*log(1.+0.41*yp)+7.8*
-     $      (1.-exp(-yp/(11.))-yp/(11.)*exp(-yp/(3.)))) ! Reichardt
+C       lotw = utau*((1./0.41)*log(1.+0.41*yp)+7.8*
+C      $      (1.-exp(-yp/(11.))-yp/(11.)*exp(-yp/(3.)))) ! Reichardt
+
+
+      ! Spalding law of the wall
+      kap = 0.41
+      beta = 5.17
+      if (yp < 11.0) then
+            psi = yp*kap
+      else
+            psi = log(yp)+kap*beta
+      endif
+      F = -yp + psi/kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+     $      -psi*psi*psi/6. -psi*psi*psi*psi/24.)
+
+      iter = 0
+      do while ((abs(F) .gt. 1.0e-13) .and. (iter .lt. 100))
+      F = -yp + psi/kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+     $      -psi*psi*psi/6. -psi*psi*psi*psi/24.)
+      dF = 1./kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+     $       -psi*psi*psi/6.)
+      hF = -F/dF
+
+      psi = psi - F/dF
+      iter = iter + 1
+      end do
+
+      if (iter .eq. 10) then
+            print *, "lotw not converged", yw, yp, psi, F
+      endif
+
+      lotw = psi/kap*utau
+
 
       return
       end
@@ -753,6 +786,8 @@ c-----------------------------------------------------------------------
       integer flag
       real Re_tau, ypb, yw, yp
       integer sign
+      real kap, beta, F, dF, hF, psi
+      integer iter
 
       ypb = 11.062299784340414
       Re_tau = utau/nu
@@ -766,8 +801,36 @@ C         dlotwdy = Re_tau*utau
 C       endif
 
       ! Reichardt law of the wall
-      dlotwdy = Re_tau*utau*(1./(1.+0.41*yp)+7.8*
-     $      (1./11.*exp(-yp/(11.))+(yp-3.)/(33.)*exp(-yp/(3.)))) ! Reichardt
+C       dlotwdy = Re_tau*utau*(1./(1.+0.41*yp)+7.8*
+C      $      (1./11.*exp(-yp/(11.))+(yp-3.)/(33.)*exp(-yp/(3.)))) ! Reichardt
+
+      ! Spalding law of the wall
+      ! Spalding law of the wall
+      kap = 0.41
+      beta = 5.17
+      if (yp < 11.0) then
+            psi = yp*kap
+      else
+            psi = log(yp)+kap*beta
+      endif
+      F = -yp + psi/kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+     $      -psi*psi*psi/6. -psi*psi*psi*psi/24.)
+      dF = 1./kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+     $       -psi*psi*psi/6.)
+
+      iter = 0
+      do while ((abs(F) .gt. 1.0e-13) .and. (iter .lt. 100))
+      F = -yp + psi/kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+     $      -psi*psi*psi/6. -psi*psi*psi*psi/24.)
+      dF = 1./kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+     $       -psi*psi*psi/6.)
+      hF = -F/dF
+
+      psi = psi - F/dF
+      iter = iter + 1
+      end do
+
+      dlotwdy = 1./dF/kap*utau*Re_tau
 
       return
       end
