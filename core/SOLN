@@ -46,6 +46,9 @@ c     Solution data
      $    ,bfintx    (lx1,ly1,lz1,lelv)
      $    ,bfinty    (lx1,ly1,lz1,lelv)
      $    ,bfintz    (lx1,ly1,lz1,lelv)
+     $    ,bfintx2    (lx1,ly1,lz1,lelv)
+     $    ,bfinty2    (lx1,ly1,lz1,lelv)
+     $    ,bfintz2    (lx1,ly1,lz1,lelv)
      $    ,brhsx    (lx1,ly1,lz1,lelv)
      $    ,brhsy    (lx1,ly1,lz1,lelv)
      $    ,brhsz    (lx1,ly1,lz1,lelv)
@@ -61,7 +64,8 @@ c     Solution data
      $     vx, vy, vz, t, vtrans, vdiff, bfx, bfy, bfz, cflf, c_vx,fw,
      $     bmnv, bmass, bdivw,
      $     vx_e,vy_e,vz_e,
-     $     bfintx, bfinty, bfintz, brhsx, brhsy, brhsz
+     $     bfintx, bfinty, bfintz, cbfintx, cbfinty, cbfintz,
+     $     brhsx, brhsy, brhsz
 
 c     Solution data for magnetic field
       real bx     (lbx1,lby1,lbz1,lbelv)

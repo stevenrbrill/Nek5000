@@ -13,6 +13,7 @@ c
      $              , trn,tr1,tr2,pa,p0
      $              , ffx,ffy,ffz
      $              , ffintx,ffinty,ffintz
+     $              , ffintx2,ffinty2,ffintz2
      $              , rhsx,rhsy,rhsz
      $              , temp,flux,hc,hrad,tinf,qvol
      $              , udiff,utrans

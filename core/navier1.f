@@ -1473,11 +1473,11 @@ C----------------------------------------------------------------------
 C
       TIME = TIME-DT
       ! Use Steven's version of hte function to get pre-integrated values
-      CALL SRB_NEKUF   (BFX,BFY,BFZ,BFINTX,BFINTY,BFINTZ,
+      CALL SRB_NEKUF   (BFX,BFY,BFZ,BFINTX2,BFINTY2,BFINTZ2,
      $  BRHSX,BRHSY,BRHSZ)
       CALL OPCOLV  (BFX,BFY,BFZ,BM1)
-      ! ! Steven - Add preintegrated values into the forcing terms
-      ! CALL OPADD2 (BFX,BFY,BFZ,BFINTX,BFINTY,BFINTZ)
+      ! Steven - Add preintegrated values into the forcing terms
+      CALL OPADD2 (BFX,BFY,BFZ,BFINTX2,BFINTY2,BFINTZ2)
       ! print *, "Print BFIntx"
       ! call srbprint(BFINTX)
       ! print *, "Print BFinty"
@@ -1557,10 +1557,10 @@ C     Steven - same as nekuf but gets pre-integrated values and rhs values
             F1(I,J,K,IEL) = FFX
             F2(I,J,K,IEL) = FFY
             F3(I,J,K,IEL) = FFZ
-            CALL USERFINT   (I,J,K,IELG)
-            FINT1(I,J,K,IEL) = FFINTX
-            FINT2(I,J,K,IEL) = FFINTY
-            FINT3(I,J,K,IEL) = FFINTZ
+            CALL USERFINT2   (I,J,K,IELG)
+            FINT1(I,J,K,IEL) = FFINTX2
+            FINT2(I,J,K,IEL) = FFINTY2
+            FINT3(I,J,K,IEL) = FFINTZ2
             CALL USERHACK (I,J,K,IELG)
             RHS1(I,J,K,IEL) = RHSX
             RHS2(I,J,K,IEL) = RHSY
