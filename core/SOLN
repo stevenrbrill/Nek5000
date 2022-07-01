@@ -64,7 +64,7 @@ c     Solution data
      $     vx, vy, vz, t, vtrans, vdiff, bfx, bfy, bfz, cflf, c_vx,fw,
      $     bmnv, bmass, bdivw,
      $     vx_e,vy_e,vz_e,
-     $     bfintx, bfinty, bfintz, cbfintx, cbfinty, cbfintz,
+     $     bfintx, bfinty, bfintz, bfintx2, bfinty2, bfintz2,
      $     brhsx, brhsy, brhsz
 
 c     Solution data for magnetic field
