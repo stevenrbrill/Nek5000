@@ -29,6 +29,12 @@ c     Can be used for post-processing runs (SIZE .gt. 10+3*LDIMT flds)
      $    ,aby2   (lx1,ly1,lz1,lelv)
      $    ,abz2   (lx1,ly1,lz1,lelv)
      $    ,vdiff_e(lx1,ly1,lz1,lelt)
+     $    ,psixlag(lx1,ly1,lz1,lelv,2)
+     $    ,psiylag(lx1,ly1,lz1,lelv,2)
+     $    ,psizlag(lx1,ly1,lz1,lelv,2)
+     $    ,mpsixlag(lx1,ly1,lz1,lelv,2)
+     $    ,mpsiylag(lx1,ly1,lz1,lelv,2)
+     $    ,mpsizlag(lx1,ly1,lz1,lelv,2)
 
 c     Solution data
       real vx     (lx1,ly1,lz1,lelv)
@@ -65,7 +71,8 @@ c     Solution data
      $     bmnv, bmass, bdivw,
      $     vx_e,vy_e,vz_e,
      $     bfintx, bfinty, bfintz, bfintx2, bfinty2, bfintz2,
-     $     brhsx, brhsy, brhsz
+     $     brhsx, brhsy, brhsz, psixlag, psiylag, psizlag,
+     $     mpsixlag, mpsiylag, mpsizlag
 
 c     Solution data for magnetic field
       real bx     (lbx1,lby1,lbz1,lbelv)
