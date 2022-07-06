@@ -59,8 +59,6 @@ c
       INTYPE = -1
       NTOT1  = lx1*ly1*lz1*NELV
 
-      print *, "CAll plan4"
-
       if (igeom.eq.1) then
 
          ! compute explicit contributions bfx,bfy,bfz 
@@ -94,7 +92,6 @@ C          if (igeom.eq.2) call lagpsi
          npres=icalld
          etime1=dnekclock()
 
-         print *, "Pressure stuff"
          call crespsp  (respr)
          call invers2  (h1,vtrans,ntot1)
          call rzero    (h2,ntot1)
@@ -109,7 +106,6 @@ C          if (igeom.eq.2) call lagpsi
 
          tpres=tpres+(dnekclock()-etime1)
 
-         print *, "Velocity stuff"
          ! compute velocity
          if(ifstrs .and. .not.ifaxis) then
             call bcneutr

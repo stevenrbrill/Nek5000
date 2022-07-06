@@ -1260,6 +1260,7 @@ C       if (time.lt.50) then
         call oprzero_d(rxmd,rymd,rzmd)
         call oprzero_d(sxmd,symd,szmd)
         call oprzero_d(txmd,tymd,tzmd)
+        
       else
 
         call my_set_dealias_rx
@@ -1882,9 +1883,6 @@ C           call col2(wsz_d,bmd,n_d)
             call my_intp_rstd(wintz2(1,1,1,iel),wsz_d(1,1,1,iel),
      $             lx1,lxd,if3d,1)
           enddo
-C           call invcol2(wintx,bm1,n)
-C           call invcol2(winty,bm1,n)
-C           call invcol2(wintz,bm1,n)
 
 C C           if (istep.eq.0 .or. ifoutfld) then
 C           do iel = 1,nelv
@@ -2688,7 +2686,7 @@ C                 enddo
       enddo
       ! Multiply phi_temp by Helmholz matrices to extract columns 
       ! multiplied by psi
-      call axhelm(wrhsx,w1,myH1,myH2,1,1)
+      call axhelm(wrhsx,w1,myH1,myH2,1,1) 
 C       call axhelm(wrhsy,w2,myH1,myH2,1,1)
 C       call axhelm(wrhsz,w3,myH1,myH2,1,1)
 
