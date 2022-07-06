@@ -1450,6 +1450,8 @@ C----------------------------------------------------------------------
       if (iftran)                               call makeabf
       if ((iftran.and..not.ifchar).or.
      $    (iftran.and..not.ifnav.and.ifchar))   call makebdf
+C       if ((iftran.and..not.ifchar).or.
+C      $    (iftran.and..not.ifnav.and.ifchar))   call srb_makebdf
       if (ifnav.and.ifchar)                     call advchar
 
 c     Adding this call allows prescribed pressure bc for PnPn-2
@@ -1689,6 +1691,55 @@ C
 C
       return
       END
+c-----------------------------------------------------------------------
+      subroutine srb_makebdf
+C
+C     Add contributions to F from lagged BD terms.
+C
+      include 'SIZE'
+      include 'SOLN'
+      include 'MASS'
+      include 'GEOM'
+      include 'INPUT'
+      include 'TSTEP'
+C
+      COMMON /SCRNS/ TA1(LX1,LY1,LZ1,LELV)
+     $ ,             TA2(LX1,LY1,LZ1,LELV)
+     $ ,             TA3(LX1,LY1,LZ1,LELV)
+     $ ,             TB1(LX1,LY1,LZ1,LELV)
+     $ ,             TB2(LX1,LY1,LZ1,LELV)
+     $ ,             TB3(LX1,LY1,LZ1,LELV)
+     $ ,             H2 (LX1,LY1,LZ1,LELV)
+C
+      NTOT1 = lx1*ly1*lz1*NELV
+      CONST = 1./DT
+
+      if(iflomach) then
+        call cfill(h2,CONST,ntot1)
+      else
+        call cmult2(h2,vtrans(1,1,1,1,ifield),const,ntot1)
+      endif
+
+      call opcmult (TB1,TB2,TB3,MPSIX,MPSIY,MPSIZ,bd(2))
+C
+      DO 100 ILAG=2,NBD
+         call opcmult(TA1,TA2,TA3,MPSIXLAG(1,1,1,1,ILAG-1)
+     $       ,MPSIYLAG(1,1,1,1,ILAG-1),MPSIXLAG(1,1,1,1,ILAG-1)
+     $       ,bd(ilag+1))
+         CALL OPADD2  (TB1,TB2,TB3,TA1,TA2,TA3)
+ 100  CONTINUE
+      CALL OPADD2col (BFX,BFY,BFZ,TB1,TB2,TB3,h2)
+
+C       print *, "Print psibdfx"
+C       call srbprint(TB1)
+C       print *, "Print psibdfy"
+C       call srbprint(TB2)
+C       print *, "Print psibdfz"
+C       call srbprint(TB3)
+C       print *, "Print"
+C
+      return
+      END      
 c-----------------------------------------------------------------------
       subroutine makeabf
 C-----------------------------------------------------------------------
@@ -2048,6 +2099,60 @@ C
       return
       END
 C
+      subroutine lagpsi
+C-----------------------------------------------------------------------
+C
+C     Keep old velocity field(s) 
+C
+C-----------------------------------------------------------------------
+      include 'SIZE'
+      include 'INPUT'
+      include 'SOLN'
+      include 'TSTEP'
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
+
+C
+      NTOT1 = lx1*ly1*lz1*NELV
+C
+c      DO 100 ILAG=NBDINP-1,2,-1
+      DO 100 ILAG=3-1,2,-1
+         CALL COPY(PSIXLAG(1,1,1,1,ILAG),PSIXLAG(1,1,1,1,ILAG-1),NTOT1)
+         CALL COPY(PSIYLAG(1,1,1,1,ILAG),PSIYLAG(1,1,1,1,ILAG-1),NTOT1)
+         IF (ldim.EQ.3)
+     $   CALL COPY(PSIZLAG(1,1,1,1,ILAG),PSIZLAG(1,1,1,1,ILAG-1),NTOT1)
+
+        CALL COPY(MPSIXLAG(1,1,1,1,ILAG),MPSIXLAG(1,1,1,1,ILAG-1),NTOT1)
+        CALL COPY(MPSIYLAG(1,1,1,1,ILAG),MPSIYLAG(1,1,1,1,ILAG-1),NTOT1)
+         IF (ldim.EQ.3)
+     $  CALL COPY(MPSIZLAG(1,1,1,1,ILAG),MPSIZLAG(1,1,1,1,ILAG-1),NTOT1)
+ 100  CONTINUE
+C
+      CALL OPCOPY (PSIXLAG,PSIYLAG,PSIZLAG,psix,psiy,psiz)
+      CALL OPCOPY (MPSIXLAG,MPSIYLAG,MPSIZLAG,M_psi_x,M_psi_y,M_psi_z)
+C
+      return
+      END
+C      
       subroutine hypmsk3 (hv1msk,hv2msk,hv3msk)
 C---------------------------------------------------------------------
 C
