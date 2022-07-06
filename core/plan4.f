@@ -42,6 +42,12 @@ C
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
  
       REAL           DPR   (LX2,LY2,LZ2,LELV)
       EQUIVALENCE   (DPR,DV1)
@@ -52,6 +58,8 @@ C
 c
       INTYPE = -1
       NTOT1  = lx1*ly1*lz1*NELV
+
+      print *, "CAll plan4"
 
       if (igeom.eq.1) then
 
@@ -74,6 +82,7 @@ c
          call add2 (qtl,usrdiv,ntot1)
 
          if (igeom.eq.2) call lagvel
+C          if (igeom.eq.2) call lagpsi
 
          ! mask Dirichlet boundaries
          call bcdirvc  (vx,vy,vz,v1mask,v2mask,v3mask) 
@@ -85,6 +94,7 @@ c
          npres=icalld
          etime1=dnekclock()
 
+         print *, "Pressure stuff"
          call crespsp  (respr)
          call invers2  (h1,vtrans,ntot1)
          call rzero    (h2,ntot1)
@@ -99,6 +109,7 @@ c
 
          tpres=tpres+(dnekclock()-etime1)
 
+         print *, "Velocity stuff"
          ! compute velocity
          if(ifstrs .and. .not.ifaxis) then
             call bcneutr
@@ -110,6 +121,7 @@ c
             call cresvsp     (res1,res2,res3,h1,h2)
          endif
          call ophinv       (dv1,dv2,dv3,res1,res2,res3,h1,h2,tolhv,nmxv)
+C          call srb_ophinv   (dv1,dv2,dv3,res1,res2,res3,h1,h2,tolhv,nmxv)
          call opadd2       (vx,vy,vz,dv1,dv2,dv3)
 
       endif
@@ -348,6 +360,27 @@ C     Compute the residual for the velocity
       COMMON /SCRMG/ wa1   (LX1*LY1*LZ1,LELV)
      $ ,             wa2   (LX1*LY1*LZ1,LELV)
      $ ,             wa3   (LX1*LY1*LZ1,LELV)
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
 
       NTOT = lx1*ly1*lz1*NELV
       INTYPE = -1
@@ -360,6 +393,7 @@ C     Compute the residual for the velocity
 
       !CALL OPHX    (RESV1,RESV2,RESV3,VX,VY,VZ,H1,H2)
       CALL srb_ophx    (RESV1,RESV2,RESV3,VX,VY,VZ,H1,H2)
+C       call opadd2col(RESV1,RESV2,RESV3,M_psi_x,M_psi_y,M_psi_z,H2)
       CALL OPCHSGN (RESV1,RESV2,RESV3)
 
       scale = -1./3.
