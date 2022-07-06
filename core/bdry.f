@@ -1284,6 +1284,33 @@ C
       END
 
 c-----------------------------------------------------------------------
+      SUBROUTINE FACEINT2 (CB,V1,V2,V3,IEL,IFACE,NX,NY,NZ)
+C
+C     Assign fortran function boundary conditions to 
+C     face IFACE of element IEL for vector (V1,V2,V3).
+C
+      INCLUDE 'SIZE'
+      INCLUDE 'NEKUSE'
+      INCLUDE 'PARALLEL'
+C
+      dimension v1(nx,ny,nz),v2(nx,ny,nz),v3(nx,ny,nz)
+cc
+      ieg = lglel(iel)
+C
+         DO 800 IZ=1,lz1
+         DO 800 IY=1,ly1
+         DO 800 IX=1,lx1
+            CALL USERBCINT  (IX,IY,IZ,IFACE,IEG)
+            V1(IX,IY,IZ) = V1(IX,IY,IZ)+TRX
+            V2(IX,IY,IZ) = V2(IX,IY,IZ)+TRY
+            V3(IX,IY,IZ) = V3(IX,IY,IZ)+TRZ
+  800    CONTINUE
+         RETURN   
+C
+      RETURN
+      END
+
+c-----------------------------------------------------------------------
       SUBROUTINE SRBFACEIV (CB,V1,V2,V3,IEL,IFACE,NX,NY,NZ)
 C     Steven's way to hack in differeny BCs
 C     Assign fortran function boundary conditions to 
@@ -1426,8 +1453,10 @@ C
       NFACE = 2*ldim
       NXY1  = lx1*ly1
       NXYZ1 = lx1*ly1*lz1
+
 C
-      DO 100 IEL=1,NELV
+      DO 510 IEL=1,NELV
+        ww_count = 0
       DO 100 IFC=1,NFACE
 C
          CB  = CBC (IFC,IEL,IFLD)
@@ -1457,6 +1486,7 @@ C
              CALL FACCVS (TRX,TRY,TRZ,AREA(1,1,IFC,IEL),IFC)
              CALL FACEINT (CB,TRX,TRY,TRZ,IEL,IFC,lx1,ly1,lz1)
              IF (IFQINP(IFC,IEL)) CALL GLOBROT (TRX,TRY,TRZ,IEL,IFC)
+             ww_count = ww_count + 1
              GOTO 120
          ENDIF
 C
@@ -1513,6 +1543,13 @@ C
          IF (ldim.EQ.3) CALL ADD2 (BFZ(1,1,1,IEL),TRZ,NXYZ1)
 C
   100 CONTINUE
+
+C         if (ww_count .gt. 0) then
+C             CALL FACEINT2 (CB,BFX(1,1,1,IEL),BFY(1,1,1,IEL),
+C      $           BFZ(1,1,1,IEL),IEL,IFC,lx1,ly1,lz1)
+C          endif  
+C          print *, "Ww_count = ", ww_count, iel
+  510 CONTINUE
 C
       RETURN
       END
