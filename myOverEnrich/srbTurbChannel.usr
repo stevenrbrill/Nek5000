@@ -410,12 +410,12 @@ c-----------------------------------------------------------------------
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
-     $               ,psix_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
      $               ,M_psi_x(lx1,ly1,lz1,lelv)
      $               ,M_psi_y(lx1,ly1,lz1,lelv)
      $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       NTOT1=lx1*ly1*lz1*NELV
 C      CALL SUB2(vx,psix,NTOT1)
@@ -456,12 +456,12 @@ c-----------------------------------------------------------------------
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
-     $               ,psix_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
      $               ,M_psi_x(lx1,ly1,lz1,lelv)
      $               ,M_psi_y(lx1,ly1,lz1,lelv)
      $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       NTOT1=lx1*ly1*lz1*NELV
 C      CALL ADD2(vx,psix,NTOT1)
@@ -600,12 +600,12 @@ c-----------------------------------------------------------------------
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
-     $               ,psix_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
      $               ,M_psi_x(lx1,ly1,lz1,lelv)
      $               ,M_psi_y(lx1,ly1,lz1,lelv)
      $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       e = gllel(ieg)
 
@@ -643,12 +643,12 @@ c-----------------------------------------------------------------------
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
-     $               ,psix_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
      $               ,M_psi_x(lx1,ly1,lz1,lelv)
      $               ,M_psi_y(lx1,ly1,lz1,lelv)
      $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       e = gllel(ieg)
 
@@ -686,12 +686,12 @@ c-----------------------------------------------------------------------
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
-     $               ,psix_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
      $               ,M_psi_x(lx1,ly1,lz1,lelv)
      $               ,M_psi_y(lx1,ly1,lz1,lelv)
      $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       e = gllel(ieg)
 
@@ -728,9 +728,30 @@ c-----------------------------------------------------------------------
       include 'NEKUSE'
 
 c     Effective enrichment source terms for momentum equation
-      common /enrich/ wsx(lx1,ly1,lz1,lelt)
-     $               ,wsy(lx1,ly1,lz1,lelt)
-     $               ,wsz(lx1,ly1,lz1,lelt)
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       e = gllel(ieg)
 
@@ -1154,13 +1175,13 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
-     $               ,psix_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
      $               ,M_psi_x(lx1,ly1,lz1,lelv)
      $               ,M_psi_y(lx1,ly1,lz1,lelv)
      $               ,M_psi_z(lx1,ly1,lz1,lelv)
-
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+     
 C       save psix, psiy, psiz
 c---------------------------------------------------------------
 
@@ -2600,12 +2621,12 @@ c     VARIABLES DECLARED FOR ENRICHMENT METHOD
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
-     $               ,psix_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
      $               ,M_psi_x(lx1,ly1,lz1,lelv)
      $               ,M_psi_y(lx1,ly1,lz1,lelv)
      $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
 C       save psix, psiy, psiz
 c---------------------------------------------------------------

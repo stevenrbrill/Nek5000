@@ -2124,12 +2124,12 @@ C-----------------------------------------------------------------------
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
-     $               ,psix_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
      $               ,M_psi_x(lx1,ly1,lz1,lelv)
      $               ,M_psi_y(lx1,ly1,lz1,lelv)
      $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
 C
       NTOT1 = lx1*ly1*lz1*NELV

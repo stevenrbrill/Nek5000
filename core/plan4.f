@@ -42,12 +42,12 @@ C
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
-     $               ,psix_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
      $               ,M_psi_x(lx1,ly1,lz1,lelv)
      $               ,M_psi_y(lx1,ly1,lz1,lelv)
      $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
  
       REAL           DPR   (LX2,LY2,LZ2,LELV)
       EQUIVALENCE   (DPR,DV1)
@@ -375,12 +375,12 @@ C     Compute the residual for the velocity
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
-     $               ,psix_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
-     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
      $               ,M_psi_x(lx1,ly1,lz1,lelv)
      $               ,M_psi_y(lx1,ly1,lz1,lelv)
      $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       NTOT = lx1*ly1*lz1*NELV
       INTYPE = -1
