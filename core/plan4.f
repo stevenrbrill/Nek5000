@@ -36,6 +36,9 @@ C
      $               ,wintx(lx1,ly1,lz1,lelv)
      $               ,winty(lx1,ly1,lz1,lelv)
      $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
      $               ,wrhsx(lx1,ly1,lz1,lelv)
      $               ,wrhsy(lx1,ly1,lz1,lelv)
      $               ,wrhsz(lx1,ly1,lz1,lelv)
@@ -80,7 +83,7 @@ c
          call add2 (qtl,usrdiv,ntot1)
 
          if (igeom.eq.2) call lagvel
-C          if (igeom.eq.2) call lagpsi
+         if (igeom.eq.2) call lagpsi
 
          ! mask Dirichlet boundaries
          call bcdirvc  (vx,vy,vz,v1mask,v2mask,v3mask) 
@@ -365,6 +368,9 @@ C     Compute the residual for the velocity
      $               ,wintx(lx1,ly1,lz1,lelv)
      $               ,winty(lx1,ly1,lz1,lelv)
      $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
      $               ,wrhsx(lx1,ly1,lz1,lelv)
      $               ,wrhsy(lx1,ly1,lz1,lelv)
      $               ,wrhsz(lx1,ly1,lz1,lelv)
@@ -389,7 +395,7 @@ C     Compute the residual for the velocity
 
       !CALL OPHX    (RESV1,RESV2,RESV3,VX,VY,VZ,H1,H2)
       CALL srb_ophx    (RESV1,RESV2,RESV3,VX,VY,VZ,H1,H2)
-C       call opadd2col(RESV1,RESV2,RESV3,M_psi_x,M_psi_y,M_psi_z,H2)
+      call opadd2col(RESV1,RESV2,RESV3,M_psi_x,M_psi_y,M_psi_z,H2)
       CALL OPCHSGN (RESV1,RESV2,RESV3)
 
       scale = -1./3.

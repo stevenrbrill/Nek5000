@@ -1450,8 +1450,8 @@ C----------------------------------------------------------------------
       if (iftran)                               call makeabf
       if ((iftran.and..not.ifchar).or.
      $    (iftran.and..not.ifnav.and.ifchar))   call makebdf
-C       if ((iftran.and..not.ifchar).or.
-C      $    (iftran.and..not.ifnav.and.ifchar))   call srb_makebdf
+      if ((iftran.and..not.ifchar).or.
+     $    (iftran.and..not.ifnav.and.ifchar))   call srb_makebdf
       if (ifnav.and.ifchar)                     call advchar
 
 c     Adding this call allows prescribed pressure bc for PnPn-2
@@ -1710,6 +1710,30 @@ C
      $ ,             TB2(LX1,LY1,LZ1,LELV)
      $ ,             TB3(LX1,LY1,LZ1,LELV)
      $ ,             H2 (LX1,LY1,LZ1,LELV)
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 C
       NTOT1 = lx1*ly1*lz1*NELV
       CONST = 1./DT
@@ -1720,7 +1744,7 @@ C
         call cmult2(h2,vtrans(1,1,1,1,ifield),const,ntot1)
       endif
 
-      call opcmult (TB1,TB2,TB3,MPSIX,MPSIY,MPSIZ,bd(2))
+      call opcmult (TB1,TB2,TB3,M_psi_x,M_psi_y,M_psi_z,bd(2))
 C
       DO 100 ILAG=2,NBD
          call opcmult(TA1,TA2,TA3,MPSIXLAG(1,1,1,1,ILAG-1)
@@ -2118,6 +2142,9 @@ C-----------------------------------------------------------------------
      $               ,wintx(lx1,ly1,lz1,lelv)
      $               ,winty(lx1,ly1,lz1,lelv)
      $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
      $               ,wrhsx(lx1,ly1,lz1,lelv)
      $               ,wrhsy(lx1,ly1,lz1,lelv)
      $               ,wrhsz(lx1,ly1,lz1,lelv)
