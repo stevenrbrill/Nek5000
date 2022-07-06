@@ -793,37 +793,37 @@ C          lotw = utau*yp
 C       endif
 
       ! Reichardt law of the wall
-C       lotw = utau*((1./0.41)*log(1.+0.41*yp)+7.8*
-C      $      (1.-exp(-yp/(11.))-yp/(11.)*exp(-yp/(3.)))) ! Reichardt
+      lotw = utau*((1./0.41)*log(1.+0.41*yp)+7.8*
+     $      (1.-exp(-yp/(11.))-yp/(11.)*exp(-yp/(3.)))) ! Reichardt
 
       ! Spalding law of the wall
-      kap = 0.41
-      beta = 5.17
-      if (yp < 11.0) then
-            psi = yp*kap
-      else
-            psi = log(yp)+kap*beta
-      endif
-      F = -yp + psi/kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
-     $      -psi*psi*psi/6. -psi*psi*psi*psi/24.)
+C       kap = 0.41
+C       beta = 5.17
+C       if (yp < 11.0) then
+C             psi = yp*kap
+C       else
+C             psi = log(yp)+kap*beta
+C       endif
+C       F = -yp + psi/kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+C      $      -psi*psi*psi/6. -psi*psi*psi*psi/24.)
 
-      iter = 0
-      do while ((abs(F) .gt. 1.0e-13) .and. (iter .lt. 100))
-      F = -yp + psi/kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
-     $      -psi*psi*psi/6. -psi*psi*psi*psi/24.)
-      dF = 1./kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
-     $       -psi*psi*psi/6.)
-      hF = -F/dF
+C       iter = 0
+C       do while ((abs(F) .gt. 1.0e-13) .and. (iter .lt. 100))
+C       F = -yp + psi/kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+C      $      -psi*psi*psi/6. -psi*psi*psi*psi/24.)
+C       dF = 1./kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+C      $       -psi*psi*psi/6.)
+C       hF = -F/dF
 
-      psi = psi - F/dF
-      iter = iter + 1
-      end do
+C       psi = psi - F/dF
+C       iter = iter + 1
+C       end do
 
-      if (iter .eq. 10) then
-            print *, "lotw not converged", yw, yp, psi, F
-      endif
+C       if (iter .eq. 10) then
+C             print *, "lotw not converged", yw, yp, psi, F
+C       endif
 
-      lotw = psi/kap*utau
+C       lotw = psi/kap*utau
 
       return
       end
@@ -851,35 +851,35 @@ C         dlotwdy = Re_tau*utau
 C       endif
 
       ! Reichardt law of the wall
-C       dlotwdy = Re_tau*utau*(1./(1.+0.41*yp)+7.8*
-C      $      (1./11.*exp(-yp/(11.))+(yp-3.)/(33.)*exp(-yp/(3.)))) ! Reichardt
+      dlotwdy = Re_tau*utau*(1./(1.+0.41*yp)+7.8*
+     $      (1./11.*exp(-yp/(11.))+(yp-3.)/(33.)*exp(-yp/(3.)))) ! Reichardt
 
       ! Spalding law of the wall
-      kap = 0.41
-      beta = 5.17
-      if (yp < 11.0) then
-            psi = yp*kap
-      else
-            psi = log(yp)+kap*beta
-      endif
-      F = -yp + psi/kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
-     $      -psi*psi*psi/6. -psi*psi*psi*psi/24.)
-      dF = 1./kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
-     $       -psi*psi*psi/6.)
+C       kap = 0.41
+C       beta = 5.17
+C       if (yp < 11.0) then
+C             psi = yp*kap
+C       else
+C             psi = log(yp)+kap*beta
+C       endif
+C       F = -yp + psi/kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+C      $      -psi*psi*psi/6. -psi*psi*psi*psi/24.)
+C       dF = 1./kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+C      $       -psi*psi*psi/6.)
 
-      iter = 0
-      do while ((abs(F) .gt. 1.0e-13) .and. (iter .lt. 100))
-      F = -yp + psi/kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
-     $      -psi*psi*psi/6. -psi*psi*psi*psi/24.)
-      dF = 1./kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
-     $       -psi*psi*psi/6.)
-      hF = -F/dF
+C       iter = 0
+C       do while ((abs(F) .gt. 1.0e-13) .and. (iter .lt. 100))
+C       F = -yp + psi/kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+C      $      -psi*psi*psi/6. -psi*psi*psi*psi/24.)
+C       dF = 1./kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+C      $       -psi*psi*psi/6.)
+C       hF = -F/dF
 
-      psi = psi - F/dF
-      iter = iter + 1
-      end do
+C       psi = psi - F/dF
+C       iter = iter + 1
+C       end do
 
-      dlotwdy = 1./dF/kap*utau*Re_tau
+C       dlotwdy = 1./dF/kap*utau*Re_tau
 
       return
       end
