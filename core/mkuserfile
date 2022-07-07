@@ -92,6 +92,17 @@ c automatically added by makenek
 _ACEOF
 fi
 
+if ! cat $CASENAME.f | grep -qi "subroutine.*userqint2" ; then
+cat >> $CASENAME.f << _ACEOF
+
+c automatically added by makenek
+      subroutine userqint2(ix,iy,iz,eg)
+
+      return
+      end
+_ACEOF
+fi
+
 if ! cat $CASENAME.f | grep -qi "subroutine.*uservp" ; then
 cat >> $CASENAME.f << _ACEOF
 

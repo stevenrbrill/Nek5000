@@ -74,6 +74,8 @@ C     !! NOTE: Do not change the content of the array BQ until the current
 
       endif
 
+      CALL add2 (bq(1,1,1,1,ifield-1),bqint(1,1,1,1,ifield-1),ntot)
+
       tmakq=tmakq+(dnekclock()-etime0)
 
       return

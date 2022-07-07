@@ -6,7 +6,7 @@ c
      $    ,si2,si3,sigma,turbk,turbe,ps(ldimt)
      $    ,ffintx,ffinty,ffintz,ffintx2,ffinty2,ffintz2
      $    ,rhsx,rhsy,rhsz
-     $    ,qint
+     $    ,qint, qint2
       common /nekuse/ x  ,y  ,z  ,r  ,theta
      $              , ux ,uy ,uz
      $              , un ,u1 ,u2

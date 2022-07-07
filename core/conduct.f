@@ -144,9 +144,10 @@ c     mass matrix on the Gauss-Lobatto mesh.
 
       if (nio.eq.0.and.loglevel.gt.2) 
      $   write(6,*) 'makeuq', ifield, time
-      call srb_setqvol(bq(1,1,1,1,ifield-1),bqint(1,1,1,1,ifield-1))
+      call srb_setqvol(bq(1,1,1,1,ifield-1),bqint(1,1,1,1,ifield-1),
+     $       bqint2(1,1,1,1,ifield-1))
       call col2   (bq(1,1,1,1,ifield-1) ,bm1,n)
-      call add2   (bq(1,1,1,1,ifield-1),bqint(1,1,1,1,ifield-1),n)
+      call add2   (bq(1,1,1,1,ifield-1),bqint2(1,1,1,1,ifield-1),n)
 
       if (.not.ifcvfld(ifield)) time = time+dt ! Restore time
 
@@ -199,7 +200,7 @@ C
       end
 C
 c-----------------------------------------------------------------------
-      subroutine srb_setqvol(bql,bqintl)
+      subroutine srb_setqvol(bql,bqintl,bqintl2)
 
 c     Set user specified volumetric forcing function (e.g. heat source).
 
@@ -211,6 +212,7 @@ c     Set user specified volumetric forcing function (e.g. heat source).
 
       real bql(lx1*ly1*lz1,lelt)
       real bqintl(lx1*ly1*lz1,lelt)
+      real bqintl2(lx1*ly1*lz1,lelt)
 
 #ifdef TIMER
       etime1=dnekclock()
@@ -222,7 +224,7 @@ c     Set user specified volumetric forcing function (e.g. heat source).
 
       do iel=1,nel
 
-         call srb_nekuq (bql,bqintl,iel) ! ONLY SUPPORT USERQ - pff, 3/08/16
+         call srb_nekuq (bql,bqintl,bqintl2,iel) ! ONLY SUPPORT USERQ - pff, 3/08/16
 
 c        igrp = igroup(iel)
 c        if (matype(igrp,ifield).eq.1) then ! constant source within a group
@@ -274,7 +276,7 @@ c
       return
       end
 
-      subroutine srb_nekuq (bql,bqintl,iel)
+      subroutine srb_nekuq (bql,bqintl,bqintl2,iel)
 C------------------------------------------------------------------
 C
 C     Generate user-specified volumetric source term (temp./p.s.)
@@ -290,6 +292,7 @@ C------------------------------------------------------------------
 c
       real bql(lx1,ly1,lz1,lelt)
       real bqintl(lx1,ly1,lz1,lelt)
+      real bqintl2(lx1,ly1,lz1,lelt)
 c
       ielg = lglel(iel)
       do 10 k=1,lz1
@@ -302,6 +305,9 @@ c
          qint = 0.0
          call userqint(i,j,k,ielg)
          bqintl(i,j,k,ielg) = qint
+         qint2 = 0.0
+         call userqint2(i,j,k,ielg)
+         bqintl2(i,j,k,ielg) = qint2
  10   continue
 
       return
