@@ -126,11 +126,11 @@ c
       id = iz + np
 c
       ! PickQuad
-      call zwgll  (w(iz),dgt,np)  ! GL points
-C       call zwgl  (w(iz),dgt,np)  ! GL points
+C       call zwgll  (w(iz),dgt,np)  ! GL points
+      call zwgl  (w(iz),dgt,np)  ! GL points
       ! PickQuad
-      call zwgll  (w(id),dgt,mp)  ! GL points
-C       call zwgl  (w(id),dgt,mp)  ! GL points
+C       call zwgll  (w(id),dgt,mp)  ! GL points
+      call zwgl  (w(id),dgt,mp)  ! GL points
 c
       ndgt = 2*np
       ldgt = mp*np
@@ -241,8 +241,8 @@ c
 c
       call zwgll (w(iz),jgt,np)
       ! PickQuad
-      call zwgll (w(id),jgt,mp)
-C       call zwgl (w(id),jgt,mp)
+C       call zwgll (w(id),jgt,mp)
+      call zwgl (w(id),jgt,mp)
 c
       n  = np-1
       do i=1,mp
@@ -283,8 +283,8 @@ C
       nxyzd = lxd*lyd*lzd
 
       ! PickQuad
-      call zwgll (myzd,mywd,lxd)  ! zwgl -- NOT zwgll!
-C       call zwgl (myzd,mywd,lxd)  ! zwgl -- NOT zwgll!
+C       call zwgll (myzd,mywd,lxd)  ! zwgl -- NOT zwgll!
+      call zwgl (myzd,mywd,lxd)  ! zwgl -- NOT zwgll!
 
       if (if3d) then
 c
