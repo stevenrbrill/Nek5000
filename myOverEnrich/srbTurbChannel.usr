@@ -1058,6 +1058,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real tau_w(lx1,ly1,lz1,lelv)
       real srb_temp(lx1,ly1,lz1,lelv)
       real srb_temp_d(lxd,lyd,lzd,lelv)
+      integer use_overint
 
       real xmd(lxd,lyd,lzd,lelv), ymd(lxd,lyd,lzd,lelv) 
       real zmd(lxd,lyd,lzd,lelv), vx_d(lxd,lyd,lzd,lelv)
@@ -1229,7 +1230,9 @@ c     WALL ENRICHMENT...START
       
 c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
-      use_default = 0
+      use_default = 1
+      use_overint = 1
+      use_weak_bc = 0
 
       if (istep.eq.0) then
           call oprzero(psix,psiy,psiz)
@@ -1607,6 +1610,7 @@ C                     do iy = 1,ly1
           ! ----------------------------------------------------------------
           ! Term 2: -rho*dot(u0,gradient(psi))        M^psi,1 * u
           ! + Term 4: -rho*dot(psi,gradient(psi))     Should be zero
+          if (use_overint .eq. 1) then
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
               do i = 1,lxd*lyd*lzd 
@@ -1659,9 +1663,11 @@ C                     do iy = 1,ly1
                 tr4z(i,1,1,iel) = -1.0*w1_d(i,1,1,iel)
               enddo
             endif
-          enddo    
+          enddo
+          endif    
 
           ! No overint
+          if (use_overint .ne. 1) then
           do iel = 1,nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
               do i = 1,lx1*ly1*lz1 
@@ -1669,50 +1675,52 @@ C                     do iy = 1,ly1
                 w1(i,1,1,iel) = vx(i,1,1,iel)*gpsix_x1(i,1,1,iel)
      $                          + vy(i,1,1,iel)*gpsix_y1(i,1,1,iel)
      $                          + vz(i,1,1,iel)*gpsix_z1(i,1,1,iel)
-C                 wsx(i,1,1,iel) = wsx(i,1,1,iel) + w1(i,1,1,iel)
+                wsx(i,1,1,iel) = wsx(i,1,1,iel) + w1(i,1,1,iel)
                 tr2x1(i,1,1,iel) = -1.0*w1(i,1,1,iel)
                 
                 ! T4x
                 w1(i,1,1,iel) = psix(i,1,1,iel)*gpsix_x1(i,1,1,iel)
      $                          + psiy(i,1,1,iel)*gpsix_y1(i,1,1,iel)
      $                          + psiz(i,1,1,iel)*gpsix_z1(i,1,1,iel)
-C                 wsx(i,1,1,iel) = wsx(i,1,1,iel) + w1(i,1,1,iel)
+                wsx(i,1,1,iel) = wsx(i,1,1,iel) + w1(i,1,1,iel)
                 tr4x1(i,1,1,iel) = -1.0*w1(i,1,1,iel)
 
                 ! T2y
                 w1(i,1,1,iel) = vx(i,1,1,iel)*gpsiy_x1(i,1,1,iel)
      $                          + vy(i,1,1,iel)*gpsiy_y1(i,1,1,iel)
      $                          + vz(i,1,1,iel)*gpsiy_z1(i,1,1,iel)
-C                 wsy(i,1,1,iel) = wsy(i,1,1,iel) + w1(i,1,1,iel)
+                wsy(i,1,1,iel) = wsy(i,1,1,iel) + w1(i,1,1,iel)
                 tr2y1(i,1,1,iel) = -1.0*w1(i,1,1,iel)
                 
                 ! T4y
                 w1(i,1,1,iel) = psix(i,1,1,iel)*gpsiy_x1(i,1,1,iel)
      $                          + psiy(i,1,1,iel)*gpsiy_y1(i,1,1,iel)
      $                          + psiz(i,1,1,iel)*gpsiy_z1(i,1,1,iel)
-C                 wsy(i,1,1,iel) = wsy(i,1,1,iel) + w1(i,1,1,iel)
+                wsy(i,1,1,iel) = wsy(i,1,1,iel) + w1(i,1,1,iel)
                 tr4y1(i,1,1,iel) = -1.0*w1(i,1,1,iel)
 
                 ! T2z
                 w1(i,1,1,iel) = vx(i,1,1,iel)*gpsiz_x1(i,1,1,iel)
      $                          + vy(i,1,1,iel)*gpsiz_y1(i,1,1,iel)
      $                          + vz(i,1,1,iel)*gpsiz_z1(i,1,1,iel)
-C                 wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
+                wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
                 tr2z1(i,1,1,iel) = -1.0*w1(i,1,1,iel)
                 
                 ! T4z
                 w1(i,1,1,iel) = psix(i,1,1,iel)*gpsiz_x1(i,1,1,iel)
      $                          + psiy(i,1,1,iel)*gpsiz_y1(i,1,1,iel)
      $                          + psiz(i,1,1,iel)*gpsiz_z1(i,1,1,iel)
-C                 wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
+                wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
                 tr4z1(i,1,1,iel) = -1.0*w1(i,1,1,iel)
               enddo
             endif
           enddo     
+          endif
 
           ! ----------------------------------------------------------------
           ! Term 3: -rho*dot(psi,gradient(u0))   S^psi
 
+          if (use_overint .eq. 1) then
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for x
           ! S^psi * u
@@ -1835,15 +1843,17 @@ C                 wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
               enddo
             endif
           enddo
+          endif
 
-          call col2   (tr2x1,bm1,n)
-          call col2   (tr2y1,bm1,n)
-          call col2   (tr2z1,bm1,n)
-          call col2   (tr4x1,bm1,n)
-          call col2   (tr4y1,bm1,n)
-          call col2   (tr4z1,bm1,n)
+C           call col2   (tr2x1,bm1,n)
+C           call col2   (tr2y1,bm1,n)
+C           call col2   (tr2z1,bm1,n)
+C           call col2   (tr4x1,bm1,n)
+C           call col2   (tr4y1,bm1,n)
+C           call col2   (tr4z1,bm1,n)
 
-            ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+          if (use_overint .ne. 1) then  
+          ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for x
           ! S^psi * u
           ! Compute grad of u
@@ -1854,7 +1864,7 @@ C                 wsz(i,1,1,iel) = wsz(i,1,1,iel) + w1(i,1,1,iel)
           call cmult  (tr3x1,-1.0,n)
           call col2   (tr3x1,bm1,n)
           ! Add to total forcing
-C           call add2   (wsx,w1,n)
+          call add2   (wsx,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for y
@@ -1867,7 +1877,7 @@ C           call add2   (wsx,w1,n)
           call cmult  (tr3y1,-1.0,n)
           call col2   (tr3y1,bm1,n)
           ! Add to total forcing
-C           call add2   (wsy,w1,n)
+          call add2   (wsy,w1,n)
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! S for z
@@ -1880,7 +1890,9 @@ C           call add2   (wsy,w1,n)
           call cmult  (tr3z1,-1.0,n)
           call col2   (tr3z1,bm1,n)
           ! Add to total forcing
-C           call add2   (wsz,w1,n)
+          call add2   (wsz,w1,n)
+
+          endif
 
           ! ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
           ! Multiply by mass matrix for integration  
@@ -2120,7 +2132,6 @@ C       call oprzero(wintx,winty,wintz)
       endif
 
       ! Weak BC
-      use_weak_bc = 1
 
       vx_bc = 0.0
       vy_bc = 0.0
