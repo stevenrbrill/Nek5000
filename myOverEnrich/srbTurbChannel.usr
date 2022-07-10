@@ -1012,6 +1012,18 @@ c---------------------------------------------------------------
       integer bIDs(1)
       save iobj_wall
 
+c --------------------------------------------------------------
+c     Weak Wall terms
+      integer comp_ww_mats
+      save comp_ww_mats
+      real bmww(lx1,ly1,lz1,lelv), Cpen(lx1,ly1,lz1,lelv), 
+     $     Csym(lx1,ly1,lz1,lelv), Ccon(lx1,ly1,lz1,lelv) 
+      common /wwbc/ bmww,
+     $              Cpen, 
+     $              Csym, 
+     $              Ccon
+      
+
 c---------------------------------------------------------------
 c     VARIABLES DECLARED FOR ENRICHMENT METHOD
       integer secondcall
@@ -1083,7 +1095,9 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $                ,w_face(lxd,lzd,lelv)
       real tx_face(lxd,lzd,lelv), ty_face(lxd,lzd,lelv), 
      $     tz_face(lxd,lzd,lelv) 
-      real gam_ip
+      real gam_ip, hb, cbl
+      real face_area
+      real srb_test
       real vx_bc, vy_bc, vz_bc
       common vx_bc, vy_bc, vz_bc
       real ip_term_x(lx1,ly1,lz1,lelv), ip_term_y(lx1,ly1,lz1,lelv)
@@ -2105,134 +2119,69 @@ C       call oprzero(wintx,winty,wintz)
 
       endif
 
-      use_weak_bc = 0
+      ! Weak BC
+      use_weak_bc = 1
 
       vx_bc = 0.0
       vy_bc = 0.0
       vz_bc = 0.0
 
       if (use_weak_bc .eq. 1) then
-         if (comp_phi_grad .ne. 1) then
-            call rzero(srb_temp,lx1*ly1*lz1)
-            call rzero(srb_temp_d,lxd*lyd*lzd)
-            iz_end = lz1
-            if (ldim .eq. 2) then
-              iz_end = 1
-            endif
-            do iz = 1,iz_end
-              do iy = 1,ly1
-                do ix = 1,lx1
-                  ib = (iz-1)*lx1*ly1 + (iy-1)*(lx1) + ix
-                  srb_temp(ix,iy,iz,1) = 1
-                  call my_intp_rstd(srb_temp_d,srb_temp,lx1,lxd,if3d,0)
-                  call my_grad_rst(dpdr(1,ib),dpds(1,ib),dpdt(1,ib),
-     $                   srb_temp_d,lxd,if3d)
-                  srb_temp(ix,iy,iz,1) = 0   
-                enddo
-              enddo
-            enddo
-          endif   
 
-          nb = lx1*ly1
-          nq = lxd*lyd
-          nq_face = lxd
-          if (ldim .eq. 3) then
-            nb = nb*lz1
-            nq = nq*lzd
-            nq_face = nq_face*lzd
-          endif
-          do iel = 1,nelv 
-            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-              ! Compute phi grad
-              if (comp_phi_grad .ne. 1) then
-                  call my_set_dealias_rx
-      call my_intp_rstd(rxmd(1,1,1,iel),rxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-      call my_intp_rstd(rymd(1,1,1,iel),rym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-      call my_intp_rstd(rzmd(1,1,1,iel),rzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-      call my_intp_rstd(sxmd(1,1,1,iel),sxm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-      call my_intp_rstd(symd(1,1,1,iel),sym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-      call my_intp_rstd(szmd(1,1,1,iel),szm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-      call my_intp_rstd(txmd(1,1,1,iel),txm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-      call my_intp_rstd(tymd(1,1,1,iel),tym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-      call my_intp_rstd(tzmd(1,1,1,iel),tzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-      call my_intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
-                do j=1,nb ! actually nb
-                  do i=1,nq ! actually nq
-                dpdx(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rxmd(i,1,1,iel)
-     $                                     + dpds(i,j)*sxmd(i,1,1,iel)
-     $                                     + dpdt(i,j)*txmd(i,1,1,iel) )
-                dpdy(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rymd(i,1,1,iel)
-     $                                     + dpds(i,j)*symd(i,1,1,iel)
-     $                                     + dpdt(i,j)*tymd(i,1,1,iel) )
-                dpdz(j,i,iel)=1./jacmd(i,iel)*(dpdr(i,j)*rzmd(i,1,1,iel)
-     $                                     + dpds(i,j)*szmd(i,1,1,iel)
-     $                                     + dpdt(i,j)*tzmd(i,1,1,iel) )
-                  enddo
-                enddo
-              endif
+         gam_ip = 1.0
+C          hb = XLEN / NUMBER_ELEMENTS_X * ZLEN / NUMBER_ELEMENTS_Z
+C          cbl = 400000.0
 
+C          hb = 2.0 / NUMBER_ELEMENTS_Y
+         cbl = 2.*(lx1-1.)*lx1
 
-              if (flag(iel) .eq. -1) then
+         ! Compute weak wall matrices for implicit solve
+         if (comp_ww_mats .ne. 1) then
+            print *, "Call Weak Wall coeffs"
+            call rzero(bmww,n)
+            do iel = 1,nelv
+              if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+                if (flag(iel) .eq. -1) then
                   iy_ut = 1
                   sign = -1.0
-              else
-                  iy_ut = lyd
+                else
+                  iy_ut = ly1
                   sign = 1.0
-              endif
+                endif
 
-              if (comp_phi_grad_face .ne. 1) then
-                do j = 1,nb
-                  ! nq
-                  do iz = 1,lzd
-                    do ix = 1,lxd
-                i = ix + (iy_ut-1)*lxd + (iz-1)*lxd*lyd
-                i_face = ix + (iz-1)*lxd
-                dpdx_face(j,i_face,iel) = dpdx(j,i,iel)
-                dpdy_face(j,i_face,iel) = dpdy(j,i,iel)
-                dpdz_face(j,i_face,iel) = dpdz(j,i,iel)
-                ! Specialized for channel flow. Need to generalize
-                w_face(ix,iz,iel) = mywd(ix)/rxmd(ix,iy_ut,iz,iel)
-     &                              *mywd(iz)/tzmd(ix,iy_ut,iz,iel)
-                    enddo
+                ! NOT GENERAL
+                hb = ym1(1,ly1,1,iel)-ym1(1,1,1,iel)
+
+                if (if3d) then
+                   face_area = (xm1(lx1,1,1,iel)-xm1(1,1,1,iel))*
+     &                      (zm1(1,1,lz1,iel)-zm1(1,1,1,iel))
+                else
+                   face_area = (xm1(lx1,1,1,iel)-xm1(1,1,1,iel))
+                endif
+                 
+                do iz = 1,lz1
+                  do ix = 1,lx1
+                bmww(ix,iy_ut,iz,iel) = 
+     &                  wxm1(ix)/2.*face_area
+             Cpen(ix,iy_ut,iz,iel) = cbl/hb*vdiff(ix,iy_ut,iz,iel,1)
+                Csym(ix,iy_ut,iz,iel) = gam_ip*sign
+     &                                        *vdiff(ix,iy_ut,iz,iel,1)
+            Ccon(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)
                   enddo
                 enddo  
               endif
+            enddo
+            
+            comp_ww_mats = 1
+         endif 
 
-              gam_ip = -1.0
-              ! Copy to faces
-              do iz = 1,lzd
-                do ix = 1,lxd
-                  i = ix + (iy_ut-1)*lxd + (iz-1)*lxd*lyd
-                  i_face = ix + (iz-1)*lxd
-                  tx_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
-     $                   vdiff_d(ix,iy_ut,iz,iel)*sign*
-     $                   (vx_d(ix,iy_ut,iz,iel)-vx_bc)
-                  ty_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
-     $                   vdiff_d(ix,iy_ut,iz,iel)*sign*
-     $                   (vy_d(ix,iy_ut,iz,iel)-vy_bc)
-                  tz_face(ix,iz,iel) = w_face(ix,iz,iel)*gam_ip*
-     $                   vdiff_d(ix,iy_ut,iz,iel)*sign*
-     $                   (vz_d(ix,iy_ut,iz,iel)-vz_bc)
-                enddo
-              enddo
 
-          call mxm(dpdy_face(1,1,iel) ,nb,tx_face(1,1,iel),
-     $       nq_face,ip_term_x(1,1,1,iel),1)
-          call mxm(dpdy_face(1,1,iel) ,nb,ty_face(1,1,iel),
-     $       nq_face,ip_term_y(1,1,1,iel),1)
-          call mxm(dpdy_face(1,1,iel) ,nb,tz_face(1,1,iel),
-     $       nq_face,ip_term_z(1,1,1,iel),1)
+         ! Forcing terms
 
-            endif
-          enddo
-          
-          ! only compute phi grads once
-          if (comp_phi_grad .ne. 1) then
-            comp_phi_grad = 1
-          endif
-          if (comp_phi_grad_face .ne. 1) then
-            comp_phi_grad_face = 1
-          endif
+         call opzero(ip_term_x,ip_term_y,ip_term_z)   
+C          call opzero(w1,w2,w3)
+C          call opzero  (tx,ty,tz)
+
       endif
 
 c     WALL ENRICHMENT...END
@@ -2750,6 +2699,33 @@ c     Imposing shear stress B.C.s
         TRY=0.0
         TRZ=0.0
       endif
+
+      if(cbc(iside,e,1).eq.'ww ') then
+        TRX=en_bound(ix,iy,iz,e) 
+        TRY=0.0
+        TRZ=0.0!sip_z
+      endif
+      
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userbcint (ix,iy,iz,iside,ieg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      real ip_term_x(lx1,ly1,lz1,lelv), ip_term_y(lx1,ly1,lz1,lelv)
+     $    ,ip_term_z(lx1,ly1,lz1,lelv)
+      common /ipterms/ ip_term_x, ip_term_y, ip_term_z
+
+      e = gllel(ieg)
+
+c     Imposing weak wall B.C.s
+      if(cbc(iside,e,1).eq.'ww ') then
+        TRX=ip_term_x(ix,iy,iz,e)
+        TRY=0.0 !ip_term_y(ix,iy,iz,e)
+        TRZ=0.0 !ip_term_z(ix,iy,iz,e)
+      endif
       
       return
       end
@@ -2849,12 +2825,14 @@ c-----------------------------------------------------------------------
       do iel=1,nelt
       do ifc=1,2*ndim
          if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $       (cbc(ifc,iel,1) .eq. 'ww ') .or.        
      $       (cbc(ifc,iel,1) .eq. 'W  ') .or. 
      $       (cbc(ifc,iel,1) .eq. 'V  ')) then 
            boundaryID(ifc,iel) = 1
          endif 
          cbc(ifc,iel,2) = cbc(ifc,iel,1) 
          if ((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $       (cbc(ifc,iel,1) .eq. 'ww ') .or.        
      $       (cbc(ifc,iel,1) .eq. 'W  ') .or.
      $       (cbc(ifc,iel,1) .eq. 'V  ')) then 
            cbc(ifc,iel,2) = 't  '
@@ -2870,12 +2848,14 @@ c-----------------------------------------------------------------------
       do iel=1,nelv
          do ifc=1,2*ldim
            if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $          (cbc(ifc,iel,1) .eq. 'ww ') .or.        
      $          (cbc(ifc,iel,1) .eq. 'W  ') .or.
      $          (cbc(ifc,iel,1) .eq. 'V  ')).AND.(ym1(1,1,1,iel).gt.0)) 
      $          then
               flag(iel) = 1
               top_y = ym1(1,1,1,iel)
            else if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
+     $               (cbc(ifc,iel,1) .eq. 'ww ') .or.        
      $               (cbc(ifc,iel,1) .eq. 'W  ') .or.
      $               (cbc(ifc,iel,1) .eq. 'V  ')).AND.
      $               (ym1(1,1,1,iel).lt.0)) then
