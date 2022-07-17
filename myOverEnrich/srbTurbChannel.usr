@@ -2177,7 +2177,7 @@ C          hb = 2.0 / NUMBER_ELEMENTS_Y
                 do iz = 1,lz1
                   do ix = 1,lx1
                 bmww(ix,iy_ut,iz,iel) = 
-     &                  wxm1(ix)/2.*face_area
+     &                  wxm1(ix)/2.*wxm1(iz)/2.*face_area
              Cpen(ix,iy_ut,iz,iel) = cbl/hb*vdiff(ix,iy_ut,iz,iel,1)
                 Csym(ix,iy_ut,iz,iel) = gam_ip*sign
      &                                        *vdiff(ix,iy_ut,iz,iel,1)
@@ -2194,8 +2194,8 @@ C          hb = 2.0 / NUMBER_ELEMENTS_Y
          ! Forcing terms
 
          call opzero(ip_term_x,ip_term_y,ip_term_z)   
-C          call opzero(w1,w2,w3)
-C          call opzero  (tx,ty,tz)
+         call opzero(w1,w2,w3)
+         call opzero  (tx,ty,tz)
 
       endif
 
