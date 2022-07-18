@@ -1039,6 +1039,7 @@ C       real psix(lx1,ly1,lz1,lelv)
       real gpsiz_z1(lx1,ly1,lz1,lelv)
       real phi_temp1(lx1,ly1,lz1,lelv)
       real psi_trans(lx1,lz1,lyd,lelv), psi_trans2(lxd,lzd,lyd,lelv)
+      real gpsi_trans(lx1,lz1,lyd,lelv), gpsi_trans2(lxd,lzd,lyd,lelv)
       real vx_psi(lx1,ly1,lz1,lelv)
 C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv) 
       real myH1(lx1,ly1,lz1,lelv), myH2(lx1,ly1,lz1,lelv) 
@@ -1468,12 +1469,18 @@ C                     do iy = 1,ly1
      $                    xm1(ix,iy,iz,iel),
      $                   ymd(1,iy,1,iel),zm1(ix,iy,iz,iel),flag(iel),
      $                   ut_param,param(2))
+                      gpsi_trans(ix,iz,iy,iel) = calc_gpsix_y(
+     $                    xm1(ix,iy,iz,iel),
+     $                   ymd(1,iy,1,iel),zm1(ix,iy,iz,iel),flag(iel),
+     $                   ut_param,param(2))
                     enddo
                   enddo
                   ! interpolate psi at overintegration points in y to
                   ! the overintegration points in x and z
                   call srb_intp_rstd(psi_trans2(1,1,iy,iel),
      $              psi_trans(1,1,iy,iel),lx1,lxd,0,0)
+                  call srb_intp_rstd(gpsi_trans2(1,1,iy,iel),
+     $              gpsi_trans(1,1,iy,iel),lx1,lxd,0,0)
                 enddo
 
                 ! Copy psi at overintegration points to correct ordering
@@ -1487,9 +1494,7 @@ C                     do iy = 1,ly1
                       endif
                       psix_d(ix,iy,iz,iel) = psi_trans2(ix,iz,iy,iel)
                       gpsix_y(ix,iy,iz,iel) = 
-     $                   calc_gpsix_y(xmd(ix,iy,iz,iel),
-     $                   ymd(ix,iy,iz,iel),zmd(ix,iy,iz,iel),flag(iel),
-     $                   ut_param,param(2))
+     $                   gpsi_trans2(ix,iz,iy,iel)
                     enddo
                   enddo
                 enddo
