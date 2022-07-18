@@ -1100,6 +1100,8 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real gam_ip, hb, cbl
       real face_area
       real srb_test
+      integer countww
+      common /ww_flag/ countww
       real vx_bc, vy_bc, vz_bc
       common vx_bc, vy_bc, vz_bc
       real ip_term_x(lx1,ly1,lz1,lelv), ip_term_y(lx1,ly1,lz1,lelv)
@@ -1233,7 +1235,12 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       use_default = 1
       use_overint = 1
-      use_weak_bc = 0
+
+      if (countww .gt. 0) then
+            use_weak_bc = 1
+      else
+            use_weak_bc = 0
+      endif
 
       if (istep.eq.0) then
           call oprzero(psix,psiy,psiz)
@@ -2860,7 +2867,10 @@ c-----------------------------------------------------------------------
       integer flag(lelv), counterp, countern, counterp2, countern2
       common /beflag/ flag
       common /y_ends/ bot_y, top_y
-      
+      integer countww
+      common /ww_flag/ countww
+
+
       counterp = 0
       countern = 0
       counterp2 = 0
@@ -2935,11 +2945,21 @@ c-----------------------------------------------------------------------
         endif
       enddo
 
+      do iel=1,nelt
+      do ifc=1,2*ndim
+         if (cbc(ifc,iel,1) .eq. 'ww ') then 
+           countww = countww + 1
+         endif 
+      enddo
+      enddo
+
       counterp = iglsum(counterp,1)
       countern = iglsum(countern,1)
 
       counterp2 = iglsum(counterp2,1)
       countern2 = iglsum(countern2,1)
+
+      countww = iglsum(countww,1)
 
       if (nid.eq.0) then 
           write(6,*) '# Boundary Elements Above Centerline:', counterp
