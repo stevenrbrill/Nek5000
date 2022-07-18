@@ -418,9 +418,6 @@ c-----------------------------------------------------------------------
      $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       NTOT1=lx1*ly1*lz1*NELV
-C      CALL SUB2(vx,psix,NTOT1)
-C      CALL SUB2(vy,psiy,NTOT1)
-C      CALL SUB2(vz,psiz,NTOT1)
 
       do i = 1,NTOT1
         vx(i,1,1,1) = vx(i,1,1,1) - psix(i,1,1,1)
@@ -464,9 +461,6 @@ c-----------------------------------------------------------------------
      $               ,psiz_rhs(lx1,ly1,lz1,lelv)
 
       NTOT1=lx1*ly1*lz1*NELV
-C      CALL ADD2(vx,psix,NTOT1)
-C      CALL ADD2(vy,psiy,NTOT1)
-C      CALL ADD2(vz,psiz,NTOT1)
 
       do i = 1,NTOT1
         vx(i,1,1,1) = vx(i,1,1,1) + psix(i,1,1,1)
@@ -565,10 +559,13 @@ c-----------------------------------------------------------------------
       subroutine oprzero_d (a,b,c)
       ! Zero overintegraded vectors
       include 'SIZE'
+      integer i
       REAL A(1),B(1),C(1)
       NTOT1=lxd*lyd*lzd*NELV
-      CALL RZERO(A,NTOT1)
-      CALL RZERO(B,NTOT1)
+      do i = 1, NTOT1
+        A(i) = 0
+        B(i) = 0
+      enddo
       IF(ldim.EQ.3) CALL RZERO(C,NTOT1)
       return
       END
