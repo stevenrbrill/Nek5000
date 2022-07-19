@@ -1200,6 +1200,8 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,psix_rhs(lx1,ly1,lz1,lelv)
      $               ,psiy_rhs(lx1,ly1,lz1,lelv)
      $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+
+      character*80 namestr
      
 C       save psix, psiy, psiz
 c---------------------------------------------------------------
@@ -2491,14 +2493,16 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          write(6,*) 'Dumping statistics ...', Re_tau, t_tau, dragx_avg,
      $    u_tau
  
-         open(unit=56,file='vel_fluc_prof.dat')
+         write(namestr,'(A,I0.8)') 'vel_fluc_prof.dat.s', istep   
+         open(unit=56,file=namestr)
          write(56,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
      $     '%time = ', time, '%Re_tau = ', Re_tau, 
      $     '%ut = ', u_tau, '%ut_param = ', ut_param
          write(56,'(A)') 
      $    '%  y    y+    uu    vv    ww    uv    u_tau  uu2   '
 
-         open(unit=57,file='mean_prof.dat')
+         write(namestr,'(A,I0.8)') 'mean_prof.dat.s', istep   
+         open(unit=57,file=namestr)
          write(57,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
      $     '%time = ', time, '%Re_tau = ', Re_tau, 
      $     '%ut = ', u_tau, '%ut_param = ', ut_param, 
@@ -2510,7 +2514,8 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          write(57,'(A)') 
      $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   Ucomb'
 
-         open(unit=58,file='en_terms.dat')
+         write(namestr,'(A,I0.8)') 'en_terms.dat.s', istep      
+         open(unit=58,file=namestr)
          write(58,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
      $     '%time = ', time, '%Re_tau = ', Re_tau, 
      $     '%ut = ', u_tau, '%ut_param = ', ut_param, 
@@ -2523,8 +2528,8 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
      $'%  y    y+    t2x    t2y    t2z    t3x    t3y    t3z    ',
      $'t1x    t1y    t1z    '
 
-
-         open(unit=59,file='mytest.dat')
+         write(namestr,'(A,I0.8)') 'mytest.dat.s', istep   
+         open(unit=59,file=namestr)
          write(59,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
      $     '%time = ', time, '%Re_tau = ', Re_tau, 
      $     '%ut = ', u_tau, '%ut_param = ', ut_param
