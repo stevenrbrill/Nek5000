@@ -1395,6 +1395,7 @@ C                     do iy = 1,ly1
                     if (use_default .eq. 1) then
                         utau = utau_ref
                     else
+                        ! SRB3D
                         utau = newton(flg,ravg(avg_ind,1),yp,param(1),
      $                        param(2),uti(ix,iy_ut,iz,iel),rtol,
      $                        maxiter)
@@ -1440,6 +1441,7 @@ C                     do iy = 1,ly1
                       if (use_default .eq. 1) then
                         ut_param = utau_ref
                       endif
+                      ! SRB3D
                       psix(ix,iy,iz,iel) = calc_psi(xm1(ix,iy,iz,iel),
      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
      $                   ut_param,param(2))
@@ -1460,6 +1462,7 @@ C                     do iy = 1,ly1
                       if (use_default .eq. 1) then
                         ut_param = utau_ref
                       endif
+                      ! SRB3D
                       psi_trans(ix,iz,iy,iel) = calc_psi(
      $                    xm1(ix,iy,iz,iel),
      $                   ymd(1,iy,1,iel),zm1(ix,iy,iz,iel),flag(iel),
@@ -1764,6 +1767,7 @@ C                     do iy = 1,ly1
      $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
                     tz_d(i,1,1,iel) = 0.0
                   endif
+                  ! SRB3D
                   w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
@@ -1805,6 +1809,7 @@ C                     do iy = 1,ly1
      $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
                     tz_d(i,1,1,iel) = 0.0
                   endif
+                  ! SRB3D
                   w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
@@ -1846,6 +1851,7 @@ C                     do iy = 1,ly1
      $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
                     tz_d(i,1,1,iel) = 0.0
                   endif
+                  ! SRB3D
                   w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
@@ -2045,6 +2051,7 @@ C           call opzero(wsx,wsy,wsz)
               call my_intp_rstd(vdiff_d(1,1,1,iel),vdiff(1,1,1,iel,1),
      $             lx1,lxd,if3d,0)
               call col3(srb_temp_d,bmd(1,1,1,iel),vdiff_d(1,1,1,iel),nq)
+              ! SRB3D
               call col3(tx_d,srb_temp_d,gpsix_x(1,1,1,iel),nq)
               call col3(ty_d,srb_temp_d,gpsix_y(1,1,1,iel),nq)
               call col3(tz_d,srb_temp_d,gpsix_z(1,1,1,iel),nq)
@@ -2059,11 +2066,13 @@ C           call opzero(wsx,wsy,wsz)
 
               call cmult (w1,2.0,nb)
 
+              ! SRB3D
               call add2(T1_rhs_x(1,1,1,iel),w1,nb)
               call add2(T1_rhs_x(1,1,1,iel),w2,nb)
               call add2(T1_rhs_x(1,1,1,iel),w3,nb)
 
               ! Cross terms
+              ! SRB3D
               call mxm(dpdx(1,1,iel) ,nb,ty_d,nq,w1,1)
               call mxm(dpdx(1,1,iel) ,nb,tz_d,nq,w2,1)
 
@@ -2081,6 +2090,7 @@ C           call opzero(wsx,wsy,wsz)
                   iy_ut = ly1
                   sign = 1.0
               endif
+              ! SRB3D
               do iz = 1,lz1
                 do ix = 1,lx1
               en_bound(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)*
@@ -2156,6 +2166,7 @@ C          hb = 2.0 / NUMBER_ELEMENTS_Y
                 endif
 
                 ! NOT GENERAL
+                ! SRB3D
                 hb = ym1(1,ly1,1,iel)-ym1(1,1,1,iel)
 
                 if (if3d) then
@@ -2229,10 +2240,12 @@ c
           call cfill(zint,ZCINT,size(zint))
 
           call cfill(xint_match,XCINT,2)
+          ! SRB3D
           yint_match(1) = bot_y
           yint_match(2) = top_y
           call cfill(zint_match,ZCINT,2)
 
+          ! SRB3D
           do i = 1,INTP_NMAX 
             if (yint(i) < ym1(1,ly1,1,1)) then
               psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1,
@@ -2417,6 +2430,7 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
                ut_avg_fit_top = utau_ref
                ut_avg_fit_bot = utau_ref
          else
+            ! SRB3D
             ut_avg_fit_bot = newton(flg,u_match(1),1.0+bot_y,param(1),
      $                 param(2),ut_param,rtol,
      $                 maxiter)
@@ -2425,6 +2439,7 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
      $                 maxiter)
          endif
 
+         ! SRB3D
          do i = 1,INTP_NMAX 
            if (yint(i) < bot_y) then
              psix_int(i) = calc_psi(xint(i),yint(i),zint(i),-1,
@@ -2598,21 +2613,12 @@ c-----------------------------------------------------------------------
       vy_bc = 0.0
       vz_bc = 0.0
 
-      hb = XLEN / NUMBER_ELEMENTS_X * ZLEN / NUMBER_ELEMENTS_Z
-      cbl = 1.0
-
-      sip_x = ip_term_x(ix,iy,iz,e)
-     $           -cbl*param(1)/hb*(vx(ix,iy,iz,e)-vx_bc)
-      sip_y = ip_term_y(ix,iy,iz,e)
-     $           -cbl*param(1)/hb*(vy(ix,iy,iz,e)-vy_bc)
-      sip_z = ip_term_z(ix,iy,iz,e)
-     $           -cbl*param(1)/hb*(vz(ix,iy,iz,e)-vz_bc)
-
       if((cbc(iside,e,1).eq.'v  ') .or. (cbc(iside,e,1).eq.'V  ')) then
         UX=0.0
         UY=0.0
         UZ=0.0
         ! This isn't actually used
+        ! SRB3D
         TRX=en_bound(ix,iy,iz,e)-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
         TRY=0.0
         TRZ=0.0
@@ -2620,12 +2626,14 @@ c-----------------------------------------------------------------------
 
 c     Imposing shear stress B.C.s
       if(cbc(iside,e,1).eq.'sh ') then
+        ! SRB3D
         TRX=en_bound(ix,iy,iz,e)+taunew(ix,iy,iz,e) !-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
         TRY=0.0
         TRZ=0.0
       endif
 
       if(cbc(iside,e,1).eq.'ww ') then
+        ! SRB3D
         TRX=en_bound(ix,iy,iz,e) 
         TRY=0.0
         TRZ=0.0!sip_z
