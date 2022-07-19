@@ -1200,18 +1200,6 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,psix_rhs(lx1,ly1,lz1,lelv)
      $               ,psiy_rhs(lx1,ly1,lz1,lelv)
      $               ,psiz_rhs(lx1,ly1,lz1,lelv)
-
-      double precision time1, time2, time3, time4
-      double precision myt1, myt2, myt3, myt4, myt5, myt6
-      integer clock_max
-      integer clock_rate
-      integer clock_reading
-      double precision wtime
-      integer use_timer
-
-
-
-      use_timer = 1
      
 C       save psix, psiy, psiz
 c---------------------------------------------------------------
@@ -1302,11 +1290,6 @@ C       if (time.lt.50) then
         
       else
 
-        if (use_timer .eq. 1) then    
-        call system_clock ( clock_reading, clock_rate, clock_max )
-        time1 = dble ( clock_reading ) / dble ( clock_rate )  
-        endif
-
         call my_set_dealias_rx
 
         do iel = 1,nelv
@@ -1351,12 +1334,7 @@ C       if (time.lt.50) then
           endif
         enddo
 
-        if (use_timer .eq. 1) then   
-        call system_clock ( clock_reading, clock_rate, clock_max )
-        time2 = dble ( clock_reading ) / dble ( clock_rate )  
-        print *, "TIME Zeros", time2-time1, time2, time1   
-        endif      
-
+            
         if (comp_psi .ne. 1) then
 C           if (use_default .eq. 1) then
 C             comp_psi = 1 ! comment for adaptation
@@ -1582,12 +1560,6 @@ C                     do iy = 1,ly1
             endif
         enddo
 
-        if (use_timer .eq. 1) then   
-        call system_clock ( clock_reading, clock_rate, clock_max )
-        time1 = dble ( clock_reading ) / dble ( clock_rate )  
-        print *, "TIME psi", time1-time2, time2, time1  
-        endif
-
         if (comp_en_F.ne. 1) then
           ! Compute the mass matrix for the overintegration points
 
@@ -1763,12 +1735,6 @@ C                     do iy = 1,ly1
           enddo     
           endif
 
-          if (use_timer .eq. 1) then   
-          call system_clock ( clock_reading, clock_rate, clock_max )
-        time2 = dble ( clock_reading ) / dble ( clock_rate )  
-        print *, "TIME T24", time2-time1, time2, time1  
-        endif
-
           ! ----------------------------------------------------------------
           ! Term 3: -rho*dot(psi,gradient(u0))   S^psi
 
@@ -1879,12 +1845,6 @@ C                     do iy = 1,ly1
           enddo
           endif
 
-          if (use_timer .eq. 1) then   
-          call system_clock ( clock_reading, clock_rate, clock_max )
-        time1 = dble ( clock_reading ) / dble ( clock_rate )  
-        print *, "TIME T3", time1-time2, time2, time1 
-        endif 
-
 C           call col2   (tr2x1,bm1,n)
 C           call col2   (tr2y1,bm1,n)
 C           call col2   (tr2z1,bm1,n)
@@ -1994,17 +1954,6 @@ C           call opcopy(wintx,winty,wintz,wsx,wsy,wsz)
 C           call opzero(wsx,wsy,wsz)
         endif
 
-        if (use_timer .eq. 1) then   
-        call system_clock ( clock_reading, clock_rate, clock_max )
-        time2 = dble ( clock_reading ) / dble ( clock_rate )  
-        print *, "TIME End T3", time2-time1, time2, time1 
-         myt1=0
-         myt2=0
-         myt3=0
-         myt4=0 
-         myt5=0
-        endif 
-
         ! Compute T1 (viscous enrichment term)
         ! (nu*dot(grad phi, grad psi))
         if (comp_T1 .ne. 1) then
@@ -2093,10 +2042,6 @@ C           call opzero(wsx,wsy,wsz)
                 enddo
               endif
               ! Compute other parts of T1
-              if (use_timer .eq. 1) then 
-              call system_clock ( clock_reading, clock_rate, clock_max )
-        time3 = dble ( clock_reading ) / dble ( clock_rate )  
-        endif 
               call my_intp_rstd(vdiff_d(1,1,1,iel),vdiff(1,1,1,iel,1),
      $             lx1,lxd,if3d,0)
 
@@ -2112,13 +2057,6 @@ C                   ! SRB3D
      $                   srb_temp_d(iq,1,1,1)*gpsix_z(iq,1,1,iel)
               enddo
 
-              if (use_timer .eq. 1) then 
-              call system_clock ( clock_reading, clock_rate, clock_max )
-        time4 = dble ( clock_reading ) / dble ( clock_rate )  
-C         print *, "TIME T1 tx_d", time4-time3, time4, time3 
-        myt1 = myt1+ time4-time3
-        endif 
-
               call mxm(dpdx(1,1,iel) ,nb,tx_d,nq,w1,1)
               call mxm(dpdy(1,1,iel) ,nb,ty_d,nq,w2,1)
               call mxm(dpdz(1,1,iel) ,nb,tz_d,nq,w3,1)
@@ -2130,12 +2068,6 @@ C         print *, "TIME T1 tx_d", time4-time3, time4, time3
      $                   -1.0*w2(ib,1,1,1)
      $                   -1.0*w3(ib,1,1,1)
               enddo
-              if (use_timer .eq. 1) then 
-              call system_clock ( clock_reading, clock_rate, clock_max )
-        time3 = dble ( clock_reading ) / dble ( clock_rate )  
-C         print *, "TIME T1 mxm 1", time3-time4, time4, time3 
-        myt2 = myt2 + time3-time4
-        endif 
 
               ! Cross terms
               ! SRB3D
@@ -2149,13 +2081,6 @@ C         print *, "TIME T1 mxm 1", time3-time4, time4, time3
                   T1_rhs_z(ib,1,1,iel) = T1_rhs_z(ib,1,1,iel)
      $                   -1.0*w2(ib,1,1,1)
               enddo
-
-              if (use_timer .eq. 1) then 
-              call system_clock ( clock_reading, clock_rate, clock_max )
-        time4 = dble ( clock_reading ) / dble ( clock_rate )  
-C         print *, "TIME T1 cross", time4-time3, time4, time3 
-        myt3 = myt3 + time4-time3
-        endif 
 
               ! Boundary terms
               if (flag(iel) .eq. -1) then
@@ -2173,13 +2098,6 @@ C         print *, "TIME T1 cross", time4-time3, time4, time3
                 enddo
               enddo
 
-              if (use_timer .eq. 1) then 
-              call system_clock ( clock_reading, clock_rate, clock_max )
-        time3 = dble ( clock_reading ) / dble ( clock_rate )  
-C         print *, "TIME T1 bound", time3-time4, time4, time3 
-        myt4 = myt4 + time3-time4
-        endif 
-
               ! (v,phi) terms
               do iq = 1,n_d
                   tx_d(iq,1,1,1) = psix_d(iq,1,1,iel)*bmd(iq,1,1,iel)
@@ -2190,13 +2108,6 @@ C         print *, "TIME T1 bound", time3-time4, time4, time3
               call mxm(phi_d(1,1),nb,M_psi_x_t(1,1,1,iel),nq,w1,1)
               call mxm(phi_d(1,1),nb,M_psi_y_t(1,1,1,iel),nq,w2,1)
               call mxm(phi_d(1,1),nb,M_psi_z_t(1,1,1,iel),nq,w3,1)
-
-              if (use_timer .eq. 1) then 
-              call system_clock ( clock_reading, clock_rate, clock_max )
-        time4 = dble ( clock_reading ) / dble ( clock_rate )  
-C         print *, "TIME T1 Mass", time4-time3, time4, time3 
-        myt5 = myt5 + time4-time3
-        endif 
 
             endif
           enddo
@@ -2236,13 +2147,6 @@ C       call oprzero(psix,psiy,psiz)
 C       call oprzero(wsx,wsy,wsz)
 C       call oprzero(wintx,winty,wintz)
 
-      endif
-
-      if (use_timer .eq. 1) then   
-      call system_clock ( clock_reading, clock_rate, clock_max )
-        time1 = dble ( clock_reading ) / dble ( clock_rate )  
-        print *, "TIME T1", time1-time2, time2, time1  
-        print *, "TIME times are", myt1, myt2, myt3, myt4, myt5
       endif
 
       ! Weak BC
@@ -2300,12 +2204,6 @@ C          hb = 2.0 / NUMBER_ELEMENTS_Y
             comp_ww_mats = 1
          endif 
       endif
-
-      if (use_timer .eq. 1) then   
-      call system_clock ( clock_reading, clock_rate, clock_max )
-        time2 = dble ( clock_reading ) / dble ( clock_rate )  
-        print *, "TIME T1 end", time2-time1, time2, time1  
-      endif  
 
 c     WALL ENRICHMENT...END
 
@@ -2688,12 +2586,6 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          close(59)
 
  998  endif
-
-      if (use_timer .eq. 1) then   
-      call system_clock ( clock_reading, clock_rate, clock_max )
-        time1 = dble ( clock_reading ) / dble ( clock_rate )  
-        print *, "TIME Post", time1-time2, time2, time1  
-      endif
 
       return
       end
