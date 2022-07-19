@@ -2888,11 +2888,11 @@ c        if ( .not.ifprint )  goto 9999
 
 C     Evaluate diagional pre-conidtioner for fluid solve
         ! SRBMOD
-      call srb_setprec (dpc,h1,h2,imesh,1)
-      call srb_setprec (wa ,h1,h2,imesh,2)
+      call setprec (dpc,h1,h2,imesh,1)
+      call setprec (wa ,h1,h2,imesh,2)
       call add2    (dpc,wa,n)
       if (ldim.eq.3) then
-         call srb_setprec (wa,h1,h2,imesh,3)
+         call setprec (wa,h1,h2,imesh,3)
          call add2    (dpc,wa,n)
       endif
 c     call rone (dpc,n)
