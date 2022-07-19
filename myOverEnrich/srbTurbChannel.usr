@@ -1767,7 +1767,6 @@ C                     do iy = 1,ly1
      $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
                     tz_d(i,1,1,iel) = 0.0
                   endif
-                  ! SRB3D
                   w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
@@ -1809,7 +1808,6 @@ C                     do iy = 1,ly1
      $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
                     tz_d(i,1,1,iel) = 0.0
                   endif
-                  ! SRB3D
                   w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
@@ -1851,7 +1849,6 @@ C                     do iy = 1,ly1
      $                       +symd(i,1,1,iel)*txy(i,1,1,iel))
                     tz_d(i,1,1,iel) = 0.0
                   endif
-                  ! SRB3D
                   w1_d(i,1,1,iel) = psix_d(i,1,1,iel)*tx_d(i,1,1,iel)
      $                            + psiy_d(i,1,1,iel)*ty_d(i,1,1,iel)
      $                            + psiz_d(i,1,1,iel)*tz_d(i,1,1,iel)
