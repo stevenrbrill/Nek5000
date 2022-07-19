@@ -1976,21 +1976,34 @@ C           call opzero(wsx,wsy,wsz)
             comp_T1 = 1 ! Comment for adaptation
           endif
 
-          call oprzero(wintx,winty,wintz)
-          call oprzero(M_psi_x,M_psi_y,M_psi_z)
-          call rzero  (T1_rhs_x,n)
-          call rzero  (T1_rhs_y,n)
-          call rzero  (T1_rhs_z,n)
-          call rzero  (M_psi_x_t,n)
-          call rzero  (M_psi_y_t,n)
-          call rzero  (M_psi_z_t,n)
-          call rzero  (tx_d,n_d)
-          call rzero  (ty_d,n_d)
-          call rzero  (tz_d,n_d)
-          call rzero  (w1_d,n_d)
-          call rzero  (w2_d,n_d)
-          call rzero  (w3_d,n_d)
-          call rzero  (phi_temp,n_d)
+          do iel = 1,nelv
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+              do ib = 1, lx1*ly1*lz1
+                wintx(ib,1,1,iel) = 0.0
+                winty(ib,1,1,iel) = 0.0
+                wintz(ib,1,1,iel) = 0.0
+                M_psi_x(ib,1,1,iel) = 0.0
+                M_psi_y(ib,1,1,iel) = 0.0
+                M_psi_z(ib,1,1,iel) = 0.0
+                M_psi_x_t(ib,1,1,iel) = 0.0
+                M_psi_y_t(ib,1,1,iel) = 0.0
+                M_psi_z_t(ib,1,1,iel) = 0.0
+                T1_rhs_x(ib,1,1,iel) = 0.0
+                T1_rhs_y(ib,1,1,iel) = 0.0
+                T1_rhs_z(ib,1,1,iel) = 0.0
+              enddo  
+
+              do iq = 1, lxd*lyd*lzd
+                  tx_d(iq,1,1,iel) = 0.0
+                  ty_d(iq,1,1,iel) = 0.0
+                  tz_d(iq,1,1,iel) = 0.0
+                  w1_d(iq,1,1,iel) = 0.0
+                  w2_d(iq,1,1,iel) = 0.0
+                  w3_d(iq,1,1,iel) = 0.0
+                  phi_temp(iq,1,1,iel) = 0.0
+              enddo    
+            endif
+          enddo
 
           ! Compute phi grads of reference elements
           if (comp_phi_grad .ne. 1) then
@@ -2017,7 +2030,6 @@ C           call opzero(wsx,wsy,wsz)
                 enddo
               enddo
             enddo
-
           endif   
 
           nb = lx1*ly1
@@ -2028,7 +2040,7 @@ C           call opzero(wsx,wsy,wsz)
           endif
           do iel = 1,nelv 
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-              ! Compute phi grad
+              ! Compute phi grad exactly once
               if (comp_phi_grad .ne. 1) then
                 do j=1,nb ! actually nb
                   do i=1,nq ! actually nq
@@ -2047,37 +2059,43 @@ C           call opzero(wsx,wsy,wsz)
               ! Compute other parts of T1
               call my_intp_rstd(vdiff_d(1,1,1,iel),vdiff(1,1,1,iel,1),
      $             lx1,lxd,if3d,0)
-              call col3(srb_temp_d,bmd(1,1,1,iel),vdiff_d(1,1,1,iel),nq)
-              ! SRB3D
-              call col3(tx_d,srb_temp_d,gpsix_x(1,1,1,iel),nq)
-              call col3(ty_d,srb_temp_d,gpsix_y(1,1,1,iel),nq)
-              call col3(tz_d,srb_temp_d,gpsix_z(1,1,1,iel),nq)
+
+              do iq = 1,nq
+                  srb_temp_d(iq,1,1,1) = 
+     $                   bmd(iq,1,1,iel)*vdiff_d(iq,1,1,iel)
+C                   ! SRB3D
+                  tx_d(iq,1,1,1) = 
+     $                   srb_temp_d(iq,1,1,1)*gpsix_x(iq,1,1,iel)
+                  ty_d(iq,1,1,1) = 
+     $                   srb_temp_d(iq,1,1,1)*gpsix_y(iq,1,1,iel)
+                  tz_d(iq,1,1,1) = 
+     $                   srb_temp_d(iq,1,1,1)*gpsix_z(iq,1,1,iel)
+              enddo
 
               call mxm(dpdx(1,1,iel) ,nb,tx_d,nq,w1,1)
               call mxm(dpdy(1,1,iel) ,nb,ty_d,nq,w2,1)
               call mxm(dpdz(1,1,iel) ,nb,tz_d,nq,w3,1)
 
-              call cmult (w1,-1.,nb)
-              call cmult (w2,-1.,nb)
-              call cmult (w3,-1.,nb)
-
-              call cmult (w1,2.0,nb)
-
               ! SRB3D
-              call add2(T1_rhs_x(1,1,1,iel),w1,nb)
-              call add2(T1_rhs_x(1,1,1,iel),w2,nb)
-              call add2(T1_rhs_x(1,1,1,iel),w3,nb)
+              do ib = 1,nb
+                  T1_rhs_x(ib,1,1,iel) = T1_rhs_x(ib,1,1,iel)
+     $                   -2.0*w1(ib,1,1,1)
+     $                   -1.0*w2(ib,1,1,1)
+     $                   -1.0*w3(ib,1,1,1)
+              enddo
 
               ! Cross terms
               ! SRB3D
               call mxm(dpdx(1,1,iel) ,nb,ty_d,nq,w1,1)
               call mxm(dpdx(1,1,iel) ,nb,tz_d,nq,w2,1)
 
-              call cmult (w1,-1.,nb)
-              call cmult (w2,-1.,nb)
-
-              call add2(T1_rhs_y(1,1,1,iel),w1,nb)
-              call add2(T1_rhs_z(1,1,1,iel),w2,nb)
+              do ib = 1,nb
+                  T1_rhs_y(ib,1,1,iel) = T1_rhs_y(ib,1,1,iel)
+     $                   -1.0*w1(ib,1,1,1)
+                 
+                  T1_rhs_z(ib,1,1,iel) = T1_rhs_z(ib,1,1,iel)
+     $                   -1.0*w2(ib,1,1,1)
+              enddo
 
               ! Boundary terms
               if (flag(iel) .eq. -1) then
@@ -2096,9 +2114,11 @@ C           call opzero(wsx,wsy,wsz)
               enddo
 
               ! (v,phi) terms
-              call col3(tx_d,psix_d(1,1,1,iel),bmd(1,1,1,iel),n_d)
-              call col3(ty_d,psiy_d(1,1,1,iel),bmd(1,1,1,iel),n_d)
-              call col3(tz_d,psiz_d(1,1,1,iel),bmd(1,1,1,iel),n_d)
+              do iq = 1,n_d
+                  tx_d(iq,1,1,1) = psix_d(iq,1,1,iel)*bmd(iq,1,1,iel)
+                  ty_d(iq,1,1,1) = psiy_d(iq,1,1,iel)*bmd(iq,1,1,iel)
+                  tz_d(iq,1,1,1) = psiz_d(iq,1,1,iel)*bmd(iq,1,1,iel)
+              enddo
 
               call mxm(phi_d(1,1),nb,M_psi_x_t(1,1,1,iel),nq,w1,1)
               call mxm(phi_d(1,1),nb,M_psi_y_t(1,1,1,iel),nq,w2,1)
@@ -2113,13 +2133,23 @@ C           call opzero(wsx,wsy,wsz)
           endif
         endif
 
-        call add2 (wintx,T1_rhs_x,n)
-        call add2 (winty,T1_rhs_y,n)
-        call add2 (wintz,T1_rhs_z,n)
+        do iel = 1,nelv 
+          if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
+            do ib = 1,lx1*ly1*lz1
+              wintx(ib,1,1,iel) = wintx(ib,1,1,iel)+T1_rhs_x(ib,1,1,iel)
+              winty(ib,1,1,iel) = winty(ib,1,1,iel)+T1_rhs_y(ib,1,1,iel)
+              wintz(ib,1,1,iel) = wintz(ib,1,1,iel)+T1_rhs_z(ib,1,1,iel)
 
-        call add2 (M_psi_x,M_psi_x_t,n)
-        call add2 (M_psi_y,M_psi_y_t,n)
-        call add2 (M_psi_z,M_psi_z_t,n)
+              M_psi_x(ib,1,1,iel) = 
+     $             M_psi_x(ib,1,1,iel) + M_psi_x_t(ib,1,1,iel)
+              M_psi_y(ib,1,1,iel) = 
+     $             M_psi_y(ib,1,1,iel) + M_psi_y_t(ib,1,1,iel)
+              M_psi_z(ib,1,1,iel) = 
+     $             M_psi_z(ib,1,1,iel) + M_psi_z_t(ib,1,1,iel)
+
+            enddo
+          endif
+        enddo
 
 C         if (istep.eq.0 .or. ifoutfld) then
 C         call copy   (tr1x1,T1_rhs_x,n)
@@ -2178,9 +2208,9 @@ C          hb = 2.0 / NUMBER_ELEMENTS_Y
                 bmww(ix,iy_ut,iz,iel) = 
      &                  wxm1(ix)/2.*wxm1(iz)/2.*face_area
              Cpen(ix,iy_ut,iz,iel) = cbl/hb*vdiff(ix,iy_ut,iz,iel,1)
-                Csym(ix,iy_ut,iz,iel) = gam_ip*sign
+             Csym(ix,iy_ut,iz,iel) = gam_ip*sign
      &                                        *vdiff(ix,iy_ut,iz,iel,1)
-            Ccon(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)
+             Ccon(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)
                   enddo
                 enddo  
               endif
