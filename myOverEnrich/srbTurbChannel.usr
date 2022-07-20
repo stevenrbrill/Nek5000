@@ -1058,6 +1058,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real srb_temp(lx1,ly1,lz1,lelv)
       real srb_temp_d(lxd,lyd,lzd,lelv)
       integer use_overint
+      real start_en
 
       real xmd(lxd,lyd,lzd,lelv), ymd(lxd,lyd,lzd,lelv) 
       real zmd(lxd,lyd,lzd,lelv), vx_d(lxd,lyd,lzd,lelv)
@@ -1236,6 +1237,8 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       use_default = 1
       use_overint = 1
+      
+      start_en = 50.0
 
       if (countww .gt. 0) then
             use_weak_bc = 1
@@ -1273,7 +1276,7 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       ! Start enrichment at time 50
 C       if (time.lt.50) then
-      if (time.lt.50) then
+      if (time.lt.start_en) then
         call oprzero(psix,psiy,psiz)
         call oprzero_d(psix_d,psiy_d,psiz_d)
         call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
