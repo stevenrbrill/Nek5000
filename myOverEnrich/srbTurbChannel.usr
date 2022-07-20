@@ -972,6 +972,13 @@ c-----------------------------------------------------------------------
       real stat_y(INTP_NMAX*nstat)
       save ravg, stat, stat_y
 
+      real srbavg(lx1*ly1*lz1*lelt,3)
+      save srbavg
+      real srbdtime, srbatime, srbtimel, srbalpha, srbbeta, srb_avg_int
+      save srbdtime, srbatime, srbtimel, srbalpha, srbbeta, srb_avg_int
+      integer use_avg_int
+
+
       save dragx_avg, dragx_avg_poly
       real tw_poly, u_tau_poly, tw_tot, u_tau_tot, u_tau_out
 
@@ -1083,6 +1090,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save    rwk2, iwk2
       integer intp_h2
       save intp_h2
+      integer recomp_en
       integer comp_phi_grad
       save comp_phi_grad
       real en_bound(lx1,ly1,lz1,lelv)
@@ -1240,6 +1248,9 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
       
       start_en = 50.0
 
+      use_avg_int = 1
+      srb_avg_int = 1.0
+
       if (countww .gt. 0) then
             use_weak_bc = 1
       else
@@ -1343,12 +1354,33 @@ C           if (use_default .eq. 1) then
 C             comp_psi = 1 ! comment for adaptation
 C           endif
 
+
+          ! if we are at the averaging interval, restart the average
+          if (use_avg_int .eq. 1) then
+            if (srbdtime .gt. srb_avg_int) then
+              time_int = 1
+              recomp_en = 1
+            else 
+              time_int = 0
+              recomp_en = 0
+            endif
+          else
+
+            if (use_default .ne. 1) then
+              recomp_en = 1
+            endif
+          endif  
+
           ! compute enrichment function psi
           if (secondcall .eq. 1) then
             call unprojenrich
+          else 
+            recomp_en = 1
           endif
 
           do iel = 1, nelv
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
+            ! Interpolate to overtintegration points in enriched elements
             call my_intp_rstd(jacmd(1,iel),jacm1(1,1,1,iel),
      $         lx1,lxd,if3d,0) ! 0 --> fwd
             do iz = 1,lzd
@@ -1363,8 +1395,6 @@ C           endif
                 enddo
               enddo
             enddo
-            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
-            ! Interpolate to overtintegration points in enriched elements
          call my_intp_rstd(xmd(1,1,1,iel),xm1(1,1,1,iel),lx1,lxd,if3d,0)
          call my_intp_rstd(ymd(1,1,1,iel),ym1(1,1,1,iel),lx1,lxd,if3d,0)
          call my_intp_rstd(zmd(1,1,1,iel),zm1(1,1,1,iel),lx1,lxd,if3d,0)
@@ -1378,6 +1408,7 @@ C           endif
        call my_intp_rstd(tymd(1,1,1,iel),tym1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
        call my_intp_rstd(tzmd(1,1,1,iel),tzm1(1,1,1,iel),lx1,lxd,if3d,0) ! 0 --> fwd
 
+               if (recomp_en .eq. 1) then
                 do iz = 1,lz1
                   do ix = 1,lx1
 C                     do iy = 1,ly1
@@ -1402,9 +1433,21 @@ C                     do iy = 1,ly1
                         utau = utau_ref
                     else
                         ! SRB3D
+                        ! Using average intervals
+                        if (use_avg_int .eq. 1) then
+                          ! Use ref for first call
+                          if (secondcall .ne. 1) then
+                              utau = utau_ref
+                          else
+                        utau = newton(flg,srbavg(avg_ind,1),yp,param(1),
+     $                        param(2),uti(ix,iy_ut,iz,iel),rtol,
+     $                        maxiter)
+                          endif
+                        else
                         utau = newton(flg,ravg(avg_ind,1),yp,param(1),
      $                        param(2),uti(ix,iy_ut,iz,iel),rtol,
      $                        maxiter)
+                        endif
                     endif
                     if (utau .eq. 0.0) then
                       count = count + 1 ! count unconverged solutions
@@ -1418,6 +1461,8 @@ C                     do iy = 1,ly1
                 enddo
                 call my_intp_rstd(uti_d(1,1,1,iel),uti(1,1,1,iel),
      $             lx1,lxd,if3d,0)
+
+               endif
              endif
           enddo
 
@@ -1427,9 +1472,17 @@ C                     do iy = 1,ly1
             write(6,*) 'Solutions not converged: ', count
           endif
 
+          ! if we are at the averaging interval, restart the average
+          if (srbdtime .gt. srb_avg_int) then
+            srbtimel = time
+            srbatime = 0.0
+            call rzero(srbavg,size(srbavg))
+          endif
+
           count = 0
 
           ! Compute psix and grad_psi at nodes
+          if (recomp_en .eq. 1) then
           do iel = 1, nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
               if (flag(iel) .eq. 1) then
@@ -1502,8 +1555,6 @@ C                     do iy = 1,ly1
              endif
           enddo
 
-
-
           ! Assume SEM basis in X and Z. Use analytical grad in y
           call gradm1(gpsix_x1,phi_temp1,gpsix_z1,psix)
           do iel = 1, nelv
@@ -1534,6 +1585,7 @@ C                     do iy = 1,ly1
             enddo
             endif
           enddo
+          endif ! recomp_en   
         endif
 
         ! Project solution onto enriched basis
@@ -1959,6 +2011,7 @@ C           call opzero(wsx,wsy,wsz)
 
         ! Compute T1 (viscous enrichment term)
         ! (nu*dot(grad phi, grad psi))
+        if (recomp_en .eq. 1) then
         if (comp_T1 .ne. 1) then
           if (use_default .eq. 1) then
             comp_T1 = 1 ! Comment for adaptation
@@ -2138,6 +2191,11 @@ C                   ! SRB3D
             enddo
           endif
         enddo
+        endif ! recomp_en
+
+        if (recomp_en .eq. 1) then
+            recomp_en = 0
+        endif
 
 C         if (istep.eq.0 .or. ifoutfld) then
 C         call copy   (tr1x1,T1_rhs_x,n)
@@ -2285,10 +2343,12 @@ c
         endif
 
         call rzero(ravg,size(ravg))
+        call rzero(srbavg,size(srbavg))
         dragx_avg = 0
         dragx_avg_poly = 0
         atime     = 0
         timel     = time
+        srbtimel   = time
         ntdump    = int(time/tSTATFREQ)
 
         icalld = 1
@@ -2297,10 +2357,16 @@ c
       dtime = time - timel
       atime = atime + dtime
 
+      srbdtime = time - srbtimel
+      srbatime = srbatime + srbdtime
+
       ! averaging over time
       if (atime.ne.0. .and. dtime.ne.0.) then
         beta      = dtime / atime
         alpha     = 1. - beta
+
+        srbbeta      = srbdtime / srbatime
+        srbalpha     = 1. - srbbeta
 
         call unprojenrich
         ifverbose = .false.
@@ -2328,6 +2394,12 @@ c
         call avg1(ravg(1,20),tr1x1,alpha,beta,n,'t1x1',ifverbose)
         call avg1(ravg(1,21),tr1y1,alpha,beta,n,'t1y1',ifverbose)
         call avg1(ravg(1,22),tr1z1,alpha,beta,n,'t1z1',ifverbose)
+
+        if (srbatime.ne.0. .and. srbdtime.ne.0.) then
+        call avg1(srbavg(1,1),vx   ,srbalpha,srbbeta,n,'uavg',ifverbose)
+        call avg1(srbavg(1,2),vy   ,srbalpha,srbbeta,n,'vavg',ifverbose)
+        call avg1(srbavg(1,3),vz   ,srbalpha,srbbeta,n,'wavg',ifverbose)
+        endif
 
         call torque_calc(1.0,x0,.false.,.false.) ! compute wall shear
         dragx_avg = alpha*dragx_avg + beta*dragx(iobj_wall)
