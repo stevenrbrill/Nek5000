@@ -1239,7 +1239,7 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
       use_default = 1
       use_overint = 1
       
-      start_en = 10.0
+      start_en = 50.0
 
       if (countww .gt. 0) then
             use_weak_bc = 1
