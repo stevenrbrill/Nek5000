@@ -1037,6 +1037,9 @@ C       real psix(lx1,ly1,lz1,lelv)
       real gpsiy_y1(lx1,ly1,lz1,lelv), gpsiy_z1(lx1,ly1,lz1,lelv)
       real gpsiz_x1(lx1,ly1,lz1,lelv), gpsiz_y1(lx1,ly1,lz1,lelv)
       real gpsiz_z1(lx1,ly1,lz1,lelv)
+      save gpsix_x, gpsix_y, gpsix_z, gpsiy_x, gpsiy_y, gpsiy_z,
+     $     gpsiz_x, gpsiz_y, gpsiz_z, gpsix_x1, gpsix_y1, gpsix_z1, 
+     $     gpsiy_x1, gpsiy_y1, gpsiy_z1, gpsiz_x1, gpsiz_y1, gpsiz_z1  
       real phi_temp1(lx1,ly1,lz1,lelv)
       real psi_trans(lx1,lz1,lyd,lelv), psi_trans2(lxd,lzd,lyd,lelv)
       real gpsi_trans(lx1,lz1,lyd,lelv), gpsi_trans2(lxd,lzd,lyd,lelv)
