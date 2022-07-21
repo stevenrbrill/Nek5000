@@ -1069,6 +1069,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real psix_d(lxd,lyd,lzd,lelv)
       real psiy_d(lxd,lyd,lzd,lelv)
       real psiz_d(lxd,lyd,lzd,lelv)
+      save psix_d, psiy_d, psiz_d
       real vdiff_d(lxd,lyd,lzd,lelv)
       real bmd(lxd,lyd,lzd,lelv)
       real jacmd(lxd*lyd*lzd,lelv)
@@ -1302,18 +1303,6 @@ C       if (time.lt.50) then
         do iel = 1,nelv
           if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
             do i = 1,lxd*lyd*lzd 
-              psix_d(i,1,1,iel) = 0.0
-              psiy_d(i,1,1,iel) = 0.0
-              psiz_d(i,1,1,iel) = 0.0
-              gpsix_x(i,1,1,iel) = 0.0
-              gpsix_y(i,1,1,iel) = 0.0
-              gpsix_z(i,1,1,iel) = 0.0
-              gpsiy_x(i,1,1,iel) = 0.0
-              gpsiy_y(i,1,1,iel) = 0.0
-              gpsiy_z(i,1,1,iel) = 0.0
-              gpsiz_x(i,1,1,iel) = 0.0
-              gpsiz_y(i,1,1,iel) = 0.0
-              gpsiz_z(i,1,1,iel) = 0.0
               txx(i,1,1,iel) = 0.0
               txy(i,1,1,iel) = 0.0
               txz(i,1,1,iel) = 0.0
@@ -1327,15 +1316,6 @@ C       if (time.lt.50) then
         do iel = 1,nelv
           if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
             do i = 1,lx1*ly1*lz1 
-              gpsix_x1(i,1,1,iel) = 0.0
-              gpsix_y1(i,1,1,iel) = 0.0
-              gpsix_z1(i,1,1,iel) = 0.0
-              gpsiy_x1(i,1,1,iel) = 0.0
-              gpsiy_y1(i,1,1,iel) = 0.0
-              gpsiy_z1(i,1,1,iel) = 0.0
-              gpsiz_x1(i,1,1,iel) = 0.0
-              gpsiz_y1(i,1,1,iel) = 0.0
-              gpsiz_z1(i,1,1,iel) = 0.0
               vx_psi(i,1,1,iel) = 0.0
             enddo
           endif
