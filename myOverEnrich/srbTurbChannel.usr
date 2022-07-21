@@ -2140,6 +2140,7 @@ C                   ! SRB3D
             comp_phi_grad = 1
           endif
         endif
+        endif ! recomp_en
 
         do iel = 1,nelv 
           if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
@@ -2158,12 +2159,7 @@ C                   ! SRB3D
             enddo
           endif
         enddo
-        endif ! recomp_en
-
-        if (recomp_en .eq. 1) then
-            recomp_en = 0
-        endif
-
+        
 C         if (istep.eq.0 .or. ifoutfld) then
 C         call copy   (tr1x1,T1_rhs_x,n)
 C         call copy   (tr1y1,T1_rhs_y,n)
