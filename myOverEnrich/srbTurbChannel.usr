@@ -1347,8 +1347,22 @@ C           endif
           ! compute enrichment function psi
           if (secondcall .eq. 1) then
             call unprojenrich
+
+            if (use_default .eq. 1) then
+              recomp_en = 0
+            else
+              recomp_en = 1
+            endif
           else 
             recomp_en = 1
+          endif
+
+
+
+          if (recomp_en .eq. 1) then
+            if(nid.eq.0) then
+              write(6,*) 'Recomputing Enrichment'
+            endif
           endif
 
           do iel = 1, nelv
