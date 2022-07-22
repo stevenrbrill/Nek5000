@@ -1337,42 +1337,24 @@ C           if (use_default .eq. 1) then
 C             comp_psi = 1 ! comment for adaptation
 C           endif
 
-
-          ! if we are at the averaging interval, restart the average
-          if (use_avg_int .eq. 1) then
-            if (srbdtime .gt. srb_avg_int) then
-              time_int = 1
-              recomp_en = 1
-            else 
-              time_int = 0
-              recomp_en = 0
-            endif
-          else
-
-            if (use_default .ne. 1) then
-              recomp_en = 1
-            endif
-          endif  
-
           ! compute enrichment function psi
           if (secondcall .eq. 1) then
             call unprojenrich
 
             if (use_default .eq. 1) then
               recomp_en = 0
-            else
+            elseif (use_avg_int .eq. 1) then
+              ! if we are at the averaging interval, restart the average    
+              if (srbdtime .gt. srb_avg_int) then
+                recomp_en = 1
+              else 
+                recomp_en = 0
+              endif
+            else !every time
               recomp_en = 1
             endif
           else 
             recomp_en = 1
-          endif
-
-
-
-          if (recomp_en .eq. 1) then
-            if(nid.eq.0) then
-              write(6,*) 'Recomputing Enrichment'
-            endif
           endif
 
           do iel = 1, nelv
@@ -1427,24 +1409,22 @@ C                     do iy = 1,ly1
      $                 (iel-1)*lx1*ly1*lz1
                     ! Use average value for matching point
                     if (use_default .eq. 1) then
+                      utau = utau_ref
+                    elseif (use_avg_int .eq. 1) then
+                      ! SRB3D
+                      ! Using average intervals
+                      ! Use ref for first call
+                      if (secondcall .ne. 1) then
                         utau = utau_ref
-                    else
-                        ! SRB3D
-                        ! Using average intervals
-                        if (use_avg_int .eq. 1) then
-                          ! Use ref for first call
-                          if (secondcall .ne. 1) then
-                              utau = utau_ref
-                          else
+                      else
                         utau = newton(flg,srbavg(avg_ind,1),yp,param(1),
      $                        param(2),uti(ix,iy_ut,iz,iel),rtol,
      $                        maxiter)
-                          endif
-                        else
-                        utau = newton(flg,ravg(avg_ind,1),yp,param(1),
+                      endif
+                    else ! Ever time
+                      utau = newton(flg,ravg(avg_ind,1),yp,param(1),
      $                        param(2),uti(ix,iy_ut,iz,iel),rtol,
      $                        maxiter)
-                        endif
                     endif
                     if (utau .eq. 0.0) then
                       count = count + 1 ! count unconverged solutions
@@ -1465,8 +1445,11 @@ C                     do iy = 1,ly1
 
           count = iglsum(count,1)
 
-          if(nid.eq.0) then
-            write(6,*) 'Solutions not converged: ', count
+          if (recomp_en .eq. 1) then
+            if(nid.eq.0) then
+              write(6,*) 'Recomputing Enrichment'
+              write(6,*) 'Solutions not converged: ', count
+            endif
           endif
 
           ! if we are at the averaging interval, restart the average
