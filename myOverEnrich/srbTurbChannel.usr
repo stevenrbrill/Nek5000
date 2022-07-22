@@ -972,6 +972,13 @@ c-----------------------------------------------------------------------
       real stat_y(INTP_NMAX*nstat)
       save ravg, stat, stat_y
 
+      real srbavg(lx1*ly1*lz1*lelt,3)
+      save srbavg
+      real srbdtime, srbatime, srbtimel, srbalpha, srbbeta, srb_avg_int
+      save srbdtime, srbatime, srbtimel, srbalpha, srbbeta, srb_avg_int
+      integer use_avg_int
+
+
       save dragx_avg, dragx_avg_poly
       real tw_poly, u_tau_poly, tw_tot, u_tau_tot, u_tau_out
 
@@ -1245,6 +1252,9 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
       
       start_en = 50.0
 
+      use_avg_int = 1
+      srb_avg_int = 50.0
+
       if (countww .gt. 0) then
             use_weak_bc = 1
       else
@@ -1327,6 +1337,23 @@ C           if (use_default .eq. 1) then
 C             comp_psi = 1 ! comment for adaptation
 C           endif
 
+
+          ! if we are at the averaging interval, restart the average
+          if (use_avg_int .eq. 1) then
+            if (srbdtime .gt. srb_avg_int) then
+              time_int = 1
+              recomp_en = 1
+            else 
+              time_int = 0
+              recomp_en = 0
+            endif
+          else
+
+            if (use_default .ne. 1) then
+              recomp_en = 1
+            endif
+          endif  
+
           ! compute enrichment function psi
           if (secondcall .eq. 1) then
             call unprojenrich
@@ -1402,9 +1429,22 @@ C                     do iy = 1,ly1
                     if (use_default .eq. 1) then
                         utau = utau_ref
                     else
+                        ! SRB3D
+                        ! Using average intervals
+                        if (use_avg_int .eq. 1) then
+                          ! Use ref for first call
+                          if (secondcall .ne. 1) then
+                              utau = utau_ref
+                          else
+                        utau = newton(flg,srbavg(avg_ind,1),yp,param(1),
+     $                        param(2),uti(ix,iy_ut,iz,iel),rtol,
+     $                        maxiter)
+                          endif
+                        else
                         utau = newton(flg,ravg(avg_ind,1),yp,param(1),
      $                        param(2),uti(ix,iy_ut,iz,iel),rtol,
      $                        maxiter)
+                        endif
                     endif
                     if (utau .eq. 0.0) then
                       count = count + 1 ! count unconverged solutions
@@ -1427,6 +1467,13 @@ C                     do iy = 1,ly1
 
           if(nid.eq.0) then
             write(6,*) 'Solutions not converged: ', count
+          endif
+
+          ! if we are at the averaging interval, restart the average
+          if (srbdtime .gt. srb_avg_int) then
+            srbtimel = time
+            srbatime = 0.0
+            call rzero(srbavg,size(srbavg))
           endif
 
           count = 0
@@ -2289,10 +2336,12 @@ c
         endif
 
         call rzero(ravg,size(ravg))
+        call rzero(srbavg,size(srbavg))
         dragx_avg = 0
         dragx_avg_poly = 0
         atime     = 0
         timel     = time
+        srbtimel   = time
         ntdump    = int(time/tSTATFREQ)
 
         icalld = 1
@@ -2301,10 +2350,16 @@ c
       dtime = time - timel
       atime = atime + dtime
 
+      srbdtime = time - srbtimel
+      srbatime = srbatime + srbdtime
+
       ! averaging over time
       if (atime.ne.0. .and. dtime.ne.0.) then
         beta      = dtime / atime
         alpha     = 1. - beta
+
+        srbbeta      = srbdtime / srbatime
+        srbalpha     = 1. - srbbeta
 
         call unprojenrich
         ifverbose = .false.
@@ -2332,6 +2387,12 @@ c
         call avg1(ravg(1,20),tr1x1,alpha,beta,n,'t1x1',ifverbose)
         call avg1(ravg(1,21),tr1y1,alpha,beta,n,'t1y1',ifverbose)
         call avg1(ravg(1,22),tr1z1,alpha,beta,n,'t1z1',ifverbose)
+
+        if (srbatime.ne.0. .and. srbdtime.ne.0.) then
+        call avg1(srbavg(1,1),vx   ,srbalpha,srbbeta,n,'uavg',ifverbose)
+        call avg1(srbavg(1,2),vy   ,srbalpha,srbbeta,n,'vavg',ifverbose)
+        call avg1(srbavg(1,3),vz   ,srbalpha,srbbeta,n,'wavg',ifverbose)
+        endif
 
         call torque_calc(1.0,x0,.false.,.false.) ! compute wall shear
         dragx_avg = alpha*dragx_avg + beta*dragx(iobj_wall)
