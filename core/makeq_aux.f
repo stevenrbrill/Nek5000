@@ -8,8 +8,8 @@
       if_conv_std = .true.
       if (ifmhd.and.ifaxis) if_conv_std = .false. ! conv. treated in induct.f
 
-      ! if (if_conv_std) call makeuq ! this will zero bq first
-      if (if_conv_std) call srb_makeuq
+      if (if_conv_std) call makeuq ! this will zero bq first
+C       if (if_conv_std) call srb_makeuq
 
       if (ifdp0dt .and.  ifield.eq.2 .and. .not.ifcvfld(ifield)) then
             dd = dp0thdt * (gamma0 - 1.)/gamma0
