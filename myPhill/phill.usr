@@ -572,6 +572,7 @@ c     get objects surface area
         call avg2(ravg(1,3),vy   ,alpha,beta,n,'vrms',ifverbose)
         call avg2(ravg(1,4),vz   ,alpha,beta,n,'wrms',ifverbose)
         call avg3(ravg(1,5),vx,vy,alpha,beta,n,'uvmm',ifverbose)
+        call avg1(ravg(1,6),vy   ,alpha,beta,n,'vavg',ifverbose)
 
         call torque_calc(1.0,x0,.false.,.false.) ! compute wall shear
         dragx_avg = alpha*dragx_avg + beta*dragx(0) ! drag from all objects
@@ -628,6 +629,19 @@ c     get objects surface area
          write(56,'(A)') 
      $    '%  y    y+    uu    vv    ww    uv    u_tau   '
 
+         open(unit=57,file='mean_prof.dat')
+         write(57,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', ut_param, 
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(57,'(A)') 
+     $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   Ucomb'
+
+
          do i = 1,nint
             yy = yint(i)
             write(56,3) 
@@ -639,9 +653,21 @@ c     get objects surface area
      &           stat_y(4*nint+i),
      &           u_tau
 
+            write(57,3) 
+     &           yy,
+     &           yy*Re_tau, 
+     &           stat_y(0*nint+i),
+     &           stat_y(5*nint+i),
+     &           0.0, !stat_y(9*nint+i),
+     &           0.0, !stat_y(10*nint+i),
+     &           0.0, !psix_int(i),
+     &           u_tau, !u_tau_out,
+     &           stat_y(0*nint+i) !stat_y(10*nint+i)+psix_int(i)
+
   3         format(1p15e17.9)
          enddo
          close(56)
+         close(57)
 
  998  endif      
       
