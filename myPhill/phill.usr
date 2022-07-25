@@ -380,6 +380,10 @@ c     parameters for line definition
       parameter (intp_nmax=200, nelx=22, nely=11, nelz=11)
       real xcint, zcint, ylen, betam
       parameter (xcint=4.0, zcint=2.25, ylen=3.035, betam=2.4)
+      real xcint1, xcint2, xcint3, xcint4, xcint5, xcint6, xcint7,
+     $     xcint8, xcint9, xcint10
+      parameter (xcint1=0.05,xcint2=0.5,xcint3=1.,xcint4=2.,xcint5=3.)
+      parameter (xcint6=4.,xcint7=5.,xcint8=6.,xcint9=7.,xcint10=8.)
 
 c     statistics start time and output frequency
       real tstatstar, tstatfreq
@@ -416,11 +420,45 @@ c     object definition
       save xint, yint, zint
       save igs_z
 
-      parameter(nstat=5)
+
+      real    rwk1(intp_nmax,ldim+1), rwk2(intp_nmax,ldim+1),
+     $        rwk3(intp_nmax,ldim+1), rwk4(intp_nmax,ldim+1),
+     $        rwk5(intp_nmax,ldim+1), rwk6(intp_nmax,ldim+1),
+     $        rwk7(intp_nmax,ldim+1), rwk8(intp_nmax,ldim+1),
+     $        rwk9(intp_nmax,ldim+1), rwk10(intp_nmax,ldim+1)
+      integer iwk1(intp_nmax,3), iwk2(intp_nmax,3), iwk3(intp_nmax,3),
+     $        iwk4(intp_nmax,3), iwk5(intp_nmax,3), iwk6(intp_nmax,3),
+     $        iwk7(intp_nmax,3), iwk8(intp_nmax,3), iwk9(intp_nmax,3),
+     $        iwk10(intp_nmax,3)
+      save    rwk1, iwk1, rwk2, iwk2, rwk3, iwk3, rwk4, iwk4,
+     $        rwk5, iwk5, rwk6, iwk6, rwk7, iwk7, rwk8, iwk8,
+     $        rwk9, iwk9, rwk10, iwk10 
+
+      real xint1(intp_nmax),xint2(intp_nmax),xint3(intp_nmax),
+     $     xint4(intp_nmax),xint5(intp_nmax),xint6(intp_nmax),
+     $     xint7(intp_nmax),xint8(intp_nmax),xint9(intp_nmax),
+     $     xint10(intp_nmax) 
+      save xint1, xint2, xint3, xint4, xint5, xint6, xint7, xint8, 
+     $     xint9, xint10
+
+      parameter(nstat=6)
       real ravg(lx1*ly1*lz1*lelt,nstat)
       real stat(lx1*ly1*lz1*lelt,nstat)
       real stat_y(intp_nmax*nstat)
       save ravg, stat, stat_y
+
+      real stat_y1(intp_nmax*nstat)
+      real stat_y2(intp_nmax*nstat)
+      real stat_y3(intp_nmax*nstat)
+      real stat_y4(intp_nmax*nstat)
+      real stat_y5(intp_nmax*nstat)
+      real stat_y6(intp_nmax*nstat)
+      real stat_y7(intp_nmax*nstat)
+      real stat_y8(intp_nmax*nstat)
+      real stat_y9(intp_nmax*nstat)
+      real stat_y10(intp_nmax*nstat)
+      save stat_y1, stat_y2, stat_y3, stat_y4, stat_y5, stat_y6, 
+     $     stay_y7, stat_y8, stat_y9, stat_y10 
 
       save dragx_avg
 
@@ -449,6 +487,16 @@ c     object definition
         if (nid.eq.0) then
           nint = intp_nmax
           call cfill(xint,xcint,size(xint))
+          call cfill(xint1,xcint1,size(xint1))
+          call cfill(xint2,xcint2,size(xint2))
+          call cfill(xint3,xcint3,size(xint3))
+          call cfill(xint4,xcint4,size(xint4))
+          call cfill(xint5,xcint5,size(xint5))
+          call cfill(xint6,xcint6,size(xint6))
+          call cfill(xint7,xcint7,size(xint7))
+          call cfill(xint8,xcint8,size(xint8))
+          call cfill(xint9,xcint9,size(xint9))
+          call cfill(xint10,xcint10,size(xint10))
           do i = 1,intp_nmax 
              yi = (i-1.)/(intp_nmax-1)
              yint(i) = ylen*0.5*(tanh(betam*(2*yi-1.0))/
@@ -459,6 +507,26 @@ c     object definition
         iffpts = .true. ! dummy call to find points
         call interp_nfld(stat_y,ravg,1,xint,yint,zint,nint,
      $                   iwk,rwk,intp_nmax,iffpts,intp_h)
+        call interp_nfld(stat_y1,ravg,1,xint1,yint,zint,nint,
+     $                   iwk1,rwk1,intp_nmax,iffpts,intp_h)
+        call interp_nfld(stat_y2,ravg,1,xint2,yint,zint,nint,
+     $                   iwk2,rwk2,intp_nmax,iffpts,intp_h)
+        call interp_nfld(stat_y3,ravg,1,xint3,yint,zint,nint,
+     $                   iwk3,rwk3,intp_nmax,iffpts,intp_h)
+        call interp_nfld(stat_y4,ravg,1,xint4,yint,zint,nint,
+     $                   iwk4,rwk4,intp_nmax,iffpts,intp_h)
+        call interp_nfld(stat_y5,ravg,1,xint5,yint,zint,nint,
+     $                   iwk5,rwk5,intp_nmax,iffpts,intp_h)
+        call interp_nfld(stat_y6,ravg,1,xint6,yint,zint,nint,
+     $                   iwk6,rwk6,intp_nmax,iffpts,intp_h)
+        call interp_nfld(stat_y7,ravg,1,xint7,yint,zint,nint,
+     $                   iwk7,rwk7,intp_nmax,iffpts,intp_h)
+        call interp_nfld(stat_y8,ravg,1,xint8,yint,zint,nint,
+     $                   iwk8,rwk8,intp_nmax,iffpts,intp_h)
+        call interp_nfld(stat_y9,ravg,1,xint9,yint,zint,nint,
+     $                   iwk9,rwk9,intp_nmax,iffpts,intp_h)
+        call interp_nfld(stat_y10,ravg,1,xint10,yint,zint,nint,
+     $                   iwk10,rwk10,intp_nmax,iffpts,intp_h)
         iffpts = .false.
         call gtpp_gs_setup(igs_z,nelx*nely,1   ,nelz,3) ! z-avg
 
@@ -521,6 +589,26 @@ c     get objects surface area
          ! extract data along wall normal direction (1D profile)
          call interp_nfld(stat_y,stat,nstat,xint,yint,zint,nint,
      $                    iwk,rwk,intp_nmax,iffpts,intp_h)
+         call interp_nfld(stat_y1,stat,nstat,xint1,yint,zint,nint,
+     $                    iwk1,rwk1,intp_nmax,iffpts,intp_h)
+         call interp_nfld(stat_y2,stat,nstat,xint2,yint,zint,nint,
+     $                    iwk2,rwk2,intp_nmax,iffpts,intp_h)
+         call interp_nfld(stat_y3,stat,nstat,xint3,yint,zint,nint,
+     $                    iwk3,rwk3,intp_nmax,iffpts,intp_h)
+         call interp_nfld(stat_y4,stat,nstat,xint4,yint,zint,nint,
+     $                    iwk4,rwk4,intp_nmax,iffpts,intp_h)
+         call interp_nfld(stat_y5,stat,nstat,xint5,yint,zint,nint,
+     $                    iwk5,rwk5,intp_nmax,iffpts,intp_h)
+         call interp_nfld(stat_y6,stat,nstat,xint6,yint,zint,nint,
+     $                    iwk6,rwk6,intp_nmax,iffpts,intp_h)
+         call interp_nfld(stat_y7,stat,nstat,xint7,yint,zint,nint,
+     $                    iwk7,rwk7,intp_nmax,iffpts,intp_h)
+         call interp_nfld(stat_y8,stat,nstat,xint8,yint,zint,nint,
+     $                    iwk8,rwk8,intp_nmax,iffpts,intp_h)
+         call interp_nfld(stat_y9,stat,nstat,xint9,yint,zint,nint,
+     $                    iwk9,rwk9,intp_nmax,iffpts,intp_h)
+         call interp_nfld(stat_y10,stat,nstat,xint10,yint,zint,nint,
+     $                    iwk10,rwk10,intp_nmax,iffpts,intp_h)
 
          ntdump = ntdump + 1
          if (nid.ne.0) goto 998 
