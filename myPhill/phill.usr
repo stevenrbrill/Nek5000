@@ -618,6 +618,7 @@ c     get objects surface area
          dnu    = param(2)
          tw     = dragx_avg / A_w
          u_tau  = sqrt(tw / rho)
+         ! SRB - Local u_taus?????
          Re_tau = u_tau / dnu
 
          write(6,*) 'Dumping statistics ...', Re_tau
@@ -642,6 +643,136 @@ c     get objects surface area
      $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   Ucomb'
 
 
+         open(unit=81,file='comp_prof1.dat')
+         write(81,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(81,'(A,A)') 
+     $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   ',
+     $'Ucomb   uu    vv    ww    uv'
+
+         open(unit=82,file='comp_prof2.dat')
+         write(82,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(82,'(A,A)') 
+     $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   ',
+     $'Ucomb   uu    vv    ww    uv'
+
+         open(unit=83,file='comp_prof3.dat')
+         write(83,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(83,'(A,A)') 
+     $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   ',
+     $'Ucomb   uu    vv    ww    uv'
+
+         open(unit=84,file='comp_prof4.dat')
+         write(84,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(84,'(A,A)') 
+     $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   ',
+     $'Ucomb   uu    vv    ww    uv'
+
+         open(unit=85,file='comp_prof5.dat')
+         write(85,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(85,'(A,A)') 
+     $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   ',
+     $'Ucomb   uu    vv    ww    uv'
+
+         open(unit=86,file='comp_prof6.dat')
+         write(86,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(86,'(A,A)') 
+     $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   ',
+     $'Ucomb   uu    vv    ww    uv'
+
+         open(unit=87,file='comp_prof7.dat')
+         write(87,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(87,'(A,A)') 
+     $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   ',
+     $'Ucomb   uu    vv    ww    uv'
+
+         open(unit=88,file='comp_prof8.dat')
+         write(88,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(88,'(A,A)') 
+     $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   ',
+     $'Ucomb   uu    vv    ww    uv'
+
+         open(unit=89,file='comp_prof9.dat')
+         write(89,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(89,'(A,A)') 
+     $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   ',
+     $'Ucomb   uu    vv    ww    uv'
+
+         open(unit=90,file='comp_prof10.dat')
+         write(90,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(90,'(A,A)') 
+     $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   ',
+     $'Ucomb   uu    vv    ww    uv'
+
          do i = 1,nint
             yy = yint(i)
             write(56,3) 
@@ -664,10 +795,163 @@ c     get objects surface area
      &           u_tau, !u_tau_out,
      &           stat_y(0*nint+i) !stat_y(10*nint+i)+psix_int(i)
 
+            write(81,3) 
+     &           yy,
+     &           yy*Re_tau, 
+     &           stat_y1(0*nint+i),
+     &           stat_y1(5*nint+i),
+     &           0.0, !stat_y(9*nint+i),
+     &           0.0, !stat_y(10*nint+i),
+     &           0.0, !psix_int(i),
+     &           u_tau, !u_tau_out,
+     &           stat_y1(0*nint+i), !stat_y(10*nint+i)+psix_int(i),
+     &           (stat_y1(1*nint+i)-(stat_y1(0*nint+i))**2),
+     &           stat_y1(2*nint+i),
+     &           stat_y1(3*nint+i),
+     &           stat_y1(4*nint+i)
+
+            write(82,3) 
+     &           yy,
+     &           yy*Re_tau, 
+     &           stat_y2(0*nint+i),
+     &           stat_y2(5*nint+i),
+     &           0.0, !stat_y(9*nint+i),
+     &           0.0, !stat_y(10*nint+i),
+     &           0.0, !psix_int(i),
+     &           u_tau, !u_tau_out,
+     &           stat_y2(0*nint+i), !stat_y(10*nint+i)+psix_int(i),
+     &           (stat_y2(1*nint+i)-(stat_y2(0*nint+i))**2),
+     &           stat_y2(2*nint+i),
+     &           stat_y2(3*nint+i),
+     &           stat_y2(4*nint+i)
+            write(83,3) 
+     &           yy,
+     &           yy*Re_tau, 
+     &           stat_y3(0*nint+i),
+     &           stat_y3(5*nint+i),
+     &           0.0, !stat_y(9*nint+i),
+     &           0.0, !stat_y(10*nint+i),
+     &           0.0, !psix_int(i),
+     &           u_tau, !u_tau_out,
+     &           stat_y3(0*nint+i), !stat_y(10*nint+i)+psix_int(i),
+     &           (stat_y3(1*nint+i)-(stat_y3(0*nint+i))**2),
+     &           stat_y3(2*nint+i),
+     &           stat_y3(3*nint+i),
+     &           stat_y3(4*nint+i)
+            write(84,3) 
+     &           yy,
+     &           yy*Re_tau, 
+     &           stat_y4(0*nint+i),
+     &           stat_y4(5*nint+i),
+     &           0.0, !stat_y(9*nint+i),
+     &           0.0, !stat_y(10*nint+i),
+     &           0.0, !psix_int(i),
+     &           u_tau, !u_tau_out,
+     &           stat_y4(0*nint+i), !stat_y(10*nint+i)+psix_int(i),
+     &           (stat_y4(1*nint+i)-(stat_y4(0*nint+i))**2),
+     &           stat_y4(2*nint+i),
+     &           stat_y4(3*nint+i),
+     &           stat_y4(4*nint+i)
+            write(85,3) 
+     &           yy,
+     &           yy*Re_tau, 
+     &           stat_y5(0*nint+i),
+     &           stat_y5(5*nint+i),
+     &           0.0, !stat_y(9*nint+i),
+     &           0.0, !stat_y(10*nint+i),
+     &           0.0, !psix_int(i),
+     &           u_tau, !u_tau_out,
+     &           stat_y5(0*nint+i), !stat_y(10*nint+i)+psix_int(i),
+     &           (stat_y5(1*nint+i)-(stat_y5(0*nint+i))**2),
+     &           stat_y5(2*nint+i),
+     &           stat_y5(3*nint+i),
+     &           stat_y5(4*nint+i)
+            write(86,3) 
+     &           yy,
+     &           yy*Re_tau, 
+     &           stat_y6(0*nint+i),
+     &           stat_y6(5*nint+i),
+     &           0.0, !stat_y(9*nint+i),
+     &           0.0, !stat_y(10*nint+i),
+     &           0.0, !psix_int(i),
+     &           u_tau, !u_tau_out,
+     &           stat_y6(0*nint+i), !stat_y(10*nint+i)+psix_int(i),
+     &           (stat_y6(1*nint+i)-(stat_y6(0*nint+i))**2),
+     &           stat_y6(2*nint+i),
+     &           stat_y6(3*nint+i),
+     &           stat_y6(4*nint+i)
+            write(87,3) 
+     &           yy,
+     &           yy*Re_tau, 
+     &           stat_y7(0*nint+i),
+     &           stat_y7(5*nint+i),
+     &           0.0, !stat_y(9*nint+i),
+     &           0.0, !stat_y(10*nint+i),
+     &           0.0, !psix_int(i),
+     &           u_tau, !u_tau_out,
+     &           stat_y7(0*nint+i), !stat_y(10*nint+i)+psix_int(i),
+     &           (stat_y7(1*nint+i)-(stat_y7(0*nint+i))**2),
+     &           stat_y7(2*nint+i),
+     &           stat_y7(3*nint+i),
+     &           stat_y7(4*nint+i)
+            write(88,3) 
+     &           yy,
+     &           yy*Re_tau, 
+     &           stat_y8(0*nint+i),
+     &           stat_y8(5*nint+i),
+     &           0.0, !stat_y(9*nint+i),
+     &           0.0, !stat_y(10*nint+i),
+     &           0.0, !psix_int(i),
+     &           u_tau, !u_tau_out,
+     &           stat_y8(0*nint+i), !stat_y(10*nint+i)+psix_int(i),
+     &           (stat_y8(1*nint+i)-(stat_y8(0*nint+i))**2),
+     &           stat_y8(2*nint+i),
+     &           stat_y8(3*nint+i),
+     &           stat_y8(4*nint+i)
+            write(89,3) 
+     &           yy,
+     &           yy*Re_tau, 
+     &           stat_y9(0*nint+i),
+     &           stat_y9(5*nint+i),
+     &           0.0, !stat_y(9*nint+i),
+     &           0.0, !stat_y(10*nint+i),
+     &           0.0, !psix_int(i),
+     &           u_tau, !u_tau_out,
+     &           stat_y9(0*nint+i), !stat_y(10*nint+i)+psix_int(i),
+     &           (stat_y9(1*nint+i)-(stat_y9(0*nint+i))**2),
+     &           stat_y9(2*nint+i),
+     &           stat_y9(3*nint+i),
+     &           stat_y9(4*nint+i)
+            write(90,3) 
+     &           yy,
+     &           yy*Re_tau, 
+     &           stat_y10(0*nint+i),
+     &           stat_y10(5*nint+i),
+     &           0.0, !stat_y(9*nint+i),
+     &           0.0, !stat_y(10*nint+i),
+     &           0.0, !psix_int(i),
+     &           u_tau, !u_tau_out,
+     &           stat_y10(0*nint+i), !stat_y(10*nint+i)+psix_int(i),
+     &           (stat_y10(1*nint+i)-(stat_y10(0*nint+i))**2),
+     &           stat_y10(2*nint+i),
+     &           stat_y10(3*nint+i),
+     &           stat_y10(4*nint+i)
+
+
   3         format(1p15e17.9)
          enddo
          close(56)
          close(57)
+         close(81)
+         close(82)
+         close(83)
+         close(84)
+         close(85)
+         close(86)
+         close(87)
+         close(88)
+         close(89)
+         close(90)
 
  998  endif      
       
