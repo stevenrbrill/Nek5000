@@ -1749,23 +1749,17 @@ C
         call cmult2(h2,vtrans(1,1,1,1,ifield),const,ntot1)
       endif
 
-      call opcmult (TB1,TB2,TB3,M_psi_x,M_psi_y,M_psi_z,bd(2))
+      call opcmult2(TB1,TB2,TB3,M_psi_x,M_psi_y,M_psi_z,bd(2))
+
 C
       DO 100 ILAG=2,NBD
-         call opcmult(TA1,TA2,TA3,MPSIXLAG(1,1,1,1,ILAG-1)
-     $       ,MPSIYLAG(1,1,1,1,ILAG-1),MPSIXLAG(1,1,1,1,ILAG-1)
+         call opcmult2(TA1,TA2,TA3,MPSIXLAG(1,1,1,1,ILAG-1)
+     $       ,MPSIYLAG(1,1,1,1,ILAG-1),MPSIZLAG(1,1,1,1,ILAG-1)
      $       ,bd(ilag+1))
          CALL OPADD2  (TB1,TB2,TB3,TA1,TA2,TA3)
  100  CONTINUE
+      
       CALL OPADD2col (BFX,BFY,BFZ,TB1,TB2,TB3,h2)
-
-C       print *, "Print psibdfx"
-C       call srbprint(TB1)
-C       print *, "Print psibdfy"
-C       call srbprint(TB2)
-C       print *, "Print psibdfz"
-C       call srbprint(TB3)
-C       print *, "Print"
 C
       return
       END      
@@ -3021,6 +3015,43 @@ C
       ENDIF
       return
       END
+c-----------------------------------------------------------------------
+      subroutine opcmult2(a1,a2,a3,b1,b2,b3,d)
+      include 'SIZE'
+      REAL A1(1),A2(1),A3(1)
+      REAL B1(1),B2(1),B3(1)
+      include 'OPCTR'
+C
+      NTOT1=lx1*ly1*lz1*NELV
+
+#ifdef TIMER
+      if (isclld.eq.0) then
+          isclld=1
+          nrout=nrout+1
+          myrout=nrout
+          rname(myrout) = 'opcmult2'
+      endif
+C
+      isbcnt = ntot1*ldim*2
+      dct(myrout) = dct(myrout) + (isbcnt)
+      ncall(myrout) = ncall(myrout) + 1
+      dcount      =      dcount + (isbcnt)
+#endif
+C
+      IF (ldim.EQ.3) THEN
+         DO 100 I=1,NTOT1
+            A1(I)=B1(I)*d
+            A2(I)=B2(I)*d
+            A3(I)=B3(I)*d
+  100    CONTINUE
+      ELSE
+         DO 200 I=1,NTOT1
+            A1(I)=B1(I)*d
+            A2(I)=B2(I)*d
+  200    CONTINUE
+      ENDIF
+      return
+      END     
 c-----------------------------------------------------------------------
       subroutine opcolv3c(a1,a2,a3,b1,b2,b3,c,d)
       include 'SIZE'

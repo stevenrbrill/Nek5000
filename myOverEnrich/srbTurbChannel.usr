@@ -1695,7 +1695,6 @@ C                       psiz(ix,iy,iz,iel) = gpsidn_norm*norm3
 
         ! If this is the first call, back fill the history
         if (secondcall .ne. 1) then
-          secondcall = 1
           do ILAG = 2,NBD
             CALL COPY(VXLAG(1,1,1,1,ILAG-1),VX,n)
             CALL COPY(VYLAG(1,1,1,1,ILAG-1),VY,n)
@@ -2321,15 +2320,15 @@ C                   ! SRB3D
                   tx_d(iq,1,1,1) = psix_d(iq,1,1,iel)*bmd(iq,1,1,iel)
                   ty_d(iq,1,1,1) = psiy_d(iq,1,1,iel)*bmd(iq,1,1,iel)
                   tz_d(iq,1,1,1) = psiz_d(iq,1,1,iel)*bmd(iq,1,1,iel)
-              enddo
+              enddo        
 
-              call mxm(phi_d(1,1),nb,M_psi_x_t(1,1,1,iel),nq,w1,1)
-              call mxm(phi_d(1,1),nb,M_psi_y_t(1,1,1,iel),nq,w2,1)
-              call mxm(phi_d(1,1),nb,M_psi_z_t(1,1,1,iel),nq,w3,1)
+              call mxm(phi_d(1,1),nb,tx_d,nq,M_psi_x_t(1,1,1,iel),1)
+              call mxm(phi_d(1,1),nb,ty_d,nq,M_psi_y_t(1,1,1,iel),1)
+              call mxm(phi_d(1,1),nb,tz_d,nq,M_psi_z_t(1,1,1,iel),1)
 
             endif
           enddo
-          
+
           ! only compute phi grads once
           if (comp_phi_grad .ne. 1) then
             comp_phi_grad = 1
@@ -2350,11 +2349,19 @@ C                   ! SRB3D
      $             M_psi_y(ib,1,1,iel) + M_psi_y_t(ib,1,1,iel)
               M_psi_z(ib,1,1,iel) = 
      $             M_psi_z(ib,1,1,iel) + M_psi_z_t(ib,1,1,iel)
-
             enddo
           endif
         enddo
-        
+
+        if (secondcall .ne. 1) then
+          secondcall = 1
+          do ILAG = 2,NBD
+            CALL COPY(MPSIXLAG(1,1,1,1,ILAG-1),M_psi_x,n)
+            CALL COPY(MPSIYLAG(1,1,1,1,ILAG-1),M_psi_y,n)
+            CALL COPY(MPSIZLAG(1,1,1,1,ILAG-1),M_psi_z,n)
+          enddo
+        endif
+
 C         if (istep.eq.0 .or. ifoutfld) then
 C         call copy   (tr1x1,T1_rhs_x,n)
 C         call copy   (tr1y1,T1_rhs_y,n)
