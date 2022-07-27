@@ -993,7 +993,9 @@ c-----------------------------------------------------------------------
 c----------------------------------------------------------------
 c     VARIABLES DECLARED FOR USING THE NON-ITERATIVE METHOD  
       real tauold(lx1,ly1,lz1,lelv), taunew(lx1,ly1,lz1,lelv)
-      common /wallshear/ taunew
+      real taunewx(lx1,ly1,lz1,lelv)
+      real taunewy(lx1,ly1,lz1,lelv), taunewz(lx1,ly1,lz1,lelv)
+      common /wallshear/ taunew, taunewx, taunewy, taunewz
       save tauold
       
       real M, Kappa, utau_init
@@ -1127,7 +1129,18 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $                ,phi_d(lx1*ly1*lz1,lxd*lyd*lzd)
 
       integer i_d
-                               !(nb,nq)
+
+      real unw(ldim,lx1,lz1,lelv), t1w(ldim,lx1,lz1,lelv),
+     $     t2w(ldim,lx1,lz1,lelv) 
+      save unw, t1w, t2w
+      real utan_x(lx1,ly1,lz1,lelv), utan_y(lx1,ly1,lz1,lelv),
+     $     utan_z(lx1,ly1,lz1,lelv) 
+      save utan_x, utan_y, utan_z
+      integer comp_norms
+      save comp_norms
+      real u_m, v_m, w_m
+      real utt1,utt2,utgt,utgtx,utgty,utgtz,utgtmag
+
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /y_ends/ bot_y, top_y
       common /mydealias1/ myzd(lxd),mywd(lxd)
@@ -1271,6 +1284,7 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
           call oprzero(gpsiy_x1,gpsiy_y1,gpsiy_z1)
           call oprzero(gpsiz_x1,gpsiz_y1,gpsiz_z1)
           call rzero(taunew,n)
+          call oprzero(taunewx,taunewy,taunewz)
           call rzero(en_bound,n)
          call rzero(uti,n)
          do iel = 1, nelv
@@ -1305,6 +1319,7 @@ C       if (time.lt.50) then
         call oprzero_d(sxmd,symd,szmd)
         call oprzero_d(txmd,tymd,tzmd)
         call rzero(vx_psi,n)
+        call oprzero(taunewx,taunewy,taunewz)
         
       else
 
@@ -1355,6 +1370,34 @@ C           endif
             endif
           else 
             recomp_en = 1
+          endif
+
+          if (comp_norms .ne. 1) then
+          do iel = 1, nelv
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
+              if (flag(iel) .eq. -1) then
+                  iface = 1
+              else
+                  iface = 3
+              endif
+
+              do iz = 1,lz1
+                do ix = 1,lx1
+                  ia = (iz-1)*lx1 + ix
+                  unw(1,ix,iz,iel)=unx(ia,1,iface,iel)
+                  unw(2,ix,iz,iel)=uny(ia,1,iface,iel)
+                  unw(3,ix,iz,iel)=unz(ia,1,iface,iel)
+                  t1w(1,ix,iz,iel)=t1x(ia,1,iface,iel)
+                  t1w(2,ix,iz,iel)=t1y(ia,1,iface,iel)
+                  t1w(3,ix,iz,iel)=t1z(ia,1,iface,iel)
+                  t2w(1,ix,iz,iel)=t2x(ia,1,iface,iel)
+                  t2w(2,ix,iz,iel)=t2y(ia,1,iface,iel)
+                  t2w(3,ix,iz,iel)=t2z(ia,1,iface,iel)
+                enddo
+              enddo
+            endif
+          enddo
+          comp_norms = 1
           endif
 
           do iel = 1, nelv
@@ -1417,11 +1460,31 @@ C                     do iy = 1,ly1
                       if (secondcall .ne. 1) then
                         utau = utau_ref
                       else
-                        utau = newton(flg,srbavg(avg_ind,1),yp,param(1),
+                        u_m = srbavg(avg_ind,1)
+                        v_m = srbavg(avg_ind,2)
+                        w_m = srbavg(avg_ind,3)
+              utt1=t1w(1,ix,iz,iel)*u_m+t1w(2,ix,iz,iel)*v_m+
+     $             t1w(3,ix,iz,iel)*w_m
+              utt2=t2w(1,ix,iz,iel)*u_m+t2w(2,ix,iz,iel)*v_m+
+     $             t2w(3,ix,iz,iel)*w_m
+              utgt=(utt1**2+utt2**2)**(0.5)
+              utgtx=utt1*t1w(1,ix,iz,iel)+utt2*t2w(1,ix,iz,iel)
+              utgty=utt1*t1w(2,ix,iz,iel)+utt2*t2w(2,ix,iz,iel)
+              utgtz=utt1*t1w(3,ix,iz,iel)+utt2*t2w(3,ix,iz,iel)
+              utgtmag=(utgtx**2+utgty**2+utgtz**2)**(0.5)
+              utgtx=utgtx/utgtmag
+              utgty=utgty/utgtmag
+              utgtz=utgtz/utgtmag
+
+              utan_x(ix,iy_ut,iz,iel) = utgtx
+              utan_y(ix,iy_ut,iz,iel) = utgty
+              utan_z(ix,iy_ut,iz,iel) = utgtz
+
+                        utau = newton(flg,utgt,yp,param(1),
      $                        param(2),uti(ix,iy_ut,iz,iel),rtol,
      $                        maxiter)
                       endif
-                    else ! Ever time
+                    else ! Every time
                       utau = newton(flg,ravg(avg_ind,1),yp,param(1),
      $                        param(2),uti(ix,iy_ut,iz,iel),rtol,
      $                        maxiter)
@@ -1430,9 +1493,18 @@ C                     do iy = 1,ly1
                       count = count + 1 ! count unconverged solutions
                       taunew(ix,iy_ut,iz,iel) = -param(1)
      $                                   *uti(ix,iy_ut,iz,iel)**2
+              taunewx(ix,iy,iz,iel) = -param(1)*(uti(ix,iy,iz,iel)**2)
+     $                                *utgtx 
+               taunewy(ix,iy,iz,iel) = -param(1)*(uti(ix,iy,iz,iel)**2)
+     $                                *utgty 
+               taunewz(ix,iy,iz,iel) = -param(1)*(uti(ix,iy,iz,iel)**2)
+     $                                *utgtz 
                     else
                       uti(ix,iy_ut,iz,iel) = utau ! update guess value                  ! for next time step
                       taunew(ix,iy_ut,iz,iel) = -param(1)*utau**2 ! shear stress
+                      taunewx(ix,iy,iz,iel) = -param(1)*utau**2*utgtx ! shear stress
+                      taunewy(ix,iy,iz,iel) = -param(1)*utau**2*utgty ! shear stress
+                      taunewz(ix,iy,iz,iel) = -param(1)*utau**2*utgtz ! shear stress
                     endif
                   enddo
                 enddo
@@ -1481,13 +1553,19 @@ C                     do iy = 1,ly1
                         ut_param = utau_ref
                       endif
                       ! SRB3D
-                      psix(ix,iy,iz,iel) = calc_psi(xm1(ix,iy,iz,iel),
+                   psi_norm = calc_psi(xm1(ix,iy,iz,iel),
      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
      $                   ut_param,param(2))
+                  psix(ix,iy,iz,iel) = psi_norm*utan_x(ix,iy_ut,iz,iel)
+                  psiy(ix,iy,iz,iel) = psi_norm*utan_y(ix,iy_ut,iz,iel)
+                  psiz(ix,iy,iz,iel) = psi_norm*utan_z(ix,iy_ut,iz,iel)
                       gpsix_y1(ix,iy,iz,iel) = 
      $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
      $                   ut_param,param(2))
+C                       gpsix_y1(ix,iy,iz,iel) = gpsidn_norm*norm1
+C                       psiy(ix,iy,iz,iel) = gpsidn_norm*norm2
+C                       psiz(ix,iy,iz,iel) = gpsidn_norm*norm3
                     enddo
                   enddo
                 enddo
@@ -2656,7 +2734,9 @@ c-----------------------------------------------------------------------
       include 'NEKUSE'
 
       real taunew(lx1,ly1,lz1,lelv)
-      common /wallshear/ taunew
+      real taunewx(lx1,ly1,lz1,lelv)
+      real taunewy(lx1,ly1,lz1,lelv), taunewz(lx1,ly1,lz1,lelv)
+      common /wallshear/ taunew, taunewx, taunewy, taunewz
       real en_bound(lx1,ly1,lz1,lelv)
       common /enbound/ en_bound 
       real ip_term_x(lx1,ly1,lz1,lelv), ip_term_y(lx1,ly1,lz1,lelv)
@@ -2690,9 +2770,9 @@ c-----------------------------------------------------------------------
 c     Imposing shear stress B.C.s
       if(cbc(iside,e,1).eq.'sh ') then
         ! SRB3D
-        TRX=en_bound(ix,iy,iz,e)+taunew(ix,iy,iz,e) !-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
-        TRY=0.0
-        TRZ=0.0
+        TRX=en_bound(ix,iy,iz,e)+taunewx(ix,iy,iz,e) !-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
+        TRY=taunewy(ix,iy,iz,e)
+        TRZ=taunewz(ix,iy,iz,e)
       endif
 
       if(cbc(iside,e,1).eq.'ww ') then
