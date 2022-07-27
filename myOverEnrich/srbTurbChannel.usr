@@ -1099,8 +1099,9 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       integer recomp_en
       integer comp_phi_grad
       save comp_phi_grad
-      real en_bound(lx1,ly1,lz1,lelv)
-      common /enbound/ en_bound 
+      real en_bound(lx1,ly1,lz1,lelv), en_bound_x(lx1,ly1,lz1,lelv),
+     $     en_bound_y(lx1,ly1,lz1,lelv), en_bound_z(lx1,ly1,lz1,lelv) 
+      common /enbound/ en_bound, en_bound_x, en_bound_y, en_bound_z
       integer nb, nq
       integer use_weak_bc, comp_phi_grad_face, i_face, nq_face
       save comp_phi_grad_face
@@ -1145,6 +1146,18 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       common /y_ends/ bot_y, top_y
       common /mydealias1/ myzd(lxd),mywd(lxd)
       real myzd, mywd
+      real           w12(lxd,lyd,lzd,lelv)
+     $              ,w22(lxd,lyd,lzd,lelv)
+     $              ,w32(lxd,lyd,lzd,lelv)
+     $              ,tx2_d(lxd,lyd,lzd,lelv)
+     $              ,ty2_d(lxd,lyd,lzd,lelv)
+     $              ,tz2_d(lxd,lyd,lzd,lelv)
+     $              ,w13(lxd,lyd,lzd,lelv)
+     $              ,w23(lxd,lyd,lzd,lelv)
+     $              ,w33(lxd,lyd,lzd,lelv)
+     $              ,tx3_d(lxd,lyd,lzd,lelv)
+     $              ,ty3_d(lxd,lyd,lzd,lelv)
+     $              ,tz3_d(lxd,lyd,lzd,lelv)
       common /scrns/ w1(lx1,ly1,lz1,lelv)
      $              ,w2(lx1,ly1,lz1,lelv)
      $              ,w3(lx1,ly1,lz1,lelv)
@@ -1552,13 +1565,14 @@ C                     do iy = 1,ly1
                       if (use_default .eq. 1) then
                         ut_param = utau_ref
                       endif
-                      ! SRB3D
                    psi_norm = calc_psi(xm1(ix,iy,iz,iel),
      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
      $                   ut_param,param(2))
                   psix(ix,iy,iz,iel) = psi_norm*utan_x(ix,iy_ut,iz,iel)
                   psiy(ix,iy,iz,iel) = psi_norm*utan_y(ix,iy_ut,iz,iel)
                   psiz(ix,iy,iz,iel) = psi_norm*utan_z(ix,iy_ut,iz,iel)
+
+                ! SRB3D
                       gpsix_y1(ix,iy,iz,iel) = 
      $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
@@ -2169,11 +2183,33 @@ C                   ! SRB3D
      $                   srb_temp_d(iq,1,1,1)*gpsix_y(iq,1,1,iel)
                   tz_d(iq,1,1,1) = 
      $                   srb_temp_d(iq,1,1,1)*gpsix_z(iq,1,1,iel)
+
+                  tx2_d(iq,1,1,1) = 
+     $                   srb_temp_d(iq,1,1,1)*gpsiy_x(iq,1,1,iel)
+                  ty2_d(iq,1,1,1) = 
+     $                   srb_temp_d(iq,1,1,1)*gpsiy_y(iq,1,1,iel)
+                  tz2_d(iq,1,1,1) = 
+     $                   srb_temp_d(iq,1,1,1)*gpsiy_z(iq,1,1,iel)
+
+                  tx3_d(iq,1,1,1) = 
+     $                   srb_temp_d(iq,1,1,1)*gpsiz_x(iq,1,1,iel)
+                  ty3_d(iq,1,1,1) = 
+     $                   srb_temp_d(iq,1,1,1)*gpsiz_y(iq,1,1,iel)
+                  tz3_d(iq,1,1,1) = 
+     $                   srb_temp_d(iq,1,1,1)*gpsiz_z(iq,1,1,iel)
               enddo
 
               call mxm(dpdx(1,1,iel) ,nb,tx_d,nq,w1,1)
               call mxm(dpdy(1,1,iel) ,nb,ty_d,nq,w2,1)
               call mxm(dpdz(1,1,iel) ,nb,tz_d,nq,w3,1)
+
+              call mxm(dpdx(1,1,iel) ,nb,tx2_d,nq,w12,1)
+              call mxm(dpdy(1,1,iel) ,nb,ty2_d,nq,w22,1)
+              call mxm(dpdz(1,1,iel) ,nb,tz2_d,nq,w32,1)
+
+              call mxm(dpdx(1,1,iel) ,nb,tx3_d,nq,w13,1)
+              call mxm(dpdy(1,1,iel) ,nb,ty3_d,nq,w23,1)
+              call mxm(dpdz(1,1,iel) ,nb,tz3_d,nq,w33,1)
 
               ! SRB3D
               do ib = 1,nb
@@ -2181,6 +2217,14 @@ C                   ! SRB3D
      $                   -2.0*w1(ib,1,1,1)
      $                   -1.0*w2(ib,1,1,1)
      $                   -1.0*w3(ib,1,1,1)
+                  T1_rhs_y(ib,1,1,iel) = T1_rhs_y(ib,1,1,iel)
+     $                   -1.0*w12(ib,1,1,1)
+     $                   -2.0*w22(ib,1,1,1)
+     $                   -1.0*w32(ib,1,1,1)
+                  T1_rhs_z(ib,1,1,iel) = T1_rhs_z(ib,1,1,iel)
+     $                   -1.0*w13(ib,1,1,1)
+     $                   -1.0*w23(ib,1,1,1)
+     $                   -2.0*w33(ib,1,1,1)
               enddo
 
               ! Cross terms
@@ -2188,12 +2232,21 @@ C                   ! SRB3D
               call mxm(dpdx(1,1,iel) ,nb,ty_d,nq,w1,1)
               call mxm(dpdx(1,1,iel) ,nb,tz_d,nq,w2,1)
 
+              call mxm(dpdy(1,1,iel) ,nb,tx2_d,nq,w12,1)
+              call mxm(dpdy(1,1,iel) ,nb,tz2_d,nq,w22,1)
+
+              call mxm(dpdz(1,1,iel) ,nb,tx3_d,nq,w13,1)
+              call mxm(dpdz(1,1,iel) ,nb,ty3_d,nq,w23,1)
+
               do ib = 1,nb
+                  T1_rhs_x(ib,1,1,iel) = T1_rhs_x(ib,1,1,iel)
+     $                   -1.0*w12(ib,1,1,1)-1.0*w13(ib,1,1,1)
+
                   T1_rhs_y(ib,1,1,iel) = T1_rhs_y(ib,1,1,iel)
-     $                   -1.0*w1(ib,1,1,1)
+     $                   -1.0*w1(ib,1,1,1)-1.0*w23(ib,1,1,1)
                  
                   T1_rhs_z(ib,1,1,iel) = T1_rhs_z(ib,1,1,iel)
-     $                   -1.0*w2(ib,1,1,1)
+     $                   -1.0*w2(ib,1,1,1)-1.0*w22(ib,1,1,1)
               enddo
 
               ! Boundary terms
@@ -2204,11 +2257,17 @@ C                   ! SRB3D
                   iy_ut = ly1
                   sign = 1.0
               endif
-              ! SRB3D
               do iz = 1,lz1
                 do ix = 1,lx1
               en_bound(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)*
-     $                  gpsix_y1(ix,iy_ut,iz,iel)       
+     $                  gpsix_y1(ix,iy_ut,iz,iel) 
+            ! SRB3D
+            en_bound_x(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)*
+     $                  gpsix_y1(ix,iy_ut,iz,iel) 
+            en_bound_y(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)*
+     $                  gpsiy_y1(ix,iy_ut,iz,iel)       
+            en_bound_z(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)*
+     $                  gpsiz_y1(ix,iy_ut,iz,iel)             
                 enddo
               enddo
 
@@ -2737,8 +2796,9 @@ c-----------------------------------------------------------------------
       real taunewx(lx1,ly1,lz1,lelv)
       real taunewy(lx1,ly1,lz1,lelv), taunewz(lx1,ly1,lz1,lelv)
       common /wallshear/ taunew, taunewx, taunewy, taunewz
-      real en_bound(lx1,ly1,lz1,lelv)
-      common /enbound/ en_bound 
+      real en_bound(lx1,ly1,lz1,lelv), en_bound_x(lx1,ly1,lz1,lelv),
+     $     en_bound_y(lx1,ly1,lz1,lelv), en_bound_z(lx1,ly1,lz1,lelv) 
+      common /enbound/ en_bound, en_bound_x, en_bound_y, en_bound_z
       real ip_term_x(lx1,ly1,lz1,lelv), ip_term_y(lx1,ly1,lz1,lelv)
      $    ,ip_term_z(lx1,ly1,lz1,lelv)
       common /ipterms/ ip_term_x, ip_term_y, ip_term_z
@@ -2770,16 +2830,16 @@ c-----------------------------------------------------------------------
 c     Imposing shear stress B.C.s
       if(cbc(iside,e,1).eq.'sh ') then
         ! SRB3D
-        TRX=en_bound(ix,iy,iz,e)+taunewx(ix,iy,iz,e) !-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
-        TRY=taunewy(ix,iy,iz,e)
-        TRZ=taunewz(ix,iy,iz,e)
+        TRX=en_bound_x(ix,iy,iz,e)+taunewx(ix,iy,iz,e) !-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
+        TRY=en_bound_y(ix,iy,iz,e)+taunewy(ix,iy,iz,e)
+        TRZ=en_bound_z(ix,iy,iz,e)+taunewz(ix,iy,iz,e)
       endif
 
       if(cbc(iside,e,1).eq.'ww ') then
         ! SRB3D
-        TRX=en_bound(ix,iy,iz,e) 
-        TRY=0.0
-        TRZ=0.0!sip_z
+        TRX=en_bound_x(ix,iy,iz,e) 
+        TRY=en_bound_y(ix,iy,iz,e)
+        TRZ=en_bound_z(ix,iy,iz,e)
       endif
       
       return
