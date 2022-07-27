@@ -392,6 +392,10 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'SOLN'
 
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)
@@ -435,6 +439,10 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'NEKUSE'
 
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)
@@ -579,6 +587,10 @@ c-----------------------------------------------------------------------
 
       integer e
 
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)
@@ -622,6 +634,10 @@ c-----------------------------------------------------------------------
 
       integer e
 
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)
@@ -665,6 +681,10 @@ c-----------------------------------------------------------------------
 
       integer e
 
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)
@@ -725,6 +745,10 @@ c-----------------------------------------------------------------------
       include 'NEKUSE'
 
 c     Effective enrichment source terms for momentum equation
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)
@@ -1182,6 +1206,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $              ,txmd(lxd,lyd,lzd,lelv)
      $              ,tymd(lxd,lyd,lzd,lelv)
      $              ,tzmd(lxd,lyd,lzd,lelv)
+
       common /tensor/ txx(lxd,lyd,lzd,lelv)
      $               ,tyy(lxd,lyd,lzd,lelv)
      $               ,tzz(lxd,lyd,lzd,lelv)
@@ -1215,6 +1240,11 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,tr4x1(lx1,ly1,lz1,lelv)
      $               ,tr4y1(lx1,ly1,lz1,lelv)
      $               ,tr4z1(lx1,ly1,lz1,lelv)
+
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)

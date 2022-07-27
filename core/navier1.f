@@ -1710,6 +1710,11 @@ C
      $ ,             TB2(LX1,LY1,LZ1,LELV)
      $ ,             TB3(LX1,LY1,LZ1,LELV)
      $ ,             H2 (LX1,LY1,LZ1,LELV)
+
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)
@@ -2133,6 +2138,11 @@ C-----------------------------------------------------------------------
       include 'INPUT'
       include 'SOLN'
       include 'TSTEP'
+      
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)

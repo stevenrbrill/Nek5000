@@ -27,6 +27,11 @@ C
      $ ,             RESPR (LX2,LY2,LZ2,LELV)
       common /scrvh/ h1    (lx1,ly1,lz1,lelv)
      $ ,             h2    (lx1,ly1,lz1,lelv)
+
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)
@@ -359,6 +364,11 @@ C     Compute the residual for the velocity
       COMMON /SCRMG/ wa1   (LX1*LY1*LZ1,LELV)
      $ ,             wa2   (LX1*LY1*LZ1,LELV)
      $ ,             wa3   (LX1*LY1*LZ1,LELV)
+     
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)

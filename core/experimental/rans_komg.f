@@ -731,6 +731,11 @@ c
       include 'SIZE'
       include 'TOTAL'
       include 'RANS_KOMG'
+
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)
@@ -3450,6 +3455,11 @@ c                                       du_j       du_i
 c
       include 'SIZE'
       include 'TOTAL'
+      
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)
