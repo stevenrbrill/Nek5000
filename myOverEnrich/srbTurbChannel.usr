@@ -2263,11 +2263,26 @@ C                   ! SRB3D
      $                  gpsix_y1(ix,iy_ut,iz,iel) 
             ! SRB3D
             en_bound_x(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)*
-     $                  gpsix_y1(ix,iy_ut,iz,iel) 
+     $         ((gpsix_x1(ix,iy_ut,iz,iel) + gpsix_x1(ix,iy_ut,iz,iel))
+     $           *unw(1,ix,iz,iel)
+     $         +(gpsix_y1(ix,iy_ut,iz,iel) + gpsiy_x1(ix,iy_ut,iz,iel))
+     $           *unw(2,ix,iz,iel)
+     $         +(gpsix_z1(ix,iy_ut,iz,iel) + gpsiz_x1(ix,iy_ut,iz,iel))
+     $           *unw(3,ix,iz,iel))
             en_bound_y(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)*
-     $                  gpsiy_y1(ix,iy_ut,iz,iel)       
+     $         ((gpsiy_x1(ix,iy_ut,iz,iel) + gpsix_y1(ix,iy_ut,iz,iel))
+     $           *unw(1,ix,iz,iel)
+     $         +(gpsiy_y1(ix,iy_ut,iz,iel) + gpsiy_y1(ix,iy_ut,iz,iel))
+     $           *unw(2,ix,iz,iel)
+     $         +(gpsiy_z1(ix,iy_ut,iz,iel) + gpsiz_y1(ix,iy_ut,iz,iel))
+     $           *unw(3,ix,iz,iel))    
             en_bound_z(ix,iy_ut,iz,iel) = sign*vdiff(ix,iy_ut,iz,iel,1)*
-     $                  gpsiz_y1(ix,iy_ut,iz,iel)             
+     $         ((gpsiz_x1(ix,iy_ut,iz,iel) + gpsix_z1(ix,iy_ut,iz,iel))
+     $           *unw(1,ix,iz,iel)
+     $         +(gpsiz_y1(ix,iy_ut,iz,iel) + gpsiy_z1(ix,iy_ut,iz,iel))
+     $           *unw(2,ix,iz,iel)
+     $         +(gpsiz_z1(ix,iy_ut,iz,iel) + gpsiz_z1(ix,iy_ut,iz,iel))
+     $           *unw(3,ix,iz,iel))           
                 enddo
               enddo
 
