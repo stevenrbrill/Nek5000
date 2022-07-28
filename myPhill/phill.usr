@@ -441,6 +441,15 @@ c     object definition
       save xint1, xint2, xint3, xint4, xint5, xint6, xint7, xint8, 
      $     xint9, xint10
 
+      real ycint1, ycint2, ycint3, ycint4, ycint5, ycint6, ycint7,
+     $     ycint8, ycint9, ycint10
+      real yint1(intp_nmax),yint2(intp_nmax),yint3(intp_nmax),
+     $     yint4(intp_nmax),yint5(intp_nmax),yint6(intp_nmax),
+     $     yint7(intp_nmax),yint8(intp_nmax),yint9(intp_nmax),
+     $     yint10(intp_nmax) 
+      save yint1, yint2, yint3, yint4, yint5, yint6, yint7, yint8, 
+     $     yint9, yint10
+
       parameter(nstat=6)
       real ravg(lx1*ly1*lz1*lelt,nstat)
       real stat(lx1*ly1*lz1*lelt,nstat)
@@ -459,6 +468,11 @@ c     object definition
       real stat_y10(intp_nmax*nstat)
       save stat_y1, stat_y2, stat_y3, stat_y4, stat_y5, stat_y6, 
      $     stay_y7, stat_y8, stat_y9, stat_y10 
+
+      real Betax, Betay
+      real Lx, Ly, Lz, Wh, H    ! x dimension, y dimension, hill half width, hill height
+      common /hill_param/ Lx, Ly, Lz, Wh, H, Betax ,Betay
+      real hill_height
 
       save dragx_avg
 
@@ -497,35 +511,66 @@ c     object definition
           call cfill(xint8,xcint8,size(xint8))
           call cfill(xint9,xcint9,size(xint9))
           call cfill(xint10,xcint10,size(xint10))
+
+          ycint1 = hill_height(xcint1,Lx,Wh,H)
+          ycint2 = hill_height(xcint2,Lx,Wh,H)
+          ycint3 = hill_height(xcint3,Lx,Wh,H)
+          ycint4 = hill_height(xcint4,Lx,Wh,H)
+          ycint5 = hill_height(xcint5,Lx,Wh,H)
+          ycint6 = hill_height(xcint6,Lx,Wh,H)
+          ycint7 = hill_height(xcint7,Lx,Wh,H)
+          ycint8 = hill_height(xcint8,Lx,Wh,H)
+          ycint9 = hill_height(xcint9,Lx,Wh,H)
+          ycint10 = hill_height(xcint10,Lx,Wh,H)
           do i = 1,intp_nmax 
              yi = (i-1.)/(intp_nmax-1)
              yint(i) = ylen*0.5*(tanh(betam*(2*yi-1.0))/
      $                 tanh(betam)+1.0)
+             yint1(i) = (ylen-ycint1)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint1
+             yint2(i) = (ylen-ycint2)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint2
+             yint3(i) = (ylen-ycint3)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint3
+             yint4(i) = (ylen-ycint4)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint4
+             yint5(i) = (ylen-ycint5)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint5
+             yint6(i) = (ylen-ycint6)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint6
+             yint7(i) = (ylen-ycint7)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint7
+             yint8(i) = (ylen-ycint8)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint8
+             yint9(i) = (ylen-ycint9)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint9
+             yint10(i) = (ylen-ycint10)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint10
           enddo
           call cfill(zint,zcint,size(zint))
         endif
         iffpts = .true. ! dummy call to find points
         call interp_nfld(stat_y,ravg,1,xint,yint,zint,nint,
      $                   iwk,rwk,intp_nmax,iffpts,intp_h)
-        call interp_nfld(stat_y1,ravg,1,xint1,yint,zint,nint,
+        call interp_nfld(stat_y1,ravg,1,xint1,yint1,zint,nint,
      $                   iwk1,rwk1,intp_nmax,iffpts,intp_h)
-        call interp_nfld(stat_y2,ravg,1,xint2,yint,zint,nint,
+        call interp_nfld(stat_y2,ravg,1,xint2,yint2,zint,nint,
      $                   iwk2,rwk2,intp_nmax,iffpts,intp_h)
-        call interp_nfld(stat_y3,ravg,1,xint3,yint,zint,nint,
+        call interp_nfld(stat_y3,ravg,1,xint3,yint3,zint,nint,
      $                   iwk3,rwk3,intp_nmax,iffpts,intp_h)
-        call interp_nfld(stat_y4,ravg,1,xint4,yint,zint,nint,
+        call interp_nfld(stat_y4,ravg,1,xint4,yint4,zint,nint,
      $                   iwk4,rwk4,intp_nmax,iffpts,intp_h)
-        call interp_nfld(stat_y5,ravg,1,xint5,yint,zint,nint,
+        call interp_nfld(stat_y5,ravg,1,xint5,yint5,zint,nint,
      $                   iwk5,rwk5,intp_nmax,iffpts,intp_h)
-        call interp_nfld(stat_y6,ravg,1,xint6,yint,zint,nint,
+        call interp_nfld(stat_y6,ravg,1,xint6,yint6,zint,nint,
      $                   iwk6,rwk6,intp_nmax,iffpts,intp_h)
-        call interp_nfld(stat_y7,ravg,1,xint7,yint,zint,nint,
+        call interp_nfld(stat_y7,ravg,1,xint7,yint7,zint,nint,
      $                   iwk7,rwk7,intp_nmax,iffpts,intp_h)
-        call interp_nfld(stat_y8,ravg,1,xint8,yint,zint,nint,
+        call interp_nfld(stat_y8,ravg,1,xint8,yint8,zint,nint,
      $                   iwk8,rwk8,intp_nmax,iffpts,intp_h)
-        call interp_nfld(stat_y9,ravg,1,xint9,yint,zint,nint,
+        call interp_nfld(stat_y9,ravg,1,xint9,yint9,zint,nint,
      $                   iwk9,rwk9,intp_nmax,iffpts,intp_h)
-        call interp_nfld(stat_y10,ravg,1,xint10,yint,zint,nint,
+        call interp_nfld(stat_y10,ravg,1,xint10,yint10,zint,nint,
      $                   iwk10,rwk10,intp_nmax,iffpts,intp_h)
         iffpts = .false.
         call gtpp_gs_setup(igs_z,nelx*nely,1   ,nelz,3) ! z-avg
@@ -590,25 +635,25 @@ c     get objects surface area
          ! extract data along wall normal direction (1D profile)
          call interp_nfld(stat_y,stat,nstat,xint,yint,zint,nint,
      $                    iwk,rwk,intp_nmax,iffpts,intp_h)
-         call interp_nfld(stat_y1,stat,nstat,xint1,yint,zint,nint,
+         call interp_nfld(stat_y1,stat,nstat,xint1,yint1,zint,nint,
      $                    iwk1,rwk1,intp_nmax,iffpts,intp_h)
-         call interp_nfld(stat_y2,stat,nstat,xint2,yint,zint,nint,
+         call interp_nfld(stat_y2,stat,nstat,xint2,yint2,zint,nint,
      $                    iwk2,rwk2,intp_nmax,iffpts,intp_h)
-         call interp_nfld(stat_y3,stat,nstat,xint3,yint,zint,nint,
+         call interp_nfld(stat_y3,stat,nstat,xint3,yint3,zint,nint,
      $                    iwk3,rwk3,intp_nmax,iffpts,intp_h)
-         call interp_nfld(stat_y4,stat,nstat,xint4,yint,zint,nint,
+         call interp_nfld(stat_y4,stat,nstat,xint4,yint4,zint,nint,
      $                    iwk4,rwk4,intp_nmax,iffpts,intp_h)
-         call interp_nfld(stat_y5,stat,nstat,xint5,yint,zint,nint,
+         call interp_nfld(stat_y5,stat,nstat,xint5,yint5,zint,nint,
      $                    iwk5,rwk5,intp_nmax,iffpts,intp_h)
-         call interp_nfld(stat_y6,stat,nstat,xint6,yint,zint,nint,
+         call interp_nfld(stat_y6,stat,nstat,xint6,yint6,zint,nint,
      $                    iwk6,rwk6,intp_nmax,iffpts,intp_h)
-         call interp_nfld(stat_y7,stat,nstat,xint7,yint,zint,nint,
+         call interp_nfld(stat_y7,stat,nstat,xint7,yint7,zint,nint,
      $                    iwk7,rwk7,intp_nmax,iffpts,intp_h)
-         call interp_nfld(stat_y8,stat,nstat,xint8,yint,zint,nint,
+         call interp_nfld(stat_y8,stat,nstat,xint8,yint8,zint,nint,
      $                    iwk8,rwk8,intp_nmax,iffpts,intp_h)
-         call interp_nfld(stat_y9,stat,nstat,xint9,yint,zint,nint,
+         call interp_nfld(stat_y9,stat,nstat,xint9,yint9,zint,nint,
      $                    iwk9,rwk9,intp_nmax,iffpts,intp_h)
-         call interp_nfld(stat_y10,stat,nstat,xint10,yint,zint,nint,
+         call interp_nfld(stat_y10,stat,nstat,xint10,yint10,zint,nint,
      $                    iwk10,rwk10,intp_nmax,iffpts,intp_h)
 
          ntdump = ntdump + 1
