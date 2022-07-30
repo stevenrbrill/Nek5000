@@ -413,12 +413,18 @@ c-----------------------------------------------------------------------
      $               ,wintx(lx1,ly1,lz1,lelv)
      $               ,winty(lx1,ly1,lz1,lelv)
      $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
      $               ,wrhsx(lx1,ly1,lz1,lelv)
      $               ,wrhsy(lx1,ly1,lz1,lelv)
      $               ,wrhsz(lx1,ly1,lz1,lelv)
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
 
       NTOT1=lx1*ly1*lz1*NELV
 C      CALL SUB2(vx,psix,NTOT1)
@@ -450,12 +456,18 @@ c-----------------------------------------------------------------------
      $               ,wintx(lx1,ly1,lz1,lelv)
      $               ,winty(lx1,ly1,lz1,lelv)
      $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
      $               ,wrhsx(lx1,ly1,lz1,lelv)
      $               ,wrhsy(lx1,ly1,lz1,lelv)
      $               ,wrhsz(lx1,ly1,lz1,lelv)
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
 
       NTOT1=lx1*ly1*lz1*NELV
 C      CALL ADD2(vx,psix,NTOT1)
@@ -565,12 +577,18 @@ c-----------------------------------------------------------------------
      $               ,wintx(lx1,ly1,lz1,lelv)
      $               ,winty(lx1,ly1,lz1,lelv)
      $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
      $               ,wrhsx(lx1,ly1,lz1,lelv)
      $               ,wrhsy(lx1,ly1,lz1,lelv)
      $               ,wrhsz(lx1,ly1,lz1,lelv)
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
 
       e = gllel(ieg)
 
@@ -599,12 +617,18 @@ c-----------------------------------------------------------------------
      $               ,wintx(lx1,ly1,lz1,lelv)
      $               ,winty(lx1,ly1,lz1,lelv)
      $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
      $               ,wrhsx(lx1,ly1,lz1,lelv)
      $               ,wrhsy(lx1,ly1,lz1,lelv)
      $               ,wrhsz(lx1,ly1,lz1,lelv)
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
 
       e = gllel(ieg)
 
@@ -614,6 +638,46 @@ c-----------------------------------------------------------------------
 
       return
       end
+
+c-----------------------------------------------------------------------
+      subroutine userfint2 (ix,iy,iz,ieg)
+      ! Access to the pre-integrated quantities
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e
+
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
+
+      e = gllel(ieg)
+
+      ffintx2 = wintx2(ix,iy,iz,e) 
+      ffinty2 = winty2(ix,iy,iz,e)
+      ffintz2 = wintz2(ix,iy,iz,e)
+
+      return
+      end      
 
 c-----------------------------------------------------------------------
       subroutine userqint (ix,iy,iz,ieg)
@@ -685,6 +749,24 @@ c     Effective enrichment source terms for momentum equation
       common /enrich/ wsx(lx1,ly1,lz1,lelv)
      $               ,wsy(lx1,ly1,lz1,lelv)
      $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
 
       e = gllel(ieg)
 
@@ -966,6 +1048,9 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $                ,dpdx(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
      $                ,dpdy(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
      $                ,dpdz(lx1*ly1*lz1,lxd*lyd*lzd,lelv)
+     $                ,phi_d(lx1*ly1*lz1,lxd*lyd*lzd)
+
+      integer i_d
                                !(nb,nq)
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /y_ends/ bot_y, top_y
@@ -1034,12 +1119,18 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,wintx(lx1,ly1,lz1,lelv)
      $               ,winty(lx1,ly1,lz1,lelv)
      $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
      $               ,wrhsx(lx1,ly1,lz1,lelv)
      $               ,wrhsy(lx1,ly1,lz1,lelv)
      $               ,wrhsz(lx1,ly1,lz1,lelv)
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
      $               ,gpsix_x(lx1,ly1,lz1,lelv) 
      $               ,gpsix_y(lx1,ly1,lz1,lelv)
      $               ,gpsix_z(lx1,ly1,lz1,lelv) 
@@ -1150,13 +1241,14 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       ! Start enrichment at time 50
 C       if (time.lt.50) then
-      if (time.lt.50.0) then
+      if (time.lt.0.0) then
         call oprzero(psix,psiy,psiz)
         call oprzero_d(psix_d,psiy_d,psiz_d)
         call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
         call oprzero(wsx,wsy,wsz)
         call oprzero_d(wsx_d,wsy_d,wsz_d)
         call oprzero(wintx,winty,wintz)
+        call oprzero(wintx2,winty2,wintz2)
         call oprzero(wrhsx,wrhsy,wrhsz)
         call oprzero_d(rxmd,rymd,rzmd)
         call oprzero_d(sxmd,symd,szmd)
@@ -1507,6 +1599,9 @@ C           enddo
                 wintx(i,1,1,iel) = 0.0
                 winty(i,1,1,iel) = 0.0
                 wintz(i,1,1,iel) = 0.0
+                wintx2(i,1,1,iel) = 0.0
+                winty2(i,1,1,iel) = 0.0
+                wintz2(i,1,1,iel) = 0.0
                 wintk(i,1,1,iel) = 0.0
                 wintomg(i,1,1,iel) = 0.0
                 tr1x1(i,1,1,iel) = 0.0
@@ -1922,15 +2017,15 @@ C           call col2(wsz_d,bmd,n_d)
 
           ! Revert back to non-overintegrated
           do iel = 1,nelv
-            call my_intp_rstd(wintx(1,1,1,iel),wsx_d(1,1,1,iel),
+            call my_intp_rstd(wintx2(1,1,1,iel),wsx_d(1,1,1,iel),
      $             lx1,lxd,if3d,1)
-            call my_intp_rstd(winty(1,1,1,iel),wsy_d(1,1,1,iel),
+            call my_intp_rstd(winty2(1,1,1,iel),wsy_d(1,1,1,iel),
      $             lx1,lxd,if3d,1)
-            call my_intp_rstd(wintz(1,1,1,iel),wsz_d(1,1,1,iel),
+            call my_intp_rstd(wintz2(1,1,1,iel),wsz_d(1,1,1,iel),
      $             lx1,lxd,if3d,1)
-            call my_intp_rstd(wintk(1,1,1,iel),wsk_d(1,1,1,iel),
+            call my_intp_rstd(wintk2(1,1,1,iel),wsk_d(1,1,1,iel),
      $             lx1,lxd,if3d,1)
-            call my_intp_rstd(wintomg(1,1,1,iel),wsomg_d(1,1,1,iel),
+            call my_intp_rstd(wintomg2(1,1,1,iel),wsomg_d(1,1,1,iel),
      $             lx1,lxd,if3d,1)
           enddo
 
@@ -1979,12 +2074,12 @@ C           call opcolv (wintx,winty,wintz,vtrans(1,1,1,1,1))
      $                      *vtrans(i,1,1,iel,ifld_k-1)
             wsomg(i,1,1,iel) = -1.0*wsomg(i,1,1,iel)
      $                      *vtrans(i,1,1,iel,ifld_omega-1)
-            wintx(i,1,1,iel) = -1.0*wintx(i,1,1,iel)*vtrans(i,1,1,iel,1)
-            winty(i,1,1,iel) = -1.0*winty(i,1,1,iel)*vtrans(i,1,1,iel,1)
-            wintz(i,1,1,iel) = -1.0*wintz(i,1,1,iel)*vtrans(i,1,1,iel,1)
-            wintk(i,1,1,iel) = -1.0*wintk(i,1,1,iel)
+            wintx2(i,1,1,iel)=-1.0*wintx2(i,1,1,iel)*vtrans(i,1,1,iel,1)
+            winty2(i,1,1,iel)=-1.0*winty2(i,1,1,iel)*vtrans(i,1,1,iel,1)
+            wintz2(i,1,1,iel)=-1.0*wintz2(i,1,1,iel)*vtrans(i,1,1,iel,1)
+            wintk2(i,1,1,iel) = -1.0*wintk2(i,1,1,iel)
      $                          *vtrans(i,1,1,iel,ifld_k-1)
-            wintomg(i,1,1,iel) = -1.0*wintomg(i,1,1,iel)
+            wintomg2(i,1,1,iel) = -1.0*wintomg2(i,1,1,iel)
      $                          *vtrans(i,1,1,iel,ifld_omega-1)
               enddo
             endif
@@ -2545,12 +2640,18 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,wintx(lx1,ly1,lz1,lelv)
      $               ,winty(lx1,ly1,lz1,lelv)
      $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
      $               ,wrhsx(lx1,ly1,lz1,lelv)
      $               ,wrhsy(lx1,ly1,lz1,lelv)
      $               ,wrhsz(lx1,ly1,lz1,lelv)
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
      $               ,gpsix_x(lx1,ly1,lz1,lelv) 
      $               ,gpsix_y(lx1,ly1,lz1,lelv)
      $               ,gpsix_z(lx1,ly1,lz1,lelv) 
@@ -2651,11 +2752,12 @@ C       endif
 
       ! Start enrichment at time 50
 C       if (time.lt.50) then
-      if (time.lt.50.0) then
+      if (time.lt.0.0) then
         call oprzero(psix,psiy,psiz)
         call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
         call oprzero(wsx,wsy,wsz)
         call oprzero(wintx,winty,wintz)
+        call oprzero(wintx2,winty2,wintz2)
         call oprzero(wrhsx,wrhsy,wrhsz)
         call rzero(wsk, n)
         call rzero(wsomg,n)
@@ -2669,7 +2771,7 @@ C           if (use_default .eq. 1) then
 C             comp_T1 = 1 ! Comment for adaptation
 C           endif
 
-C           call oprzero(wintx,winty,wintz)
+          call oprzero(wintx,winty,wintz)
           call rzero  (T1_rhs_x,n)
           call rzero  (T1_rhs_y,n)
           call rzero  (T1_rhs_z,n)
@@ -2977,12 +3079,18 @@ c     VARIABLES DECLARED FOR ENRICHMENT METHOD
      $               ,wintx(lx1,ly1,lz1,lelv)
      $               ,winty(lx1,ly1,lz1,lelv)
      $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
      $               ,wrhsx(lx1,ly1,lz1,lelv)
      $               ,wrhsy(lx1,ly1,lz1,lelv)
      $               ,wrhsz(lx1,ly1,lz1,lelv)
      $               ,psix(lx1,ly1,lz1,lelv)
      $               ,psiy(lx1,ly1,lz1,lelv)
      $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
      $               ,gpsix_x(lx1,ly1,lz1,lelv) 
      $               ,gpsix_y(lx1,ly1,lz1,lelv)
      $               ,gpsix_z(lx1,ly1,lz1,lelv) 
