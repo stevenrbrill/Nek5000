@@ -1497,7 +1497,6 @@ C                     do iy = 1,ly1
                     if (use_default .eq. 1) then
                       utau = utau_ref
                     elseif (use_avg_int .eq. 1) then
-                      ! SRB3D
                       ! Using average intervals
                       ! Use ref for first call
                       if (secondcall .ne. 1) then
@@ -1528,6 +1527,7 @@ C                     do iy = 1,ly1
      $                        maxiter)
                       endif
                     else ! Every time
+                      ! SRB
                       utau = newton(flg,ravg(avg_ind,1),yp,param(1),
      $                        param(2),uti(ix,iy_ut,iz,iel),rtol,
      $                        maxiter)
@@ -2205,7 +2205,6 @@ C           call opzero(wsx,wsy,wsz)
               do iq = 1,nq
                   srb_temp_d(iq,1,1,1) = 
      $                   bmd(iq,1,1,iel)*vdiff_d(iq,1,1,iel)
-C                   ! SRB3D
                   tx_d(iq,1,1,1) = 
      $                   srb_temp_d(iq,1,1,1)*gpsix_x(iq,1,1,iel)
                   ty_d(iq,1,1,1) = 
@@ -2240,7 +2239,6 @@ C                   ! SRB3D
               call mxm(dpdy(1,1,iel) ,nb,ty3_d,nq,w23,1)
               call mxm(dpdz(1,1,iel) ,nb,tz3_d,nq,w33,1)
 
-              ! SRB3D
               do ib = 1,nb
                   T1_rhs_x(ib,1,1,iel) = T1_rhs_x(ib,1,1,iel)
      $                   -2.0*w1(ib,1,1,1)
@@ -2257,7 +2255,6 @@ C                   ! SRB3D
               enddo
 
               ! Cross terms
-              ! SRB3D
               call mxm(dpdx(1,1,iel) ,nb,ty_d,nq,w1,1)
               call mxm(dpdx(1,1,iel) ,nb,tz_d,nq,w2,1)
 
@@ -2881,14 +2878,12 @@ c-----------------------------------------------------------------------
 
 c     Imposing shear stress B.C.s
       if(cbc(iside,e,1).eq.'sh ') then
-        ! SRB3D
         TRX=en_bound_x(ix,iy,iz,e)+taunewx(ix,iy,iz,e) !-param(1)*(5.43496e-02)*(5.43496e-02) !taunew(ix,iy,iz,e)
         TRY=en_bound_y(ix,iy,iz,e)+taunewy(ix,iy,iz,e)
         TRZ=en_bound_z(ix,iy,iz,e)+taunewz(ix,iy,iz,e)
       endif
 
       if(cbc(iside,e,1).eq.'ww ') then
-        ! SRB3D
         TRX=en_bound_x(ix,iy,iz,e) 
         TRY=en_bound_y(ix,iy,iz,e)
         TRZ=en_bound_z(ix,iy,iz,e)
@@ -2910,7 +2905,6 @@ c-----------------------------------------------------------------------
 
 c     Imposing weak wall B.C.s
       if(cbc(iside,e,1).eq.'ww ') then
-        ! SRB3D
         TRX=0.0 !ip_term_x(ix,iy,iz,e)
         TRY=0.0 !ip_term_y(ix,iy,iz,e)
         TRZ=0.0 !ip_term_z(ix,iy,iz,e)
