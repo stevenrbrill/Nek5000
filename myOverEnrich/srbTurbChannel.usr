@@ -1496,11 +1496,32 @@ C                     do iy = 1,ly1
                     ! Use average value for matching point
                     if (use_default .eq. 1) then
                       utau = utau_ref
+
+                      ! SRB CHECK ON HILL
+                      if (flag(iel) .eq. 1) then
+                        utan_x(ix,iy_ut,iz,iel) = t2w(1,ix,iz,iel)
+                        utan_y(ix,iy_ut,iz,iel) = t2w(2,ix,iz,iel)
+                        utan_z(ix,iy_ut,iz,iel) = t2w(3,ix,iz,iel)
+                      else
+                        utan_x(ix,iy_ut,iz,iel) = t1w(1,ix,iz,iel)
+                        utan_y(ix,iy_ut,iz,iel) = t1w(2,ix,iz,iel)
+                        utan_z(ix,iy_ut,iz,iel) = t1w(3,ix,iz,iel)
+                      endif
                     elseif (use_avg_int .eq. 1) then
                       ! Using average intervals
                       ! Use ref for first call
                       if (secondcall .ne. 1) then
                         utau = utau_ref
+                        ! SRB CHECK ON HILL
+                        if (flag(iel) .eq. 1) then
+                          utan_x(ix,iy_ut,iz,iel) = t2w(1,ix,iz,iel)
+                          utan_y(ix,iy_ut,iz,iel) = t2w(2,ix,iz,iel)
+                          utan_z(ix,iy_ut,iz,iel) = t2w(3,ix,iz,iel)
+                        else
+                          utan_x(ix,iy_ut,iz,iel) = t1w(1,ix,iz,iel)
+                          utan_y(ix,iy_ut,iz,iel) = t1w(2,ix,iz,iel)
+                          utan_z(ix,iy_ut,iz,iel) = t1w(3,ix,iz,iel)
+                        endif
                       else
                         u_m = srbavg(avg_ind,1)
                         v_m = srbavg(avg_ind,2)
@@ -1527,8 +1548,28 @@ C                     do iy = 1,ly1
      $                        maxiter)
                       endif
                     else ! Every time
+
+                        u_m = ravg(avg_ind,1)
+                        v_m = ravg(avg_ind,2)
+                        w_m = ravg(avg_ind,3)
+              utt1=t1w(1,ix,iz,iel)*u_m+t1w(2,ix,iz,iel)*v_m+
+     $             t1w(3,ix,iz,iel)*w_m
+              utt2=t2w(1,ix,iz,iel)*u_m+t2w(2,ix,iz,iel)*v_m+
+     $             t2w(3,ix,iz,iel)*w_m
+              utgt=(utt1**2+utt2**2)**(0.5)
+              utgtx=utt1*t1w(1,ix,iz,iel)+utt2*t2w(1,ix,iz,iel)
+              utgty=utt1*t1w(2,ix,iz,iel)+utt2*t2w(2,ix,iz,iel)
+              utgtz=utt1*t1w(3,ix,iz,iel)+utt2*t2w(3,ix,iz,iel)
+              utgtmag=(utgtx**2+utgty**2+utgtz**2)**(0.5)
+              utgtx=utgtx/utgtmag
+              utgty=utgty/utgtmag
+              utgtz=utgtz/utgtmag
+
+              utan_x(ix,iy_ut,iz,iel) = utgtx
+              utan_y(ix,iy_ut,iz,iel) = utgty
+              utan_z(ix,iy_ut,iz,iel) = utgtz
                       ! SRB
-                      utau = newton(flg,ravg(avg_ind,1),yp,param(1),
+                      utau = newton(flg,utgt,yp,param(1),
      $                        param(2),uti(ix,iy_ut,iz,iel),rtol,
      $                        maxiter)
                     endif
