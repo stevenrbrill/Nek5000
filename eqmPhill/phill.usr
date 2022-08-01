@@ -203,7 +203,7 @@ c              tauold(ix,iy,iz,iel) = param(1)*(utau_init)**2
          enddo
       endif
 
-      if (time.le.1) then
+      if (time.le.50.0) then
          do iel = 1, nelv
           do ix = 1, lx1
            do iy = 1, ly1
