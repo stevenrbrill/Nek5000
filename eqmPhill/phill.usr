@@ -1,3 +1,23 @@
+c- constants -----------------------------------------------------------
+
+#define tSTATSTART uparam(1) /* start time for averaging */
+#define tSTATFREQ  uparam(2) /* output frequency for statistics */
+
+c data extraction along wall normal direction
+#define INTP_NMAX 200 /* number of sample points */
+#define MYZCINT 1.0     /* z coordinate of 1D line */
+
+c mesh dimensions
+#define BETAM 2.4     /* wall normal stretching parameter */
+#define PI (4.*atan(1.))
+#define NUMBER_ELEMENTS_X 11
+#define NUMBER_ELEMENTS_Y 6
+#define NUMBER_ELEMENTS_Z 6
+
+c MA
+#define LPTS 1000
+#define deltaw 0.14285714285 /*Matching location*/
+
 C-----------------------------------------------------------------------
 c
 c     user subroutines required by nek5000
@@ -67,11 +87,28 @@ c     Point for torque calculation
       end
 c-----------------------------------------------------------------------
       subroutine userbc (ix,iy,iz,iside,ieg)
-      implicit none
+C       implicit none
       include 'SIZE'
+      include 'TOTAL'
       include 'NEKUSE'          ! UX, UY, UZ, TEMP, X, Y, PA
-      integer ix,iy,iz,iside,ieg      
+      integer ix,iy,iz,iside,ieg, e      
       
+      real taunewx(lx1,ly1,lz1,lelv),taunewy(lx1,ly1,lz1,lelv)
+      real taunewz(lx1,ly1,lz1,lelv)
+      common /wallshear/ taunewx,taunewy,taunewz
+
+      if (y.lt.0) temp = 1.0
+      if (y.gt.0) temp = 0.0
+
+      e = gllel(ieg)
+
+c     Imposing shear stress B.C.s
+      if(cbc(iside,e,1).eq.'sh ') then
+        TRX=taunewx(ix,iy,iz,e)
+        TRY=taunewy(ix,iy,iz,e)
+        TRZ=taunewz(ix,iy,iz,e)
+      endif
+
       return
       end
 c-----------------------------------------------------------------------
@@ -117,13 +154,16 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine usrdat2
-      implicit none
+C       implicit none
       include 'SIZE'
-      include 'SOLN'            ! vx,vy,vz,pr,t
-      include 'GEOM'            ! boundaryID
-      include 'INPUT'           ! cbc
+      include 'TOTAL'
+C       include 'SOLN'            ! vx,vy,vz,pr,t
+C       include 'GEOM'            ! boundaryID
+C       include 'INPUT'           ! cbc
       
       integer iel
+      integer flag(lelv), counterp, countern
+      common /beflag/ flag
 c     mesh stretching
       real Betax, Betay
 c     Hill parameters
@@ -164,7 +204,40 @@ c     mark faces for object definition
             boundaryID(3,iel) = 2
          endif 
       enddo
+
+      counterp = 0
+      countern = 0
       
+      do iel=1,nelt
+      do ifc=1,2*ndim
+         if (cbc(ifc,iel,1) .eq. 'sh ') boundaryID(ifc,iel) = 1 
+         cbc(ifc,iel,2) = cbc(ifc,iel,1) 
+         if (cbc(ifc,iel,1) .eq. 'sh ') cbc(ifc,iel,2) = 't  '
+      enddo
+      enddo
+
+      ! Flag boundary elements above and below centerline (y = 0)
+      do iel=1,nelv
+         do ifc=1,2*ldim
+       if ((cbc(ifc,iel,1).eq.'sh ').AND.(ym1(1,1,1,iel).gt.2.5)) then
+              flag(iel) = 1
+              counterp = counterp+1
+           else if ((cbc(ifc,iel,1).eq.'sh ').AND.
+     $             (ym1(1,1,1,iel).lt.2.5)) then
+              flag(iel) = -1
+              countern = countern+1
+           endif
+         enddo
+      enddo
+
+      counterp = iglsum(counterp,1)
+      countern = iglsum(countern,1)
+
+      if (nid.eq.0) then 
+          write(6,*) '# Boundary Elements Above Centerline:', counterp
+          write(6,*) '# Boundary Elements Below Centerline:', countern
+      endif
+
       return
       end
 c-----------------------------------------------------------------------
@@ -377,9 +450,10 @@ c
 
 c     parameters for line definition
       integer intp_nmax, nelx, nely, nelz
-      parameter (intp_nmax=200, nelx=11, nely=6, nelz=6)
+      parameter (intp_nmax=INTP_NMAX, nelx=NUMBER_ELEMENTS_X,
+     $   nely=NUMBER_ELEMENTS_Y, nelz=NUMBER_ELEMENTS_Z)
       real xcint, zcint, ylen, betam
-      parameter (xcint=4.0, zcint=2.25, ylen=3.035, betam=2.4)
+      parameter (xcint=4.0, zcint=MYZCINT, ylen=3.035, betam=2.4)
       real xcint1, xcint2, xcint3, xcint4, xcint5, xcint6, xcint7,
      $     xcint8, xcint9, xcint10
       parameter (xcint1=0.05,xcint2=0.5,xcint3=1.,xcint4=2.,xcint5=3.)
