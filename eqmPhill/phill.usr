@@ -226,9 +226,9 @@ c MA - start
 c Find the gll points on the wall faces
             ia=0
             CALL FACIND (KX1,KX2,KY1,KY2,KZ1,KZ2,NX1,NY1,NZ1,IFACE)
-            do ix=kx1,kx2
-            do iy=ky1,ky2
             do iz=kz1,kz2
+            do iy=ky1,ky2
+            do ix=kx1,kx2
 c Find the normal vector at these points
               ia=ia+1
               npts=npts+1
@@ -254,6 +254,7 @@ c Find the coordinates at a distance delta along the normal vector
           endif
         enddo
       enddo
+
 c Find the velocity and scalar values at this point
       call interp_v(u1,x1,npts)
       npts=0
