@@ -1,18 +1,13 @@
 c- constants -----------------------------------------------------------
 
-#define tSTATSTART uparam(1) /* start time for averaging */
-#define tSTATFREQ  uparam(2) /* output frequency for statistics */
-
 c data extraction along wall normal direction
 #define INTP_NMAX 200 /* number of sample points */
 #define MYZCINT 1.0     /* z coordinate of 1D line */
 
 c mesh dimensions
-#define BETAM 2.4     /* wall normal stretching parameter */
-#define PI (4.*atan(1.))
-#define NUMBER_ELEMENTS_X 11
-#define NUMBER_ELEMENTS_Y 6
-#define NUMBER_ELEMENTS_Z 6
+#define NUMBER_ELEMENTS_X 22
+#define NUMBER_ELEMENTS_Y 11
+#define NUMBER_ELEMENTS_Z 11
 
 c MA
 #define LPTS 1000
@@ -136,7 +131,7 @@ c----------------------------------------------------------------
 c     VARIABLES DECLARED FOR USING THE ITERATIVE METHOD 
       real newton,secant,rtol,ut0,ut1,uti(lx1,ly1,lz1,lelv),utau
       integer flg, maxiter, count
-      data rtol/1.0e-5/, maxiter/20000/
+      data rtol/1.0e-5/, maxiter/200/
       data flg/2/, count/0/ !flg = flag for the chosen wall model
 c      data uti/0.2/  !Initial guess value of utau for Newton Method
       data ut0/0.04/, ut1/0.08/ !Initial guess values for Secant Method
@@ -295,12 +290,15 @@ c               taunewx(ix,iy,iz,iel) = -param(1)*utau**2 ! shear stress
                taunewy(ix,iy,iz,iel) = -param(1)*utau**2*utgty ! shear stress
                taunewz(ix,iy,iz,iel) = -param(1)*utau**2*utgtz ! shear stress
       if (utau .eq. 0.0) then 
-               taunewx(ix,iy,iz,iel) = -param(1)*(uti(ix,iy,iz,iel)**2)
-     $                                *utgtx 
-               taunewy(ix,iy,iz,iel) = -param(1)*(uti(ix,iy,iz,iel)**2)
-     $                                *utgty 
-               taunewz(ix,iy,iz,iel) = -param(1)*(uti(ix,iy,iz,iel)**2)
-     $                                *utgtz 
+               taunewx(ix,iy,iz,iel) = 0.0
+               taunewy(ix,iy,iz,iel) = 0.0
+               taunewz(ix,iy,iz,iel) = 0.0
+C                taunewx(ix,iy,iz,iel) = -param(1)*(uti(ix,iy,iz,iel)**2)
+C      $                                *utgtx 
+C                taunewy(ix,iy,iz,iel) = -param(1)*(uti(ix,iy,iz,iel)**2)
+C      $                                *utgty 
+C                taunewz(ix,iy,iz,iel) = -param(1)*(uti(ix,iy,iz,iel)**2)
+C      $                                *utgtz 
       endif
             enddo
             enddo
