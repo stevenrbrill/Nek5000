@@ -440,7 +440,7 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          dnu    = param(2)
          A_w    = 2 * XLEN 
          if (ldim == 3) A_w = A_w*ZLEN
-         tw     = dragx_avg / A_w
+         tw     = (dragx_avg**2+dragz_avg**2)**(0.5) / A_w
          u_tau  = sqrt(tw / rho)
          qw     = -param(8) * dTdy_w
          t_tau  = 1/u_tau * qw
@@ -485,7 +485,7 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
      &           yy*Re_tau, 
      &           stat_y(0*nint+i),
      &           0.0,
-     &           0.0,
+     &           stat_y(0*nint+i),
      &           0.0,
      &           u_tau,
      &           stat_y(0*nint+i)
