@@ -264,9 +264,9 @@ c Find the velocity and scalar values at this point
           if(cb.eq.'sh ') then
 c Find the gll points on the wall faces
             CALL FACIND (KX1,KX2,KY1,KY2,KZ1,KZ2,NX1,NY1,NZ1,IFACE)
-            do ix=kx1,kx2
-            do iy=ky1,ky2
             do iz=kz1,kz2
+            do iy=ky1,ky2
+            do ix=kx1,kx2
               npts=npts+1
               utt1=t1w(1,npts)*u1(1,npts)+t1w(2,npts)*u1(2,npts)+
      $            t1w(3,npts)*u1(3,npts)
