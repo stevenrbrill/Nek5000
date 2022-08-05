@@ -1,3 +1,7 @@
+#define NUMBER_ELEMENTS_X 11
+#define NUMBER_ELEMENTS_Y 6
+#define NUMBER_ELEMENTS_Z 6
+
 C-----------------------------------------------------------------------
 c
 c     user subroutines required by nek5000
@@ -377,7 +381,8 @@ c
 
 c     parameters for line definition
       integer intp_nmax, nelx, nely, nelz
-      parameter (intp_nmax=200, nelx=22, nely=11, nelz=11)
+      parameter (intp_nmax=200, nelx=NUMBER_ELEMENTS_X, 
+     $   nely=NUMBER_ELEMENTS_Y, nelz=NUMBER_ELEMENTS_Z)
       real xcint, zcint, ylen, betam
       parameter (xcint=4.0, zcint=2.25, ylen=3.035, betam=2.4)
       real xcint1, xcint2, xcint3, xcint4, xcint5, xcint6, xcint7,
