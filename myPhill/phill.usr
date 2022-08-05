@@ -502,7 +502,7 @@ c     object definition
       integer bIDs(1)
       save iobj_wall
 
-      common /mycf/ cf(lx1,lelt),xf(lx1,lelt)
+      common /mycf/ cf(lx1,lelt),cf_top(lx1,lelt),xf(lx1,lelt)
 
       tstatstar = uparam(1)
       tstatfreq = uparam(2)
@@ -662,7 +662,7 @@ c     get objects surface area
         call torque_calc(1.0,x0,.false.,.false.) ! compute wall shear
         dragx_avg = alpha*dragx_avg + beta*dragx(0) ! drag from all objects
 
-        call shear_stress(cf,xf,ravg(1,1),ravg(1,2),ravg(1,3))
+        call shear_stress(cf,cf_top,xf,ravg(1,1),ravg(1,2),ravg(1,3))
         
       endif
 
@@ -707,9 +707,9 @@ c     get objects surface area
 
          open(unit=55,file='wall_vals.dat')
          npts = lx1*nelx
-         write(55,*) " % time   x   cf   "
-         write(55,2) (time,xf(k,1),cf(k,1),k=1,npts)
-   2     format(1p3e14.5)
+         write(55,*) " % time   x   cf   cf_top  "
+         write(55,2) (time,xf(k,1),cf(k,1),cf_top(k,1),k=1,npts)
+   2     format(1p4e14.5)
          close(55)
 
          rho    = param(1)
@@ -1057,7 +1057,7 @@ c     get objects surface area
 
 
 c-----------------------------------------------------------------------
-      subroutine shear_stress(cf,xf,u,v,w)
+      subroutine shear_stress(cf,cf_top,xf,u,v,w)
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
@@ -1068,7 +1068,8 @@ c-----------------------------------------------------------------------
       parameter (nelx2=NUMBER_ELEMENTS_X, 
      $   nely2=NUMBER_ELEMENTS_Y, nelz2=NUMBER_ELEMENTS_Z)
 
-      real cf(lx1,nelx2),xf(lx1,nelx2),u(lt),v(lt),w(lt)
+      real cf(lx1,nelx2),cf_top(lx1,nelx2),xf(lx1,nelx2),
+     $     u(lt),v(lt),w(lt)
 
 
       common /scrns/ sij(lxyz,3*(ldim-1),lelt)
@@ -1101,9 +1102,11 @@ c     ! average field in z and then in x
 
       npts = lx1*nelx2
       call rzero(cf,npts)
+      call rzero(cf_top,npts)
       call rzero(xf,npts)
 
       f=1 ! Face 1
+      f_top = 3
 
       visc = param(2)
 
@@ -1131,9 +1134,28 @@ c     ! average field in z and then in x
 
           enddo
         endif
+        if (ey.eq.nely2.and.ez.eq.1) then
+
+          do k=1,lx1
+
+            sxx = sij(k,1,e)
+            syy = sij(k,2,e)
+            syx = sij(k,ldim+1,e)
+
+            tnx = -uny(k,1,f_top,e)
+            tny =  unx(k,1,f_top,e)
+
+            cf_top(k,ex) = tnx*sxx*unx(k,1,f_top,e) 
+     $                   + tny*syx*unx(k,1,f_top,e) 
+     $                   + tnx*syx*uny(k,1,f_top,e) 
+     $                   + tny*syy*uny(k,1,f_top,e) 
+            cf_top(k,ex) = -visc*cf_top(k,ex)
+          enddo
+        endif
       enddo
 
       call gop(cf,ua,'+  ',npts) ! Sum cf vector over all ranks
+      call gop(cf_top,ua,'+  ',npts) ! Sum cf vector over all ranks
       call gop(xf,ua,'+  ',npts) ! Sum cf vector over all ranks
 
       return
