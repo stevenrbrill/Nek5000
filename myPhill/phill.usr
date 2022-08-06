@@ -916,7 +916,7 @@ c     get objects surface area
      &           (stat_y1(3*nint+i)-(stat_y1(0*nint+i))**2),
      &           (stat_y1(4*nint+i)-(stat_y1(1*nint+i))**2),
      &           (stat_y1(5*nint+i)-(stat_y1(2*nint+i))**2),
-     &           stat_y1(6*nint+i),
+     &           stat_y1(6*nint+i)-stat_y1(0*nint+i)*stat_y1(1*nint+i),
      &           0.5*((stat_y1(3*nint+i)-(stat_y1(0*nint+i))**2)+
      &           (stat_y1(4*nint+i)-(stat_y1(1*nint+i))**2)+
      &           (stat_y1(5*nint+i)-(stat_y1(2*nint+i))**2)),
@@ -934,7 +934,7 @@ c     get objects surface area
      &           (stat_y2(3*nint+i)-(stat_y2(0*nint+i))**2),
      &           (stat_y2(4*nint+i)-(stat_y2(1*nint+i))**2),
      &           (stat_y2(5*nint+i)-(stat_y2(2*nint+i))**2),
-     &           stat_y2(6*nint+i),
+     &           stat_y2(6*nint+i)-stat_y2(0*nint+i)*stat_y2(1*nint+i),
      &           0.5*((stat_y2(3*nint+i)-(stat_y2(0*nint+i))**2)+
      &           (stat_y2(4*nint+i)-(stat_y2(1*nint+i))**2)+
      &           (stat_y2(5*nint+i)-(stat_y2(2*nint+i))**2)),
@@ -951,7 +951,7 @@ c     get objects surface area
      &           (stat_y3(3*nint+i)-(stat_y3(0*nint+i))**2),
      &           (stat_y3(4*nint+i)-(stat_y3(1*nint+i))**2),
      &           (stat_y3(5*nint+i)-(stat_y3(2*nint+i))**2),
-     &           stat_y3(6*nint+i),
+     &           stat_y3(6*nint+i)-stat_y3(0*nint+i)*stat_y3(1*nint+i),
      &           0.5*((stat_y3(3*nint+i)-(stat_y3(0*nint+i))**2)+
      &           (stat_y3(4*nint+i)-(stat_y3(1*nint+i))**2)+
      &           (stat_y3(5*nint+i)-(stat_y3(2*nint+i))**2)),
@@ -968,7 +968,7 @@ c     get objects surface area
      &           (stat_y4(3*nint+i)-(stat_y4(0*nint+i))**2),
      &           (stat_y4(4*nint+i)-(stat_y4(1*nint+i))**2),
      &           (stat_y4(5*nint+i)-(stat_y4(2*nint+i))**2),
-     &           stat_y4(6*nint+i),
+     &           stat_y4(6*nint+i)-stat_y4(0*nint+i)*stat_y4(1*nint+i),
      &           0.5*((stat_y4(3*nint+i)-(stat_y4(0*nint+i))**2)+
      &           (stat_y4(4*nint+i)-(stat_y4(1*nint+i))**2)+
      &           (stat_y4(5*nint+i)-(stat_y4(2*nint+i))**2)),
@@ -985,7 +985,7 @@ c     get objects surface area
      &           (stat_y5(3*nint+i)-(stat_y5(0*nint+i))**2),
      &           (stat_y5(4*nint+i)-(stat_y5(1*nint+i))**2),
      &           (stat_y5(5*nint+i)-(stat_y5(2*nint+i))**2),
-     &           stat_y5(6*nint+i),
+     &           stat_y5(6*nint+i)-stat_y5(0*nint+i)*stat_y5(1*nint+i),
      &           0.5*((stat_y5(3*nint+i)-(stat_y5(0*nint+i))**2)+
      &           (stat_y5(4*nint+i)-(stat_y5(1*nint+i))**2)+
      &           (stat_y5(5*nint+i)-(stat_y5(2*nint+i))**2)),
@@ -1002,7 +1002,7 @@ c     get objects surface area
      &           (stat_y6(3*nint+i)-(stat_y6(0*nint+i))**2),
      &           (stat_y6(4*nint+i)-(stat_y6(1*nint+i))**2),
      &           (stat_y6(5*nint+i)-(stat_y6(2*nint+i))**2),
-     &           stat_y6(6*nint+i),
+     &           stat_y6(6*nint+i)-stat_y6(0*nint+i)*stat_y6(1*nint+i),
      &           0.5*((stat_y6(3*nint+i)-(stat_y6(0*nint+i))**2)+
      &           (stat_y6(4*nint+i)-(stat_y6(1*nint+i))**2)+
      &           (stat_y6(5*nint+i)-(stat_y6(2*nint+i))**2)),
@@ -1019,7 +1019,7 @@ c     get objects surface area
      &           (stat_y7(3*nint+i)-(stat_y7(0*nint+i))**2),
      &           (stat_y7(4*nint+i)-(stat_y7(1*nint+i))**2),
      &           (stat_y7(5*nint+i)-(stat_y7(2*nint+i))**2),
-     &           stat_y7(6*nint+i),
+     &           stat_y7(6*nint+i)-stat_y7(0*nint+i)*stat_y7(1*nint+i),
      &           0.5*((stat_y7(3*nint+i)-(stat_y7(0*nint+i))**2)+
      &           (stat_y7(4*nint+i)-(stat_y7(1*nint+i))**2)+
      &           (stat_y7(5*nint+i)-(stat_y7(2*nint+i))**2)),
@@ -1036,7 +1036,7 @@ c     get objects surface area
      &           (stat_y8(3*nint+i)-(stat_y8(0*nint+i))**2),
      &           (stat_y8(4*nint+i)-(stat_y8(1*nint+i))**2),
      &           (stat_y8(5*nint+i)-(stat_y8(2*nint+i))**2),
-     &           stat_y8(6*nint+i),
+     &           stat_y8(6*nint+i)-stat_y8(0*nint+i)*stat_y8(1*nint+i),
      &           0.5*((stat_y8(3*nint+i)-(stat_y8(0*nint+i))**2)+
      &           (stat_y8(4*nint+i)-(stat_y8(1*nint+i))**2)+
      &           (stat_y8(5*nint+i)-(stat_y8(2*nint+i))**2)),
@@ -1053,7 +1053,7 @@ c     get objects surface area
      &           (stat_y9(3*nint+i)-(stat_y9(0*nint+i))**2),
      &           (stat_y9(4*nint+i)-(stat_y9(1*nint+i))**2),
      &           (stat_y9(5*nint+i)-(stat_y9(2*nint+i))**2),
-     &           stat_y9(6*nint+i),
+     &           stat_y9(6*nint+i)-stat_y9(0*nint+i)*stat_y9(1*nint+i),
      &           0.5*((stat_y9(3*nint+i)-(stat_y9(0*nint+i))**2)+
      &           (stat_y9(4*nint+i)-(stat_y9(1*nint+i))**2)+
      &           (stat_y9(5*nint+i)-(stat_y9(2*nint+i))**2)),
@@ -1070,7 +1070,7 @@ c     get objects surface area
      &           (stat_y10(3*nint+i)-(stat_y10(0*nint+i))**2),
      &           (stat_y10(4*nint+i)-(stat_y10(1*nint+i))**2),
      &           (stat_y10(5*nint+i)-(stat_y10(2*nint+i))**2),
-     &           stat_y10(6*nint+i),
+     &         stat_y10(6*nint+i)-stat_y10(0*nint+i)*stat_y10(1*nint+i),
      &           0.5*((stat_y10(3*nint+i)-(stat_y10(0*nint+i))**2)+
      &           (stat_y10(4*nint+i)-(stat_y10(1*nint+i))**2)+
      &           (stat_y10(5*nint+i)-(stat_y10(2*nint+i))**2)),
