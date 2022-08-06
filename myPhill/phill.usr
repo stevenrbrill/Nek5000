@@ -722,7 +722,7 @@ c     get objects surface area
 
          open(unit=55,file='wall_vals.dat')
          npts = lx1*nelx
-         write(55,*) " % time   x   cf   cf_top  "
+         write(55,*) " % time   x   cf   cf_top  cp   cp_top"
          write(55,2) (time,xf(k,1),cf(k,1),cf_top(k,1),
      $       cp(k,1),cp_top(k,1),k=1,npts)
    2     format(1p6e14.5)
