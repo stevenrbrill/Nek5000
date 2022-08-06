@@ -1120,7 +1120,6 @@ c-----------------------------------------------------------------------
 
       real pra(lx1,ly1,lz1,lelt)
 
-
       common /scrns/ sij(lxyz,3*(ldim-1),lelt)
       common /scruz/ ua(lt),va(lt),wa(lt)
       common /scrmg/ ur (lxyz) , us (lxyz) , ut (lxyz)
@@ -1191,18 +1190,18 @@ c     ! average field in z and then in x
 
           do k=1,lx1
 
-            sxx = sij(k,1,e)
-            syy = sij(k,2,e)
-            syx = sij(k,ldim+1,e)
+            sxx = sij((ly1-1)*lx1+k,1,e)
+            syy = sij((ly1-1)*lx1+k,2,e)
+            syx = sij((ly1-1)*lx1+k,ldim+1,e)
 
             tnx = -uny(k,1,f_top,e)
-            tny =  unx(k,1,f_top,e)
+            tny = unx(k,1,f_top,e)
 
             cf_top(k,ex) = tnx*sxx*unx(k,1,f_top,e) 
      $                   + tny*syx*unx(k,1,f_top,e) 
      $                   + tnx*syx*uny(k,1,f_top,e) 
      $                   + tny*syy*uny(k,1,f_top,e) 
-            cf_top(k,ex) = -visc*cf_top(k,ex)
+            cf_top(k,ex) = visc*cf_top(k,ex)
             cp_top(k,ex) = pra(k,ly1,1,e)
           enddo
         endif
