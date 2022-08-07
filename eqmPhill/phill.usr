@@ -806,7 +806,7 @@ c     object definition
       save zint1, zint2, zint3, zint4, zint5, zint6, zint7, zint8, 
      $     zint9, zint10
 
-      parameter(nstat=7)
+      parameter(nstat=8)
       real ravg(lx1*ly1*lz1*lelt,nstat)
       real stat(lx1*ly1*lz1*lelt,nstat)
       real stat_y(intp_nmax*nstat)
@@ -841,6 +841,9 @@ c     object definition
 
       integer bIDs(1)
       save iobj_wall
+
+      common /mycf/ cf(lx1,lelt),cf_top(lx1,lelt),
+     $              cp(lx1,lelt),cp_top(lx1,lelt),xf(lx1,lelt)
 
       tstatstar = uparam(1)
       tstatfreq = uparam(2)
@@ -914,6 +917,18 @@ c     object definition
              yint10(i) = (ylen-ycint10)*0.5*(tanh(betam*(2*yi-1.0))/
      $                 tanh(betam)+1.0)+ycint10
           enddo
+          yint(1) = yint(1) + 1e-3
+          yint1(1) = yint1(1) + 1e-3
+          yint2(1) = yint2(1) + 1e-3
+          yint3(1) = yint3(1) + 1e-3
+          yint4(1) = yint4(1) + 1e-3
+          yint5(1) = yint5(1) + 1e-3
+          yint6(1) = yint6(1) + 1e-3
+          yint7(1) = yint7(1) + 1e-3
+          yint8(1) = yint8(1) + 1e-3
+          yint9(1) = yint9(1) + 1e-3
+          yint10(1) = yint10(1) + 1e-3
+
           call cfill(zint,zcint,size(zint))
           call cfill(zint1,zcint,size(zint1))
           call cfill(zint2,zcint,size(zint2))
@@ -996,6 +1011,7 @@ c     get objects surface area
         call avg2(ravg(1,5),vy   ,alpha,beta,n,'vrms',ifverbose)
         call avg2(ravg(1,6),vz   ,alpha,beta,n,'wrms',ifverbose)
         call avg3(ravg(1,7),vx,vy,alpha,beta,n,'uvmm',ifverbose)
+        call avg1(ravg(1,8),pr   ,alpha,beta,n,'pr',ifverbose)
 
         call torque_calc(1.0,x0,.false.,.false.) ! compute wall shear
         dragx_avg = alpha*dragx_avg + beta*dragx(0) ! drag from all objects
@@ -1035,7 +1051,18 @@ c     get objects surface area
      $                    iwk10,rwk10,intp_nmax,iffpts,intp_h10)
 
          ntdump = ntdump + 1
+
+         call shear_stress(cf,cf_top,cp,cp_top,xf,
+     $       ravg(1,1),ravg(1,2),ravg(1,3),ravg(1,8))
          if (nid.ne.0) goto 998 
+
+         open(unit=55,file='wall_vals.dat')
+         npts = lx1*nelx
+         write(55,*) " % time   x   cf   cf_top  cp   cp_top"
+         write(55,2) (time,xf(k,1),cf(k,1),cf_top(k,1),
+     $       cp(k,1),cp_top(k,1),k=1,npts)
+   2     format(1p6e14.5)
+         close(55)
 
          rho    = param(1)
          dnu    = param(2)
@@ -1076,8 +1103,8 @@ c     get objects surface area
      $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
      $     '%tau_tot = ', tw_tot
          write(81,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    ',
-     $'Psimean  Upolymean    Psi   u_tau   Ucomb' 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psimean  Upolymean    Psi   u_tau   Ucomb' 
          open(unit=82,file='comp_prof2.dat')
          write(82,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
      $     '%time = ', time, '%Re_tau = ', Re_tau, 
@@ -1101,8 +1128,8 @@ c     get objects surface area
      $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
      $     '%tau_tot = ', tw_tot
          write(83,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    ',
-     $'Psimean  Upolymean    Psi   u_tau   Ucomb' 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'  
 
          open(unit=84,file='comp_prof4.dat')
          write(84,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
@@ -1114,8 +1141,8 @@ c     get objects surface area
      $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
      $     '%tau_tot = ', tw_tot
          write(84,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    ',
-     $'Psimean  Upolymean    Psi   u_tau   Ucomb' 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'  
 
          open(unit=85,file='comp_prof5.dat')
          write(85,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
@@ -1127,8 +1154,8 @@ c     get objects surface area
      $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
      $     '%tau_tot = ', tw_tot
          write(85,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    ',
-     $'Psimean  Upolymean    Psi   u_tau   Ucomb' 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'  
 
          open(unit=86,file='comp_prof6.dat')
          write(86,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
@@ -1140,8 +1167,8 @@ c     get objects surface area
      $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
      $     '%tau_tot = ', tw_tot
          write(86,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    ',
-     $'Psimean  Upolymean    Psi   u_tau   Ucomb' 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'  
 
          open(unit=87,file='comp_prof7.dat')
          write(87,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
@@ -1153,8 +1180,8 @@ c     get objects surface area
      $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
      $     '%tau_tot = ', tw_tot
          write(87,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    ',
-     $'Psimean  Upolymean    Psi   u_tau   Ucomb' 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'  
 
          open(unit=88,file='comp_prof8.dat')
          write(88,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
@@ -1166,8 +1193,8 @@ c     get objects surface area
      $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
      $     '%tau_tot = ', tw_tot
          write(88,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    ',
-     $'Psimean  Upolymean    Psi   u_tau   Ucomb' 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'  
 
          open(unit=89,file='comp_prof9.dat')
          write(89,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
@@ -1179,8 +1206,8 @@ c     get objects surface area
      $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
      $     '%tau_tot = ', tw_tot
          write(89,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    ',
-     $'Psimean  Upolymean    Psi   u_tau   Ucomb' 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'  
 
          open(unit=90,file='comp_prof10.dat')
          write(90,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
@@ -1192,8 +1219,8 @@ c     get objects surface area
      $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
      $     '%tau_tot = ', tw_tot
          write(90,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    ',
-     $'Psimean  Upolymean    Psi   u_tau   Ucomb' 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'  
 
          do i = 1,nint
             yy = yint(i)
@@ -1223,9 +1250,12 @@ c     get objects surface area
      &           stat_y1(1*nint+i),
      &           stat_y1(2*nint+i),
      &           (stat_y1(3*nint+i)-(stat_y1(0*nint+i))**2),
-     &           stat_y1(4*nint+i),
-     &           stat_y1(5*nint+i),
-     &           stat_y1(6*nint+i),
+     &           (stat_y1(4*nint+i)-(stat_y1(1*nint+i))**2),
+     &           (stat_y1(5*nint+i)-(stat_y1(2*nint+i))**2),
+     &           stat_y1(6*nint+i)-stat_y1(0*nint+i)*stat_y1(1*nint+i),
+     &           0.5*((stat_y1(3*nint+i)-(stat_y1(0*nint+i))**2)+
+     &           (stat_y1(4*nint+i)-(stat_y1(1*nint+i))**2)+
+     &           (stat_y1(5*nint+i)-(stat_y1(2*nint+i))**2)),
      &           0.0, !stat_y(9*nint+i),
      &           0.0, !stat_y(10*nint+i),
      &           0.0, !psix_int(i),
@@ -1238,9 +1268,12 @@ c     get objects surface area
      &           stat_y2(1*nint+i),
      &           stat_y2(2*nint+i),
      &           (stat_y2(3*nint+i)-(stat_y2(0*nint+i))**2),
-     &           stat_y2(4*nint+i),
-     &           stat_y2(5*nint+i),
-     &           stat_y2(6*nint+i),
+     &           (stat_y2(4*nint+i)-(stat_y2(1*nint+i))**2),
+     &           (stat_y2(5*nint+i)-(stat_y2(2*nint+i))**2),
+     &           stat_y2(6*nint+i)-stat_y2(0*nint+i)*stat_y2(1*nint+i),
+     &           0.5*((stat_y2(3*nint+i)-(stat_y2(0*nint+i))**2)+
+     &           (stat_y2(4*nint+i)-(stat_y2(1*nint+i))**2)+
+     &           (stat_y2(5*nint+i)-(stat_y2(2*nint+i))**2)),
      &           0.0, !stat_y(9*nint+i),
      &           0.0, !stat_y(10*nint+i),
      &           0.0, !psix_int(i),
@@ -1252,9 +1285,12 @@ c     get objects surface area
      &           stat_y3(1*nint+i),
      &           stat_y3(2*nint+i),
      &           (stat_y3(3*nint+i)-(stat_y3(0*nint+i))**2),
-     &           stat_y3(4*nint+i),
-     &           stat_y3(5*nint+i),
-     &           stat_y3(6*nint+i),
+     &           (stat_y3(4*nint+i)-(stat_y3(1*nint+i))**2),
+     &           (stat_y3(5*nint+i)-(stat_y3(2*nint+i))**2),
+     &           stat_y3(6*nint+i)-stat_y3(0*nint+i)*stat_y3(1*nint+i),
+     &           0.5*((stat_y3(3*nint+i)-(stat_y3(0*nint+i))**2)+
+     &           (stat_y3(4*nint+i)-(stat_y3(1*nint+i))**2)+
+     &           (stat_y3(5*nint+i)-(stat_y3(2*nint+i))**2)),
      &           0.0, !stat_y(9*nint+i),
      &           0.0, !stat_y(10*nint+i),
      &           0.0, !psix_int(i),
@@ -1266,9 +1302,12 @@ c     get objects surface area
      &           stat_y4(1*nint+i),
      &           stat_y4(2*nint+i),
      &           (stat_y4(3*nint+i)-(stat_y4(0*nint+i))**2),
-     &           stat_y4(4*nint+i),
-     &           stat_y4(5*nint+i),
-     &           stat_y4(6*nint+i),
+     &           (stat_y4(4*nint+i)-(stat_y4(1*nint+i))**2),
+     &           (stat_y4(5*nint+i)-(stat_y4(2*nint+i))**2),
+     &           stat_y4(6*nint+i)-stat_y4(0*nint+i)*stat_y4(1*nint+i),
+     &           0.5*((stat_y4(3*nint+i)-(stat_y4(0*nint+i))**2)+
+     &           (stat_y4(4*nint+i)-(stat_y4(1*nint+i))**2)+
+     &           (stat_y4(5*nint+i)-(stat_y4(2*nint+i))**2)),
      &           0.0, !stat_y(9*nint+i),
      &           0.0, !stat_y(10*nint+i),
      &           0.0, !psix_int(i),
@@ -1280,9 +1319,12 @@ c     get objects surface area
      &           stat_y5(1*nint+i),
      &           stat_y5(2*nint+i),
      &           (stat_y5(3*nint+i)-(stat_y5(0*nint+i))**2),
-     &           stat_y5(4*nint+i),
-     &           stat_y5(5*nint+i),
-     &           stat_y5(6*nint+i),
+     &           (stat_y5(4*nint+i)-(stat_y5(1*nint+i))**2),
+     &           (stat_y5(5*nint+i)-(stat_y5(2*nint+i))**2),
+     &           stat_y5(6*nint+i)-stat_y5(0*nint+i)*stat_y5(1*nint+i),
+     &           0.5*((stat_y5(3*nint+i)-(stat_y5(0*nint+i))**2)+
+     &           (stat_y5(4*nint+i)-(stat_y5(1*nint+i))**2)+
+     &           (stat_y5(5*nint+i)-(stat_y5(2*nint+i))**2)),
      &           0.0, !stat_y(9*nint+i),
      &           0.0, !stat_y(10*nint+i),
      &           0.0, !psix_int(i),
@@ -1294,9 +1336,12 @@ c     get objects surface area
      &           stat_y6(1*nint+i),
      &           stat_y6(2*nint+i),
      &           (stat_y6(3*nint+i)-(stat_y6(0*nint+i))**2),
-     &           stat_y6(4*nint+i),
-     &           stat_y6(5*nint+i),
-     &           stat_y6(6*nint+i),
+     &           (stat_y6(4*nint+i)-(stat_y6(1*nint+i))**2),
+     &           (stat_y6(5*nint+i)-(stat_y6(2*nint+i))**2),
+     &           stat_y6(6*nint+i)-stat_y6(0*nint+i)*stat_y6(1*nint+i),
+     &           0.5*((stat_y6(3*nint+i)-(stat_y6(0*nint+i))**2)+
+     &           (stat_y6(4*nint+i)-(stat_y6(1*nint+i))**2)+
+     &           (stat_y6(5*nint+i)-(stat_y6(2*nint+i))**2)),
      &           0.0, !stat_y(9*nint+i),
      &           0.0, !stat_y(10*nint+i),
      &           0.0, !psix_int(i),
@@ -1308,9 +1353,12 @@ c     get objects surface area
      &           stat_y7(1*nint+i),
      &           stat_y7(2*nint+i),
      &           (stat_y7(3*nint+i)-(stat_y7(0*nint+i))**2),
-     &           stat_y7(4*nint+i),
-     &           stat_y7(5*nint+i),
-     &           stat_y7(6*nint+i),
+     &           (stat_y7(4*nint+i)-(stat_y7(1*nint+i))**2),
+     &           (stat_y7(5*nint+i)-(stat_y7(2*nint+i))**2),
+     &           stat_y7(6*nint+i)-stat_y7(0*nint+i)*stat_y7(1*nint+i),
+     &           0.5*((stat_y7(3*nint+i)-(stat_y7(0*nint+i))**2)+
+     &           (stat_y7(4*nint+i)-(stat_y7(1*nint+i))**2)+
+     &           (stat_y7(5*nint+i)-(stat_y7(2*nint+i))**2)),
      &           0.0, !stat_y(9*nint+i),
      &           0.0, !stat_y(10*nint+i),
      &           0.0, !psix_int(i),
@@ -1322,9 +1370,12 @@ c     get objects surface area
      &           stat_y8(1*nint+i),
      &           stat_y8(2*nint+i),
      &           (stat_y8(3*nint+i)-(stat_y8(0*nint+i))**2),
-     &           stat_y8(4*nint+i),
-     &           stat_y8(5*nint+i),
-     &           stat_y8(6*nint+i),
+     &           (stat_y8(4*nint+i)-(stat_y8(1*nint+i))**2),
+     &           (stat_y8(5*nint+i)-(stat_y8(2*nint+i))**2),
+     &           stat_y8(6*nint+i)-stat_y8(0*nint+i)*stat_y8(1*nint+i),
+     &           0.5*((stat_y8(3*nint+i)-(stat_y8(0*nint+i))**2)+
+     &           (stat_y8(4*nint+i)-(stat_y8(1*nint+i))**2)+
+     &           (stat_y8(5*nint+i)-(stat_y8(2*nint+i))**2)),
      &           0.0, !stat_y(9*nint+i),
      &           0.0, !stat_y(10*nint+i),
      &           0.0, !psix_int(i),
@@ -1336,9 +1387,12 @@ c     get objects surface area
      &           stat_y9(1*nint+i),
      &           stat_y9(2*nint+i),
      &           (stat_y9(3*nint+i)-(stat_y9(0*nint+i))**2),
-     &           stat_y9(4*nint+i),
-     &           stat_y9(5*nint+i),
-     &           stat_y9(6*nint+i),
+     &           (stat_y9(4*nint+i)-(stat_y9(1*nint+i))**2),
+     &           (stat_y9(5*nint+i)-(stat_y9(2*nint+i))**2),
+     &           stat_y9(6*nint+i)-stat_y9(0*nint+i)*stat_y9(1*nint+i),
+     &           0.5*((stat_y9(3*nint+i)-(stat_y9(0*nint+i))**2)+
+     &           (stat_y9(4*nint+i)-(stat_y9(1*nint+i))**2)+
+     &           (stat_y9(5*nint+i)-(stat_y9(2*nint+i))**2)),
      &           0.0, !stat_y(9*nint+i),
      &           0.0, !stat_y(10*nint+i),
      &           0.0, !psix_int(i),
@@ -1350,9 +1404,12 @@ c     get objects surface area
      &           stat_y10(1*nint+i),
      &           stat_y10(2*nint+i),
      &           (stat_y10(3*nint+i)-(stat_y10(0*nint+i))**2),
-     &           stat_y10(4*nint+i),
-     &           stat_y10(5*nint+i),
-     &           stat_y10(6*nint+i),
+     &           (stat_y10(4*nint+i)-(stat_y10(1*nint+i))**2),
+     &           (stat_y10(5*nint+i)-(stat_y10(2*nint+i))**2),
+     &         stat_y10(6*nint+i)-stat_y10(0*nint+i)*stat_y10(1*nint+i),
+     &           0.5*((stat_y10(3*nint+i)-(stat_y10(0*nint+i))**2)+
+     &           (stat_y10(4*nint+i)-(stat_y10(1*nint+i))**2)+
+     &           (stat_y10(5*nint+i)-(stat_y10(2*nint+i))**2)),
      &           0.0, !stat_y(9*nint+i),
      &           0.0, !stat_y(10*nint+i),
      &           0.0, !psix_int(i),
@@ -1570,3 +1627,116 @@ c
       return
       end
 
+c-----------------------------------------------------------------------
+      subroutine shear_stress(cf,cf_top,cp,cp_top,xf,u,v,w,pr_in)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+      include 'ZPER'  ! nelz
+
+      parameter (lt=lx1*ly1*lz1*lelt,lxyz=lx1*ly1*lz1)
+      integer nelx2, nely2, nelz2
+      parameter (nelx2=NUMBER_ELEMENTS_X, 
+     $   nely2=NUMBER_ELEMENTS_Y, nelz2=NUMBER_ELEMENTS_Z)
+
+      real cf(lx1,nelx2),cf_top(lx1,nelx2),
+     $     cp(lx1,nelx2),cp_top(lx1,nelx2),
+     $     xf(lx1,nelx2),u(lt),v(lt),w(lt),pr_in(lt)
+
+      real pra(lx1,ly1,lz1,lelt)
+
+      common /scrns/ sij(lxyz,3*(ldim-1),lelt)
+      common /scruz/ ua(lt),va(lt),wa(lt)
+      common /scrmg/ ur (lxyz) , us (lxyz) , ut (lxyz)
+     $             , vr (lxyz) , vs (lxyz) , vt (lxyz)
+     $             , wr (lxyz) , ws (lxyz) , wt (lxyz)
+
+
+      integer icalld,igs_z,e,eg,ex,ey,ez,f
+      save    icalld,igs_z
+      data    icalld /0/
+
+      n     =   lx1*ly1*lz1*nelv
+
+
+c     ! average field in z and then in x
+      idir = 3 ! z
+      if (icalld.eq.0) call gtpp_gs_setup(igs_z,nelx2,nely2,nelz2,idir)
+      icalld=1
+
+      call planar_avg(ua,u,igs_z)
+      call planar_avg(va,v,igs_z)
+      call planar_avg(wa,w,igs_z)
+      call planar_avg(pra,pr_in,igs_z)
+
+      umax=glamax(ua,n)
+
+      nij = 3*(ldim-1)
+      call comp_sij(sij,nij,ua,va,wa,ur,us,ut,vr,vs,vt,wr,ws,wt)
+
+      npts = lx1*nelx2
+      call rzero(cf,npts)
+      call rzero(cf_top,npts)
+      call rzero(cp,npts)
+      call rzero(cp_top,npts)
+      call rzero(xf,npts)
+
+      f=1 ! Face 1
+      f_top = 3
+
+      visc = param(2)
+
+      do e=1,nelv
+        eg = lglel(e)
+        call get_exyz(ex,ey,ez,eg,nelx2,nely2,nelz2)
+
+        if (ey.eq.1.and.ez.eq.1) then
+
+          do k=1,lx1
+
+            sxx = sij(k,1,e)
+            syy = sij(k,2,e)
+            syx = sij(k,ldim+1,e)
+
+            tnx = -uny(k,1,f,e)
+            tny =  unx(k,1,f,e)
+
+            cf(k,ex) = tnx*sxx*unx(k,1,f,e) 
+     $               + tny*syx*unx(k,1,f,e) 
+     $               + tnx*syx*uny(k,1,f,e) 
+     $               + tny*syy*uny(k,1,f,e) 
+            cf(k,ex) = -visc*cf(k,ex)
+            xf(k,ex) =  xm1(k,1,1,e)
+            cp(k,ex) = pra(k,1,1,e)
+
+          enddo
+        endif
+        if (ey.eq.nely2.and.ez.eq.1) then
+
+          do k=1,lx1
+
+            sxx = sij((ly1-1)*lx1+k,1,e)
+            syy = sij((ly1-1)*lx1+k,2,e)
+            syx = sij((ly1-1)*lx1+k,ldim+1,e)
+
+            tnx = -uny(k,1,f_top,e)
+            tny = unx(k,1,f_top,e)
+
+            cf_top(k,ex) = tnx*sxx*unx(k,1,f_top,e) 
+     $                   + tny*syx*unx(k,1,f_top,e) 
+     $                   + tnx*syx*uny(k,1,f_top,e) 
+     $                   + tny*syy*uny(k,1,f_top,e) 
+            cf_top(k,ex) = visc*cf_top(k,ex)
+            cp_top(k,ex) = pra(k,ly1,1,e)
+          enddo
+        endif
+      enddo
+
+      call gop(cf,ua,'+  ',npts) ! Sum cf vector over all ranks
+      call gop(cf_top,ua,'+  ',npts) ! Sum cf vector over all ranks
+      call gop(cp,ua,'+  ',npts) ! Sum cf vector over all ranks
+      call gop(cp_top,ua,'+  ',npts) ! Sum cf vector over all ranks
+      call gop(xf,ua,'+  ',npts) ! Sum cf vector over all ranks
+
+      return
+      end
