@@ -3016,9 +3016,9 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
      &           yy,
      &           yy*Re_tau,
      &           (stat_y(3*nint+i)-(stat_y(0*nint+i))**2),
-     &           stat_y(4*nint+i),
-     &           stat_y(5*nint+i),
-     &           stat_y(6*nint+i),
+     &           (stat_y(4*nint+i)-(stat_y(1*nint+i))**2),
+     &           (stat_y(5*nint+i)-(stat_y(2*nint+i))**2),
+     &           stat_y(6*nint+i)-stat_y(0*nint+i)*stat_y(1*nint+i),
      &           u_tau_out,
      &           (stat_y(24*nint+i)+2.0*stat_y(26*nint+i)+
      &            psix_int(i)*psix_int(i)-(stat_y(0*nint+i))**2)
