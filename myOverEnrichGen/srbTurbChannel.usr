@@ -1560,11 +1560,8 @@ C                     do iy = 1,ly1
                     endif
                     avg_ind = ix+(iy-1)*lx1+(iz-1)*lx1*ly1+
      $                 (iel-1)*lx1*ly1*lz1
-                    ! Use average value for matching point
-                    if (use_default .eq. 1) then
-                      utau = utau_ref
-
-                      ! SRB CHECK ON HILL
+                    ! SRB CHECK ON HILL
+                    ! default utan is parallel to wall in x dir
                       if (flag(iel) .eq. 1) then
                         utan_x(ix,iy_ut,iz,iel) = t2w(1,ix,iz,iel)
                         utan_y(ix,iy_ut,iz,iel) = t2w(2,ix,iz,iel)
@@ -1574,21 +1571,14 @@ C                     do iy = 1,ly1
                         utan_y(ix,iy_ut,iz,iel) = t1w(2,ix,iz,iel)
                         utan_z(ix,iy_ut,iz,iel) = t1w(3,ix,iz,iel)
                       endif
+                    ! Use average value for matching point
+                    if (use_default .eq. 1) then
+                      utau = utau_ref                      
                     elseif (use_avg_int .eq. 1) then
                       ! Using average intervals
                       ! Use ref for first call
                       if (secondcall .ne. 1) then
                         utau = utau_ref
-                        ! SRB CHECK ON HILL
-                        if (flag(iel) .eq. 1) then
-                          utan_x(ix,iy_ut,iz,iel) = t2w(1,ix,iz,iel)
-                          utan_y(ix,iy_ut,iz,iel) = t2w(2,ix,iz,iel)
-                          utan_z(ix,iy_ut,iz,iel) = t2w(3,ix,iz,iel)
-                        else
-                          utan_x(ix,iy_ut,iz,iel) = t1w(1,ix,iz,iel)
-                          utan_y(ix,iy_ut,iz,iel) = t1w(2,ix,iz,iel)
-                          utan_z(ix,iy_ut,iz,iel) = t1w(3,ix,iz,iel)
-                        endif
                       else
                         u_m = srbavg(avg_ind,1)
                         v_m = srbavg(avg_ind,2)
@@ -1645,11 +1635,11 @@ C                     do iy = 1,ly1
                       taunew(ix,iy_ut,iz,iel) = -param(1)
      $                                   *uti(ix,iy_ut,iz,iel)**2
                       taunewx(ix,iy,iz,iel) = -param(1)
-     $                                    *(uti(ix,iy,iz,iel)**2)*utgtx 
+     $                                  *(uti(ix,iy_ut,iz,iel)**2)*utgtx 
                       taunewy(ix,iy,iz,iel) = -param(1)
-     $                                    *(uti(ix,iy,iz,iel)**2)*utgty 
+     $                                  *(uti(ix,iy_ut,iz,iel)**2)*utgty 
                       taunewz(ix,iy,iz,iel) = -param(1)
-     $                                    *(uti(ix,iy,iz,iel)**2)*utgtz 
+     $                                  *(uti(ix,iy_ut,iz,iel)**2)*utgtz 
                     else
                       uti(ix,iy_ut,iz,iel) = utau ! update guess value                  ! for next time step
                       taunew(ix,iy_ut,iz,iel) = -param(1)*utau**2 ! shear stress
