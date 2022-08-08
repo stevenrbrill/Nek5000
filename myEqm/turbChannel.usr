@@ -506,8 +506,9 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'NEKUSE'
 
-      real taunew(lx1,ly1,lz1,lelv)
-      common /wallshear/ taunew
+      real taunewx(lx1,ly1,lz1,lelv),taunewy(lx1,ly1,lz1,lelv)
+      real taunewz(lx1,ly1,lz1,lelv)
+      common /wallshear/ taunewx,taunewy,taunewz
 
       if (y.lt.0) temp = 1.0
       if (y.gt.0) temp = 0.0
