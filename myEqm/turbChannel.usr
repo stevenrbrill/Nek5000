@@ -18,7 +18,7 @@ c mesh dimensions
 #define NUMBER_ELEMENTS_Z 8
 
 c MA
-#define LPTS 1000
+#define LPTS 10000
 #define deltaw 0.14285714285 /*Matching location*/
 c-----------------------------------------------------------------------
       subroutine uservp (ix,iy,iz,ieg)
@@ -186,7 +186,7 @@ c     For non-iterative method: up,yp = uplus,yplus of matching point
             do iz = 1, lz1
 c              tauold(ix,iy,iz,iel) = param(1)*(utau_init)**2
                tauold(ix,iy,iz,iel)=0.0
-               uti(ix,iy,iz,iel) = 0.08 ! Guess value for N-R solver
+               uti(ix,iy,iz,iel) = 0.03 ! Guess value for N-R solver
             enddo
            enddo
           enddo
