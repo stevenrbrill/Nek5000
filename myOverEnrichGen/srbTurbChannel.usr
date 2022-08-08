@@ -962,6 +962,60 @@ c-----------------------------------------------------------------------
       end
 
 c-----------------------------------------------------------------------
+      real function calc_psi2  (x,y,z,xwall,ywall,zwall,flag,utau,nu)
+      ! Evaluate enrichment function
+      implicit none
+      real x, y, z, utau, nu ! Wall distance
+      real xwall, ywall, zwall
+      integer flag
+      real Re_tau, ypb, yw
+      real lotw
+      
+      Re_tau = utau/nu
+
+      ! Distance from wall
+      yw = sqrt((x-xwall)**2+(y-ywall)**2+(z-zwall)**2)
+
+      ! Enrichment value
+      calc_psi2 = lotw(yw,utau,nu)
+
+      return
+      end      
+
+
+c-----------------------------------------------------------------------
+      real function calc_gpsix_y2 (x,y,z,xwall,ywall,zwall,flag,utau,nu)
+      ! Evaluate enrichment gradient
+      implicit none
+      real x, y, z, utau, nu 
+      real xwall, ywall, zwall
+      integer flag
+      real Re_tau, ypb, yw
+      integer sign
+      real dlotwdy
+
+      ypb = 11.062299784340414
+      Re_tau = utau/nu
+
+      ! Not fully general
+
+      ! Distance from wall
+      if (y .lt. yw) then
+        sign = -1
+      elseif (y .ge. yw) then
+        sign = 1
+      endif
+
+      ! Distance from wall
+      yw = sqrt((x-xwall)**2+(y-ywall)**2+(z-zwall)**2)
+
+      ! Enrichment gradient
+      calc_gpsix_y2 = sign*dlotwdy(yw,utau,nu)
+
+      return
+      end
+
+c-----------------------------------------------------------------------
       subroutine userchk ()
       include 'SIZE'
       include 'TOTAL'
@@ -1288,6 +1342,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $     gpsiy_y_t2(lxd,lzd,lyd,lelv), gpsiy_z_t2(lxd,lzd,lyd,lelv), 
      $     gpsiz_x_t2(lxd,lzd,lyd,lelv), gpsiz_y_t2(lxd,lzd,lyd,lelv),
      $     gpsiz_z_t2(lxd,lzd,lyd,lelv) 
+      real z_lxd(lxd), w_lxd(lxd), line_dist, myyd
      
 C       save psix, psiy, psiz
 c---------------------------------------------------------------
@@ -1297,6 +1352,8 @@ c---------------------------------------------------------------
       nelx  = NUMBER_ELEMENTS_X
       nely  = NUMBER_ELEMENTS_Y
       nelz  = NUMBER_ELEMENTS_Z
+
+      call zwgl (z_lxd,w_lxd,lxd)
 
       if (istep.eq.0) then
          bIDs(1) = 1
@@ -1655,9 +1712,10 @@ C                     do iy = 1,ly1
                       if (use_default .eq. 1) then
                         ut_param = utau_ref
                       endif
-                   psi_norm = calc_psi(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
-     $                   ut_param,param(2))
+                   psi_norm = calc_psi2(xm1(ix,iy,iz,iel),
+     $                 ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),
+     $                 xm1(ix,iy_ut,iz,iel),ym1(ix,iy_ut,iz,iel),
+     $                 zm1(ix,iy_ut,iz,iel),flag(iel),ut_param,param(2))
                   psix(ix,iy,iz,iel) = psi_norm*utan_x(ix,iy_ut,iz,iel)
                   psiy(ix,iy,iz,iel) = psi_norm*utan_y(ix,iy_ut,iz,iel)
                   psiz(ix,iy,iz,iel) = psi_norm*utan_z(ix,iy_ut,iz,iel)
@@ -1707,20 +1765,26 @@ C                     do iy = 1,ly1
                       if (use_default .eq. 1) then
                         ut_param = utau_ref
                       endif
-                      ! SRB3D
+C                       ! SRB3D
+                      line_dist = sqrt(
+     $                 (xm1(ix,ly1,iz,iel)-xm1(ix,1,iz,iel))**2                 
+     $                 +(ym1(ix,ly1,iz,iel)-ym1(ix,1,iz,iel))**2
+     $                 +(zm1(ix,ly1,iz,iel)-zm1(ix,1,iz,iel))**2)
+                      myyd = ym1(ix,1,iz,iel)+(z_lxd(iy)+1.0)/2.0*line_dist
                       psi_trans(ix,iz,iy,iel) = calc_psi(
-     $                    xm1(ix,iy,iz,iel),
-     $                   ymd(1,iy,1,iel),zm1(ix,iy,iz,iel),flag(iel),
-     $                   ut_param,param(2))
+     $                    xm1(ix,1,iz,iel),myyd,
+     $                    zm1(ix,1,iz,iel),flag(iel),
+     $                    ut_param,param(2))
+
                       gpsi_trans(ix,iz,iy,iel) = calc_gpsix_y(
      $                    xm1(ix,iy,iz,iel),
-     $                   ymd(1,iy,1,iel),zm1(ix,iy,iz,iel),flag(iel),
+     $                   ymd(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
      $                   ut_param,param(2))
 
-                      psi_trans_t = calc_psi(
-     $                    xm1(ix,iy,iz,iel),
-     $                   ymd(1,iy,1,iel),zm1(ix,iy,iz,iel),flag(iel),
-     $                   ut_param,param(2))
+                        psi_trans_t(ix,iz,iy,iel) = calc_psi(
+     $                    xm1(ix,1,iz,iel),myyd,
+     $                    zm1(ix,1,iz,iel),flag(iel),
+     $                    ut_param,param(2))
 
              psix_trans(ix,iy,iz,iel) = psi_trans_t
      $             *utan_x(ix,iy_ut,iz,iel)
