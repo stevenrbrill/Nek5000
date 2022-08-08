@@ -994,7 +994,7 @@ c-----------------------------------------------------------------------
       save xint, yint, zint
       save igs_x, igs_z
 
-      parameter(nstat=27)
+      parameter(nstat=31)
       real ravg(lx1*ly1*lz1*lelt,nstat)
       real stat(lx1*ly1*lz1*lelt,nstat)
       real stat_y(INTP_NMAX*nstat)
@@ -2780,18 +2780,20 @@ c
         call avg3(ravg(1,11),vy,t ,alpha,beta,n,'vtmm',ifverbose)
 
         call avg1(ravg(1,12),psix ,alpha,beta,n,'psix',ifverbose)
-        call avg1(ravg(1,14),uti ,alpha,beta,n,'utia',ifverbose)
-        call avg1(ravg(1,15),taunew ,alpha,beta,n,'taua',ifverbose)
+        call avg1(ravg(1,13),psiy ,alpha,beta,n,'psiy',ifverbose)
+        call avg1(ravg(1,14),psiz ,alpha,beta,n,'psiz',ifverbose)
+        call avg1(ravg(1,18),uti ,alpha,beta,n,'utia',ifverbose)
+        call avg1(ravg(1,19),taunew ,alpha,beta,n,'taua',ifverbose)
 
-        call avg1(ravg(1,16),tr2x1,alpha,beta,n,'t2x1',ifverbose)
-        call avg1(ravg(1,17),tr2y1,alpha,beta,n,'t2y1',ifverbose)
-        call avg1(ravg(1,18),tr2z1,alpha,beta,n,'t2z1',ifverbose)
-        call avg1(ravg(1,19),tr3x1,alpha,beta,n,'t3x1',ifverbose)
-        call avg1(ravg(1,20),tr3y1,alpha,beta,n,'t3y1',ifverbose)
-        call avg1(ravg(1,21),tr3z1,alpha,beta,n,'t3z1',ifverbose)
-        call avg1(ravg(1,22),tr1x1,alpha,beta,n,'t1x1',ifverbose)
-        call avg1(ravg(1,23),tr1y1,alpha,beta,n,'t1y1',ifverbose)
-        call avg1(ravg(1,24),tr1z1,alpha,beta,n,'t1z1',ifverbose)
+        call avg1(ravg(1,20),tr2x1,alpha,beta,n,'t2x1',ifverbose)
+        call avg1(ravg(1,21),tr2y1,alpha,beta,n,'t2y1',ifverbose)
+        call avg1(ravg(1,22),tr2z1,alpha,beta,n,'t2z1',ifverbose)
+        call avg1(ravg(1,23),tr3x1,alpha,beta,n,'t3x1',ifverbose)
+        call avg1(ravg(1,24),tr3y1,alpha,beta,n,'t3y1',ifverbose)
+        call avg1(ravg(1,25),tr3z1,alpha,beta,n,'t3z1',ifverbose)
+        call avg1(ravg(1,26),tr1x1,alpha,beta,n,'t1x1',ifverbose)
+        call avg1(ravg(1,27),tr1y1,alpha,beta,n,'t1y1',ifverbose)
+        call avg1(ravg(1,28),tr1z1,alpha,beta,n,'t1z1',ifverbose)
 
         if (srbatime.ne.0. .and. srbdtime.ne.0.) then
         call avg1(srbavg(1,1),vx   ,srbalpha,srbbeta,n,'uavg',ifverbose)
@@ -2807,10 +2809,12 @@ c
         dragx_avg_poly = alpha*dragx_avg_poly + beta*dragx(iobj_wall)
 
 c        write(6,*) 'dragx(iobj_wall) = ', dragx(iobj_wall)
-        call avg1(ravg(1,13),vx   ,alpha,beta,n,'upol',ifverbose)
-        call avg2(ravg(1,25),vx   ,alpha,beta,n,'upsq',ifverbose)
-        call avg2(ravg(1,26),psix ,alpha,beta,n,'psiq',ifverbose)
-        call avg2(ravg(1,27),vx_psi ,alpha,beta,n,'upsi',ifverbose)
+        call avg1(ravg(1,15),vx   ,alpha,beta,n,'upol',ifverbose)
+        call avg1(ravg(1,16),vy   ,alpha,beta,n,'vpol',ifverbose)
+        call avg1(ravg(1,17),vz   ,alpha,beta,n,'wpol',ifverbose)
+        call avg2(ravg(1,29),vx   ,alpha,beta,n,'upsq',ifverbose)
+        call avg2(ravg(1,30),psix ,alpha,beta,n,'psiq',ifverbose)
+        call avg2(ravg(1,31),vx_psi ,alpha,beta,n,'upsi',ifverbose)
       endif
 
 C       if (istep.eq.0 .or. ifoutfld) then
@@ -2836,52 +2840,53 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          enddo
 
          if (ldim .eq. 2) then
+            print *, "ENRICHMENT STATS INACCURATE. FIX"
          ! Correct stat 9
          ! psi = correct value in boundary, 0 off boundary
          ! u = correct value in boundary, same off boundary
-           do iel = 1, nelv
-            if (flag(iel) .eq. -1) then
-              iy =  ly1
-              do iz = 1, lz1
-                do ix = 1, lx1
-             j = (iel-1)*lx1*ly1*lz1 + (iz-1)*lx1*ly1 + (iy-1)*lx1 + ix
-                  stat(j,12) = 2.0*stat(j,12)
-                  stat(j,13) = stat(j,13) - stat(j,12)/2.0
-                  stat(j,27) = 2.0*stat(j,27)
-                enddo
-              enddo
-            elseif (flag(iel) .eq. -2) then
-              iy =  1
-              do iz = 1, lz1
-                do ix = 1, lx1
-             j = (iel-1)*lx1*ly1*lz1 + (iz-1)*lx1*ly1 + (iy-1)*lx1 + ix
-                  stat(j,13) = stat(j,13) + stat(j,12)
-                  stat(j,12) = 0.0
-                  stat(j,27) = 0.0
-                enddo
-              enddo
-            elseif (flag(iel) .eq. 2) then
-              iy = ly1
-              do iz = 1, lz1
-                do ix = 1, lx1
-             j = (iel-1)*lx1*ly1*lz1 + (iz-1)*lx1*ly1 + (iy-1)*lx1 + ix
-                  stat(j,13) = stat(j,13) + stat(j,12)
-                  stat(j,12) = 0.0
-                  stat(j,27) = 0.0
-                enddo
-              enddo  
-            elseif (flag(iel) .eq. 1) then
-              iy =  1
-              do iz = 1, lz1
-                do ix = 1, lx1
-             j = (iel-1)*lx1*ly1*lz1 + (iz-1)*lx1*ly1 + (iy-1)*lx1 + ix
-                  stat(j,12) = 2.0*stat(j,12)
-                  stat(j,13) = stat(j,13) - stat(j,12)/2.0
-                  stat(j,27) = 2.0*stat(j,27)
-                enddo
-              enddo  
-            endif 
-           enddo
+C            do iel = 1, nelv
+C             if (flag(iel) .eq. -1) then
+C               iy =  ly1
+C               do iz = 1, lz1
+C                 do ix = 1, lx1
+C              j = (iel-1)*lx1*ly1*lz1 + (iz-1)*lx1*ly1 + (iy-1)*lx1 + ix
+C                   stat(j,12) = 2.0*stat(j,12)
+C                   stat(j,13) = stat(j,13) - stat(j,12)/2.0
+C                   stat(j,27) = 2.0*stat(j,27)
+C                 enddo
+C               enddo
+C             elseif (flag(iel) .eq. -2) then
+C               iy =  1
+C               do iz = 1, lz1
+C                 do ix = 1, lx1
+C              j = (iel-1)*lx1*ly1*lz1 + (iz-1)*lx1*ly1 + (iy-1)*lx1 + ix
+C                   stat(j,13) = stat(j,13) + stat(j,12)
+C                   stat(j,12) = 0.0
+C                   stat(j,27) = 0.0
+C                 enddo
+C               enddo
+C             elseif (flag(iel) .eq. 2) then
+C               iy = ly1
+C               do iz = 1, lz1
+C                 do ix = 1, lx1
+C              j = (iel-1)*lx1*ly1*lz1 + (iz-1)*lx1*ly1 + (iy-1)*lx1 + ix
+C                   stat(j,13) = stat(j,13) + stat(j,12)
+C                   stat(j,12) = 0.0
+C                   stat(j,27) = 0.0
+C                 enddo
+C               enddo  
+C             elseif (flag(iel) .eq. 1) then
+C               iy =  1
+C               do iz = 1, lz1
+C                 do ix = 1, lx1
+C              j = (iel-1)*lx1*ly1*lz1 + (iz-1)*lx1*ly1 + (iy-1)*lx1 + ix
+C                   stat(j,12) = 2.0*stat(j,12)
+C                   stat(j,13) = stat(j,13) - stat(j,12)/2.0
+C                   stat(j,27) = 2.0*stat(j,27)
+C                 enddo
+C               enddo  
+C             endif 
+C            enddo
          endif
 
          if (nfield.gt.1) then
@@ -2908,8 +2913,8 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          if (nid.ne.0) goto 998 
 
          ! Interpolate psi at all points
-         ut_param = (stat_y(13*nint+1) + stat_y(13*nint+nint))/2.0
-         tau_param = (stat_y(14*nint+1) + stat_y(14*nint+nint))/2.0
+         ut_param = (stat_y(17*nint+1) + stat_y(17*nint+nint))/2.0
+         tau_param = (stat_y(18*nint+1) + stat_y(18*nint+nint))/2.0
          if (use_default .eq. 1) then
                ut_param = utau_ref
                ut_avg_fit_top = utau_ref
@@ -3020,7 +3025,7 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
      &           (stat_y(5*nint+i)-(stat_y(2*nint+i))**2),
      &           stat_y(6*nint+i)-stat_y(0*nint+i)*stat_y(1*nint+i),
      &           u_tau_out,
-     &           (stat_y(24*nint+i)+2.0*stat_y(26*nint+i)+
+     &           (stat_y(26*nint+i)+2.0*stat_y(28*nint+i)+
      &            psix_int(i)*psix_int(i)-(stat_y(0*nint+i))**2)
 
             write(57,3) 
@@ -3036,15 +3041,15 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
             write(58,3) 
      &           yy,
      &           yy*Re_tau, 
-     &           stat_y(15*nint+i),
-     &           stat_y(16*nint+i),
-     &           stat_y(17*nint+i),
-     &           stat_y(18*nint+i),
      &           stat_y(19*nint+i),
      &           stat_y(20*nint+i),
      &           stat_y(21*nint+i),
      &           stat_y(22*nint+i),
-     &           stat_y(23*nint+i)
+     &           stat_y(23*nint+i),
+     &           stat_y(24*nint+i),
+     &           stat_y(25*nint+i),
+     &           stat_y(26*nint+i),
+     &           stat_y(27*nint+i)
 
 C             write(81,3) 
 C      &           yint1(i),
