@@ -1456,15 +1456,6 @@ C       if (time.lt.50) then
             enddo
           endif
         enddo
-
-        do iel = 1,nelv
-          if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then
-            do i = 1,lx1*ly1*lz1 
-              vx_psi(i,1,1,iel) = 0.0
-            enddo
-          endif
-        enddo
-
             
         if (comp_psi .ne. 1) then
 C           if (use_default .eq. 1) then
