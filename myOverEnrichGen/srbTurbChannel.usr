@@ -1762,17 +1762,17 @@ C                       ! SRB3D
      $                   ymd(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
      $                   ut_param,param(2))
 
-                        psi_trans_t(ix,iz,iy,iel) = calc_psi(
+                        psi_trans_t = calc_psi(
      $                    xm1(ix,1,iz,iel),myyd,
      $                    zm1(ix,1,iz,iel),flag(iel),
      $                    ut_param,param(2))
 
-             psix_trans(ix,iy,iz,iel) = psi_trans_t
-     $             *utan_x(ix,iy_ut,iz,iel)
-             psiy_trans(ix,iy,iz,iel) = psi_trans_t
-     $             *utan_y(ix,iy_ut,iz,iel)
-             psiz_trans(ix,iy,iz,iel) = psi_trans_t
-     $            *utan_z(ix,iy_ut,iz,iel)
+                        psix_trans(ix,iz,iy,iel) = psi_trans_t
+     $                        *utan_x(ix,iy_ut,iz,iel)
+                        psiy_trans(ix,iz,iy,iel) = psi_trans_t
+     $                        *utan_y(ix,iy_ut,iz,iel)
+                        psiz_trans(ix,iz,iy,iel) = psi_trans_t
+     $                       *utan_z(ix,iy_ut,iz,iel)
 
                       gpsidn_norm_t = 
      $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
