@@ -516,9 +516,9 @@ c-----------------------------------------------------------------------
 
 c     Imposing shear stress B.C.s
       if(cbc(iside,e,1).eq.'sh ') then
-        TRX=taunew(ix,iy,iz,e)
-        TRY=0.0
-        TRZ=0.0
+        TRX=taunewx(ix,iy,iz,e)
+        TRY=taunewy(ix,iy,iz,e)
+        TRZ=taunewz(ix,iy,iz,e)
       endif
       
       return
