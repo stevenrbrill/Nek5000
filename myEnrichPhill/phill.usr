@@ -1023,6 +1023,20 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
 
+c     parameters for line definition
+      integer intp_nmax, nelx, nely, nelz
+      parameter (intp_nmax=200)
+      real xcint, zcint, ylen, betam
+      parameter (xcint=4.0, zcint=2.25, ylen=3.035, betam=2.4)
+      real xcint1, xcint2, xcint3, xcint4, xcint5, xcint6, xcint7,
+     $     xcint8, xcint9, xcint10
+      parameter (xcint1=0.05,xcint2=0.5,xcint3=1.,xcint4=2.,xcint5=3.)
+      parameter (xcint6=4.,xcint7=5.,xcint8=6.,xcint9=7.,xcint10=8.)
+
+c     object definition
+      real a_tmp(maxobj), wa(maxobj), A_w
+      save A_w
+
       real x0(3)
       data x0 /0.0, 0.0, 0.0/ 
       save x0
@@ -1040,6 +1054,11 @@ c-----------------------------------------------------------------------
       real    rwk(INTP_NMAX,ldim+1) ! r, s, t, dist2
       integer iwk(INTP_NMAX,3)      ! code, proc, el 
       save    rwk, iwk
+      real    rwk2_orig(2,ldim+1) ! r, s, t, dist2
+      integer iwk2_orig(2,3)      ! code, proc, el 
+      save    rwk2_orig, iwk2_orig
+      integer intp_h2_orig
+      save intp_h2_orig
 
       integer nint, intp_h
       save    nint, intp_h
@@ -1051,11 +1070,65 @@ c-----------------------------------------------------------------------
       save xint, yint, zint
       save igs_x, igs_z
 
-      parameter(nstat=31)
+      real    rwk1(intp_nmax,ldim+1), rwk2(intp_nmax,ldim+1),
+     $        rwk3(intp_nmax,ldim+1), rwk4(intp_nmax,ldim+1),
+     $        rwk5(intp_nmax,ldim+1), rwk6(intp_nmax,ldim+1),
+     $        rwk7(intp_nmax,ldim+1), rwk8(intp_nmax,ldim+1),
+     $        rwk9(intp_nmax,ldim+1), rwk10(intp_nmax,ldim+1)
+      integer iwk1(intp_nmax,3), iwk2(intp_nmax,3), iwk3(intp_nmax,3),
+     $        iwk4(intp_nmax,3), iwk5(intp_nmax,3), iwk6(intp_nmax,3),
+     $        iwk7(intp_nmax,3), iwk8(intp_nmax,3), iwk9(intp_nmax,3),
+     $        iwk10(intp_nmax,3)
+      save    rwk1, iwk1, rwk2, iwk2, rwk3, iwk3, rwk4, iwk4,
+     $        rwk5, iwk5, rwk6, iwk6, rwk7, iwk7, rwk8, iwk8,
+     $        rwk9, iwk9, rwk10, iwk10 
+
+      real xint1(intp_nmax),xint2(intp_nmax),xint3(intp_nmax),
+     $     xint4(intp_nmax),xint5(intp_nmax),xint6(intp_nmax),
+     $     xint7(intp_nmax),xint8(intp_nmax),xint9(intp_nmax),
+     $     xint10(intp_nmax) 
+      save xint1, xint2, xint3, xint4, xint5, xint6, xint7, xint8, 
+     $     xint9, xint10
+
+      real ycint1, ycint2, ycint3, ycint4, ycint5, ycint6, ycint7,
+     $     ycint8, ycint9, ycint10
+      real yint1(intp_nmax),yint2(intp_nmax),yint3(intp_nmax),
+     $     yint4(intp_nmax),yint5(intp_nmax),yint6(intp_nmax),
+     $     yint7(intp_nmax),yint8(intp_nmax),yint9(intp_nmax),
+     $     yint10(intp_nmax) 
+      save yint1, yint2, yint3, yint4, yint5, yint6, yint7, yint8, 
+     $     yint9, yint10
+
+      real  zint1(intp_nmax),zint2(intp_nmax),zint3(intp_nmax),
+     $     zint4(intp_nmax),zint5(intp_nmax),zint6(intp_nmax),
+     $     zint7(intp_nmax),zint8(intp_nmax),zint9(intp_nmax),
+     $     zint10(intp_nmax) 
+      save zint1, zint2, zint3, zint4, zint5, zint6, zint7, zint8, 
+     $     zint9, zint10
+
+      parameter(nstat=20)
       real ravg(lx1*ly1*lz1*lelt,nstat)
       real stat(lx1*ly1*lz1*lelt,nstat)
       real stat_y(INTP_NMAX*nstat)
       save ravg, stat, stat_y
+
+      real stat_y1(intp_nmax*nstat)
+      real stat_y2(intp_nmax*nstat)
+      real stat_y3(intp_nmax*nstat)
+      real stat_y4(intp_nmax*nstat)
+      real stat_y5(intp_nmax*nstat)
+      real stat_y6(intp_nmax*nstat)
+      real stat_y7(intp_nmax*nstat)
+      real stat_y8(intp_nmax*nstat)
+      real stat_y9(intp_nmax*nstat)
+      real stat_y10(intp_nmax*nstat)
+      save stat_y1, stat_y2, stat_y3, stat_y4, stat_y5, stat_y6, 
+     $     stay_y7, stat_y8, stat_y9, stat_y10 
+
+      real Betax, Betay
+      real Lx, Ly, Lz, Wh, H    ! x dimension, y dimension, hill half width, hill height
+      common /hill_param/ Lx, Ly, Lz, Wh, H, Betax ,Betay
+      real hill_height
 
       real srbavg(lx1*ly1*lz1*lelt,3)
       save srbavg
@@ -1102,6 +1175,9 @@ c---------------------------------------------------------------
 
       integer bIDs(1), iobj_wall(2)
       save iobj_wall
+
+      common /mycf/ cf(lx1,lelt),cf_top(lx1,lelt),
+     $              cp(lx1,lelt),cp_top(lx1,lelt),xf(lx1,lelt)
 
 c --------------------------------------------------------------
 c     Weak Wall terms
@@ -1176,11 +1252,6 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save psix_int, psiy_int, psiz_int
       real xint_match(2),yint_match(2),zint_match(2)
       save xint_match, yint_match, zint_match
-      real    rwk2(2,ldim+1) ! r, s, t, dist2
-      integer iwk2(2,3)      ! code, proc, el 
-      save    rwk2, iwk2
-      integer intp_h2
-      save intp_h2
       integer recomp_en
       integer comp_phi_grad
       save comp_phi_grad
@@ -2821,16 +2892,90 @@ c
 
         nxm = 1 ! mesh is linear
         call interp_setup(intp_h,0.0,nxm,nelt)
-        call interp_setup(intp_h2,0.0,nxm,nelt)
+        call interp_setup(intp_h2_orig,0.0,nxm,nelt)
+        call interp_setup(intp_h1,0.0,0,nelv)
+        call interp_setup(intp_h2,0.0,0,nelv)
+        call interp_setup(intp_h3,0.0,0,nelv)
+        call interp_setup(intp_h4,0.0,0,nelv)
+        call interp_setup(intp_h5,0.0,0,nelv)
+        call interp_setup(intp_h6,0.0,0,nelv)
+        call interp_setup(intp_h7,0.0,0,nelv)
+        call interp_setup(intp_h8,0.0,0,nelv)
+        call interp_setup(intp_h9,0.0,0,nelv)
+        call interp_setup(intp_h10,0.0,0,nelv)
         nint = 0
         if (nid.eq.0) then
           nint = INTP_NMAX
           call cfill(xint,XCINT,size(xint))
+          call cfill(xint1,xcint1,size(xint1))
+          call cfill(xint2,xcint2,size(xint2))
+          call cfill(xint3,xcint3,size(xint3))
+          call cfill(xint4,xcint4,size(xint4))
+          call cfill(xint5,xcint5,size(xint5))
+          call cfill(xint6,xcint6,size(xint6))
+          call cfill(xint7,xcint7,size(xint7))
+          call cfill(xint8,xcint8,size(xint8))
+          call cfill(xint9,xcint9,size(xint9))
+          call cfill(xint10,xcint10,size(xint10))
+
+          ycint1 = hill_height(xcint1,Lx,Wh,H)
+          ycint2 = hill_height(xcint2,Lx,Wh,H)
+          ycint3 = hill_height(xcint3,Lx,Wh,H)
+          ycint4 = hill_height(xcint4,Lx,Wh,H)
+          ycint5 = hill_height(xcint5,Lx,Wh,H)
+          ycint6 = hill_height(xcint6,Lx,Wh,H)
+          ycint7 = hill_height(xcint7,Lx,Wh,H)
+          ycint8 = hill_height(xcint8,Lx,Wh,H)
+          ycint9 = hill_height(xcint9,Lx,Wh,H)
+          ycint10 = hill_height(xcint10,Lx,Wh,H)
           do i = 1,INTP_NMAX 
              yi = (i-1.)/(INTP_NMAX-1)
-             yint(i) = tanh(BETAM*(2*yi-1))/tanh(BETAM)
+             yint(i) = ylen*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)
+             yint1(i) = (ylen-ycint1)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint1
+             yint2(i) = (ylen-ycint2)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint2
+             yint3(i) = (ylen-ycint3)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint3
+             yint4(i) = (ylen-ycint4)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint4
+             yint5(i) = (ylen-ycint5)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint5
+             yint6(i) = (ylen-ycint6)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint6
+             yint7(i) = (ylen-ycint7)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint7
+             yint8(i) = (ylen-ycint8)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint8
+             yint9(i) = (ylen-ycint9)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint9
+             yint10(i) = (ylen-ycint10)*0.5*(tanh(betam*(2*yi-1.0))/
+     $                 tanh(betam)+1.0)+ycint10
           enddo
-          call cfill(zint,ZCINT,size(zint))
+          yint(1) = yint(1) + 1e-3
+          yint1(1) = yint1(1) + 1e-3
+          yint2(1) = yint2(1) + 1e-3
+          yint3(1) = yint3(1) + 1e-3
+          yint4(1) = yint4(1) + 1e-3
+          yint5(1) = yint5(1) + 1e-3
+          yint6(1) = yint6(1) + 1e-3
+          yint7(1) = yint7(1) + 1e-3
+          yint8(1) = yint8(1) + 1e-3
+          yint9(1) = yint9(1) + 1e-3
+          yint10(1) = yint10(1) + 1e-3
+          
+          call cfill(zint,zcint,size(zint))
+          call cfill(zint1,zcint,size(zint1))
+          call cfill(zint2,zcint,size(zint2))
+          call cfill(zint3,zcint,size(zint3))
+          call cfill(zint4,zcint,size(zint4))
+          call cfill(zint5,zcint,size(zint5))
+          call cfill(zint6,zcint,size(zint6))
+          call cfill(zint7,zcint,size(zint7))
+          call cfill(zint8,zcint,size(zint8))
+          call cfill(zint9,zcint,size(zint9))
+          call cfill(zint10,zcint,size(zint10))
 
           call cfill(xint_match,XCINT,2)
           ! SRB3D
@@ -2857,12 +3002,31 @@ c
         call interp_nfld(stat_y,ravg,1,xint,yint,zint,nint,
      $                   iwk,rwk,INTP_NMAX,iffpts,intp_h)
         call interp_nfld(u_match,stat,1,xint_match,yint_match,
-     $                  zint_match,2,iwk2,rwk2,2,iffpts,intp_h2)
+     $           zint_match,2,iwk2_orig,rwk2_orig,2,iffpts,intp_h2_orig)
+        call interp_nfld(stat_y,ravg,1,xint,yint,zint,nint,
+     $                   iwk,rwk,intp_nmax,iffpts,intp_h)
+        call interp_nfld(stat_y1,ravg,1,xint1,yint1,zint1,nint,
+     $                   iwk1,rwk1,intp_nmax,iffpts,intp_h1)
+        call interp_nfld(stat_y2,ravg,1,xint2,yint2,zint2,nint,
+     $                   iwk2,rwk2,intp_nmax,iffpts,intp_h2)
+        call interp_nfld(stat_y3,ravg,1,xint3,yint3,zint3,nint,
+     $                   iwk3,rwk3,intp_nmax,iffpts,intp_h3)
+        call interp_nfld(stat_y4,ravg,1,xint4,yint4,zint4,nint,
+     $                   iwk4,rwk4,intp_nmax,iffpts,intp_h4)
+        call interp_nfld(stat_y5,ravg,1,xint5,yint5,zint5,nint,
+     $                   iwk5,rwk5,intp_nmax,iffpts,intp_h5)
+        call interp_nfld(stat_y6,ravg,1,xint6,yint6,zint6,nint,
+     $                   iwk6,rwk6,intp_nmax,iffpts,intp_h6)
+        call interp_nfld(stat_y7,ravg,1,xint7,yint7,zint7,nint,
+     $                   iwk7,rwk7,intp_nmax,iffpts,intp_h7)
+        call interp_nfld(stat_y8,ravg,1,xint8,yint8,zint8,nint,
+     $                   iwk8,rwk8,intp_nmax,iffpts,intp_h8)
+        call interp_nfld(stat_y9,ravg,1,xint9,yint9,zint9,nint,
+     $                   iwk9,rwk9,intp_nmax,iffpts,intp_h9)
+        call interp_nfld(stat_y10,ravg,1,xint10,yint10,zint10,nint,
+     $                   iwk10,rwk10,intp_nmax,iffpts,intp_h10)
         iffpts = .false.
-        call gtpp_gs_setup(igs_x,nelx     ,nely,nelz,1) ! x-avg
-        if (ldim == 3) then
-          call gtpp_gs_setup(igs_z,nelx*nely,1   ,nelz,3) ! z-avg
-        endif
+        call gtpp_gs_setup(igs_z,nelx*nely,1   ,nelz,3) ! z-avg
 
         call rzero(ravg,size(ravg))
         call rzero(srbavg,size(srbavg))
@@ -2872,6 +3036,25 @@ c
         timel     = time
         srbtimel   = time
         ntdump    = int(time/tSTATFREQ)
+
+c     get objects surface area     
+        nn = nx1*nz1
+        do iobj = 1,nobj
+           a_tmp(iobj)= 0.0
+           do imem = 1, nmember(iobj)
+              ieg   = object(iobj,imem,1)
+              ifc   = object(iobj,imem,2)
+              if (gllnid(ieg).eq.nid) then ! this processor has a contribution
+                 iel = gllel(ieg)
+                 a_tmp(iobj)=a_tmp(iobj)+vlsum(area(1,1,ifc,iel),nn)
+              endif
+           enddo
+        enddo
+        call gop(a_tmp, wa, '+  ', maxobj)
+        A_w = 0.0
+        do iobj = 1,nobj
+           A_w = A_w + a_tmp(iobj)
+        enddo
 
         icalld = 1
       endif
@@ -2910,16 +3093,8 @@ c
         call avg1(ravg(1,14),psiz ,alpha,beta,n,'psiz',ifverbose)
         call avg1(ravg(1,18),uti ,alpha,beta,n,'utia',ifverbose)
         call avg1(ravg(1,19),taunew ,alpha,beta,n,'taua',ifverbose)
+        call avg1(ravg(1,20),pr   ,alpha,beta,n,'pr',ifverbose)
 
-        call avg1(ravg(1,20),tr2x1,alpha,beta,n,'t2x1',ifverbose)
-        call avg1(ravg(1,21),tr2y1,alpha,beta,n,'t2y1',ifverbose)
-        call avg1(ravg(1,22),tr2z1,alpha,beta,n,'t2z1',ifverbose)
-        call avg1(ravg(1,23),tr3x1,alpha,beta,n,'t3x1',ifverbose)
-        call avg1(ravg(1,24),tr3y1,alpha,beta,n,'t3y1',ifverbose)
-        call avg1(ravg(1,25),tr3z1,alpha,beta,n,'t3z1',ifverbose)
-        call avg1(ravg(1,26),tr1x1,alpha,beta,n,'t1x1',ifverbose)
-        call avg1(ravg(1,27),tr1y1,alpha,beta,n,'t1y1',ifverbose)
-        call avg1(ravg(1,28),tr1z1,alpha,beta,n,'t1z1',ifverbose)
 
         if (srbatime.ne.0. .and. srbdtime.ne.0.) then
         call avg1(srbavg(1,1),vx   ,srbalpha,srbbeta,n,'uavg',ifverbose)
@@ -2938,9 +3113,6 @@ c        write(6,*) 'dragx(iobj_wall) = ', dragx(iobj_wall)
         call avg1(ravg(1,15),vx   ,alpha,beta,n,'upol',ifverbose)
         call avg1(ravg(1,16),vy   ,alpha,beta,n,'vpol',ifverbose)
         call avg1(ravg(1,17),vz   ,alpha,beta,n,'wpol',ifverbose)
-        call avg2(ravg(1,29),vx   ,alpha,beta,n,'upsq',ifverbose)
-        call avg2(ravg(1,30),psix ,alpha,beta,n,'psiq',ifverbose)
-        call avg2(ravg(1,31),vx_psi ,alpha,beta,n,'upsi',ifverbose)
       endif
 
 C       if (istep.eq.0 .or. ifoutfld) then
@@ -2961,8 +3133,7 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
       if(istep.gt.0 .and. time.gt.(ntdump+1)*tSTATFREQ) then
          ! averaging over statistical homogeneous directions (x-z)
          do i = 1,nstat
-            call planar_avg(wo1      ,ravg(1,i),igs_x)
-            call planar_avg(stat(1,i),wo1      ,igs_z)
+            call planar_avg(stat(1,i),ravg(1,i),igs_z)
          enddo
 
          if (ldim .eq. 2) then
@@ -3015,28 +3186,60 @@ C             endif
 C            enddo
          endif
 
-         if (nfield.gt.1) then
-            ! evaluate d<T>/dy at the lower wall
-            call opgrad(wo1,wo2,wo3,stat(1,6))
-            call dssum(wo2,lx1,ly1,lz1)
-            call col2(wo2,binvm1,n)
-            call interp_nfld(stat_y,wo2,1,xint,yint,zint,nint,
-     $                       iwk,rwk,INTP_NMAX,iffpts,intp_h)
-            dTdy_w = stat_y(1)
-         else
-            dTdy_w = 1.
-         endif
+C          if (nfield.gt.1) then
+C             ! evaluate d<T>/dy at the lower wall
+C             call opgrad(wo1,wo2,wo3,stat(1,6))
+C             call dssum(wo2,lx1,ly1,lz1)
+C             call col2(wo2,binvm1,n)
+C             call interp_nfld(stat_y,wo2,1,xint,yint,zint,nint,
+C      $                       iwk,rwk,INTP_NMAX,iffpts,intp_h)
+C             dTdy_w = stat_y(1)
+C          else
+C             dTdy_w = 1.
+C          endif
 
          ! extract data along wall normal direction (1D profile)
          call interp_nfld(stat_y,stat,nstat,xint,yint,zint,nint,
      $                    iwk,rwk,INTP_NMAX,iffpts,intp_h)
+         call interp_nfld(stat_y1,stat,nstat,xint1,yint1,zint1,nint,
+     $                    iwk1,rwk1,intp_nmax,iffpts,intp_h1)
+         call interp_nfld(stat_y2,stat,nstat,xint2,yint2,zint2,nint,
+     $                    iwk2,rwk2,intp_nmax,iffpts,intp_h2)
+         call interp_nfld(stat_y3,stat,nstat,xint3,yint3,zint3,nint,
+     $                    iwk3,rwk3,intp_nmax,iffpts,intp_h3)
+         call interp_nfld(stat_y4,stat,nstat,xint4,yint4,zint4,nint,
+     $                    iwk4,rwk4,intp_nmax,iffpts,intp_h4)
+         call interp_nfld(stat_y5,stat,nstat,xint5,yint5,zint5,nint,
+     $                    iwk5,rwk5,intp_nmax,iffpts,intp_h5)
+         call interp_nfld(stat_y6,stat,nstat,xint6,yint6,zint6,nint,
+     $                    iwk6,rwk6,intp_nmax,iffpts,intp_h6)
+         call interp_nfld(stat_y7,stat,nstat,xint7,yint7,zint7,nint,
+     $                    iwk7,rwk7,intp_nmax,iffpts,intp_h7)
+         call interp_nfld(stat_y8,stat,nstat,xint8,yint8,zint8,nint,
+     $                    iwk8,rwk8,intp_nmax,iffpts,intp_h8)
+         call interp_nfld(stat_y9,stat,nstat,xint9,yint9,zint9,nint,
+     $                    iwk9,rwk9,intp_nmax,iffpts,intp_h9)
+         call interp_nfld(stat_y10,stat,nstat,xint10,yint10,zint10,nint,
+     $                    iwk10,rwk10,intp_nmax,iffpts,intp_h10)
 
          ! extract u at avg matching ponit
          call interp_nfld(u_match,stat,1,xint_match,yint_match,
-     $                  zint_match,2,iwk2,rwk2,2,iffpts,intp_h2)
+     $         zint_match,2,iwk2_orig,rwk2_orig,2,iffpts,intp_h2_orig)
 
          ntdump = ntdump + 1
+
+         call shear_stress(cf,cf_top,cp,cp_top,xf,
+     $       ravg(1,1),ravg(1,2),ravg(1,3),ravg(1,20))
+
          if (nid.ne.0) goto 998 
+
+         open(unit=55,file='wall_vals.dat')
+         npts = lx1*nelx
+         write(55,*) " % time   x   cf   cf_top  cp   cp_top"
+         write(55,7) (time,xf(k,1),cf(k,1),cf_top(k,1),
+     $       cp(k,1),cp_top(k,1),k=1,npts)
+   7     format(1p6e14.5)
+         close(55)
 
          ! Interpolate psi at all points
          ut_param = (stat_y(17*nint+1) + stat_y(17*nint+nint))/2.0
@@ -3070,8 +3273,6 @@ C            enddo
 
          rho    = param(1)
          dnu    = param(2)
-         A_w    = 2 * XLEN 
-         if (ldim == 3) A_w = A_w*ZLEN
          tw     = dragx_avg / A_w
          u_tau  = sqrt(tw / rho)
          tw_poly     = dragx_avg_poly / A_w
@@ -3200,7 +3401,7 @@ C            enddo
      &           psix_int(i),
      &           psiy_int(i),
      &           psiz_int(i), 
-     &           u_tau, !u_tau_out,
+     &           u_tau_out,
      &           stat_y(14*nint+i)+psix_int(i),
      &           stat_y(15*nint+i)+psiy_int(i),
      &           stat_y(16*nint+i)+psiz_int(i)
@@ -3435,7 +3636,7 @@ c     mark faces for object definition
            if (((cbc(ifc,iel,1) .eq. 'sh ') .or. 
      $          (cbc(ifc,iel,1) .eq. 'ww ') .or.        
      $          (cbc(ifc,iel,1) .eq. 'W  ') .or.
-     $          (cbc(ifc,iel,1) .eq. 'V  ')).AND.(ym1(1,1,1,iel).gt.0)) 
+     $        (cbc(ifc,iel,1) .eq. 'V  ')).AND.(ym1(1,1,1,iel).gt.2.5)) 
      $          then
               flag(iel) = 1
               top_y = ym1(1,1,1,iel)
@@ -3443,7 +3644,7 @@ c     mark faces for object definition
      $               (cbc(ifc,iel,1) .eq. 'ww ') .or.        
      $               (cbc(ifc,iel,1) .eq. 'W  ') .or.
      $               (cbc(ifc,iel,1) .eq. 'V  ')).AND.
-     $               (ym1(1,1,1,iel).lt.0)) then
+     $               (ym1(1,1,1,iel).lt.2.5)) then
               flag(iel) = -1
               bot_y = ym1(1,ly1,1,iel)
            endif
