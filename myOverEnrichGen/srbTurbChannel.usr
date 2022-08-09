@@ -3157,10 +3157,10 @@ C            enddo
      &           yy*Re_tau, 
      &           stat_y(0*nint+i),
      &           stat_y(11*nint+i),
-     &           stat_y(12*nint+i),
+     &           stat_y(14*nint+i),
      &           psix_int(i),
      &           u_tau_out,
-     &           stat_y(12*nint+i)+psix_int(i)
+     &           stat_y(14*nint+i)+psix_int(i)
 
             write(58,3) 
      &           yy,
