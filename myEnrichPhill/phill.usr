@@ -2899,7 +2899,7 @@ c
 
         nxm = 1 ! mesh is linear
         call interp_setup(intp_h,0.0,nxm,nelt)
-        call interp_setup(intp_h2_orig,0.0,nxm,nelt)
+C         call interp_setup(intp_h2_orig,0.0,nxm,nelt)
         call interp_setup(intp_h1,0.0,0,nelv)
         call interp_setup(intp_h2,0.0,0,nelv)
         call interp_setup(intp_h3,0.0,0,nelv)
@@ -3008,8 +3008,8 @@ c
         iffpts = .true. ! dummy call to find points
         call interp_nfld(stat_y,ravg,1,xint,yint,zint,nint,
      $                   iwk,rwk,INTP_NMAX,iffpts,intp_h)
-        call interp_nfld(u_match,stat,1,xint_match,yint_match,
-     $           zint_match,2,iwk2_orig,rwk2_orig,2,iffpts,intp_h2_orig)
+C         call interp_nfld(u_match,stat,1,xint_match,yint_match,
+C      $           zint_match,2,iwk2_orig,rwk2_orig,2,iffpts,intp_h2_orig)
         call interp_nfld(stat_y,ravg,1,xint,yint,zint,nint,
      $                   iwk,rwk,intp_nmax,iffpts,intp_h)
         call interp_nfld(stat_y1,ravg,1,xint1,yint1,zint1,nint,
@@ -3230,8 +3230,8 @@ C          endif
      $                    iwk10,rwk10,intp_nmax,iffpts,intp_h10)
 
          ! extract u at avg matching ponit
-         call interp_nfld(u_match,stat,1,xint_match,yint_match,
-     $         zint_match,2,iwk2_orig,rwk2_orig,2,iffpts,intp_h2_orig)
+C          call interp_nfld(u_match,stat,1,xint_match,yint_match,
+C      $         zint_match,2,iwk2_orig,rwk2_orig,2,iffpts,intp_h2_orig)
 
          ntdump = ntdump + 1
 
