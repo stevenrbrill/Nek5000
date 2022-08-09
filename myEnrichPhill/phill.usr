@@ -1,5 +1,8 @@
 c- constants -----------------------------------------------------------
 
+#define tSTATSTART uparam(1) /* start time for averaging */
+#define tSTATFREQ  uparam(2) /* output frequency for statistics */
+
 c data extraction along wall normal direction
 #define INTP_NMAX 200 /* number of sample points */
 #define MYZCINT 1.0     /* z coordinate of 1D line */
@@ -13,10 +16,470 @@ c MA
 #define LPTS 10000
 #define deltaw 0.14285714285 /*Matching location*/
 
-C-----------------------------------------------------------------------
+
+c-----------------------------------------------------------------------
+      subroutine my_grad_rst(ur,us,ut,u,md,if3d) ! Gauss-->Gauss grad
+
+      include 'SIZE'
+      include 'DXYZ'
+
+      real    ur(1),us(1),ut(1),u(1)
+      logical if3d
+
+      parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
+      common /mydgrad/ myd(ldg),mydt(ldg),mydg(ldg),mydgt(ldg)
+     $             , myjgl(ldg),myjgt(ldg), wkd(lwkd)
+      real myjgl,myjgt
+
+      m0 = md-1
+      call my_get_dgl_ptr (ip,md,md)
+      if (if3d) then
+         call local_grad3(ur,us,ut,u,m0,1,mydg(ip),mydgt(ip))
+      else
+         call local_grad2(ur,us   ,u,m0,1,mydg(ip),mydgt(ip))
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine my_grad_rstd(ur,us,ut,u,mx,md,if3d,ju) ! GLL->GL grad
+
+      include 'SIZE'
+      include 'DXYZ'
+
+      real    ur(1),us(1),ut(1),u(1),ju(1)
+      logical if3d
+
+      parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
+      common /mydgrad/ myd(ldg),mydt(ldg),mydg(ldg),mydgt(ldg)
+     $             , myjgl(ldg),myjgt(ldg), wkd(lwkd)
+      real myjgl,myjgt
+
+      call my_intp_rstd(ju,u,mx,md,if3d,0) ! 0 = forward
+
+      m0 = md-1
+      call my_get_dgl_ptr (ip,md,md)
+      if (if3d) then
+         call local_grad3(ur,us,ut,ju,m0,1,mydg(ip),mydgt(ip))
+      else
+         call local_grad2(ur,us   ,ju,m0,1,mydg(ip),mydgt(ip))
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine my_get_dgl_ptr (ip,mx,md)
 c
-c     user subroutines required by nek5000
+c     Get pointer to GL-GL interpolation dgl() for pair (mx,md)
 c
+      include 'SIZE'
+c
+      parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
+      common /mydgrad/ myd(ldg),mydt(ldg),mydg(ldg),mydgt(ldg)
+     $             , myjgl(ldg),myjgt(ldg), mywkd(lwkd)
+      real myjgl,myjgt
+c
+      parameter (ld=2*lxd)
+      common /myjgrad/ mypd    (0:ld*ld)
+     $             , mypdg   (0:ld*ld)
+     $             , mypjgl  (0:ld*ld)
+      integer mypd , mypdg , mypjgl
+c
+      ij = md + ld*(mx-1)
+      ip = mypdg (ij)
+
+      if (ip.eq.0) then
+
+         nstore   = mypdg (0)
+         mypdg (ij) = nstore+1
+         nstore   = nstore + md*mx
+         mypdg (0)  = nstore
+         ip       = mypdg (ij)
+c
+         nwrkd = mx + md
+         call lim_chk(nstore,ldg ,'dg   ','ldg  ','get_dgl_pt')
+         call lim_chk(nwrkd ,lwkd,'wkd  ','lwkd ','get_dgl_pt')
+c
+         call my_gen_dgl(mydg (ip),mydgt(ip),md,mx,mywkd)
+      endif
+c
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine my_gen_dgl(dgl,dgt,mp,np,w)
+c
+c     Generate derivative from np GL points onto mp GL points
+c
+c        dgl  = interpolation matrix, mapping from velocity nodes to pressure
+c        dgt  = transpose of interpolation matrix
+c        w    = work array of size (3*np+mp)
+c
+c        np   = number of points on GLL grid
+c        mp   = number of points on GL  grid
+c
+c
+c
+      real dgl(mp,np),dgt(np*mp),w(1)
+c
+c
+      iz = 1
+      id = iz + np
+c
+      ! PickQuad
+C       call zwgll  (w(iz),dgt,np)  ! GL points
+      call zwgl  (w(iz),dgt,np)  ! GL points
+      ! PickQuad
+C       call zwgll  (w(id),dgt,mp)  ! GL points
+      call zwgl  (w(id),dgt,mp)  ! GL points
+c
+      ndgt = 2*np
+      ldgt = mp*np
+      call lim_chk(ndgt,ldgt,'ldgt ','dgt  ','gen_dgl   ')
+c
+      n  = np-1
+      do i=1,mp
+         call fd_weights_full(w(id+i-1),w(iz),n,1,dgt) ! 1=1st deriv.
+         do j=1,np
+            dgl(i,j) = dgt(np+j)                       ! Derivative matrix
+         enddo
+      enddo
+c
+      call transpose(dgt,np,dgl,mp)
+c
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine my_intp_rstd(ju,u,mx,md,if3d,idir) ! GLL->GL interpolation
+
+c     GLL interpolation from mx to md.
+
+c     If idir ^= 0, then apply transpose operator  (md to mx)
+
+      include 'SIZE'
+
+      real    ju(1),u(1)
+      logical if3d
+
+      parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
+      common /mydgrad/ myd(ldg),mydt(ldg),mydg(ldg),mydgt(ldg)
+     $             , myjgl(ldg),myjgt(ldg), mywkd(lwkd)
+      real myjgl,myjgt
+
+      parameter (ld=2*lxd)
+      common /myctmp0/ myw(ld**ldim,2)
+
+      call lim_chk(md,ld,'md   ','ld   ','grad_rstd ')
+      call lim_chk(mx,ld,'mx   ','ld   ','grad_rstd ')
+
+      ldw = 2*(ld**ldim)
+
+      call my_get_int_ptr (i,mx,md)
+c
+      if (idir.eq.0) then
+         call specmpn(ju,md,u,mx,myjgl(i),myjgt(i),if3d,myw,ldw)
+      else
+         call specmpn(ju,mx,u,md,myjgt(i),myjgl(i),if3d,myw,ldw)
+      endif
+c
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine my_get_int_ptr (ip,mx,md) ! GLL-->GL pointer
+
+c     Get pointer to jgl() for interpolation pair (mx,md)
+
+      include 'SIZE'
+
+      parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
+      common /mydgrad/ myd(ldg),mydt(ldg),mydg(ldg),mydgt(ldg)
+     $             , myjgl(ldg),myjgt(ldg), mywkd(lwkd)
+      real myjgl,myjgt
+c
+      parameter (ld=2*lxd)
+      common /myigrad/ mypd    (0:ld*ld)
+     $             , mypdg   (0:ld*ld)
+     $             , mypjgl  (0:ld*ld)
+      integer mypd , mypdg , mypjgl
+c
+      ij = md + ld*(mx-1)
+      ip = mypjgl(ij)
+c
+      if (ip.eq.0) then
+c
+         nstore   = mypjgl(0)
+         mypjgl(ij) = nstore+1
+         nstore   = nstore + md*mx
+         mypjgl(0)  = nstore
+         ip       = mypjgl(ij)
+c
+         nwrkd = mx + md
+         call lim_chk(nstore,ldg ,'jgl  ','ldg  ','get_int_pt')
+         call lim_chk(nwrkd ,lwkd,'wkd  ','lwkd ','get_int_pt')
+c
+         call my_gen_int(myjgl(ip),myjgt(ip),md,mx,mywkd)
+      endif
+c
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine my_gen_int(jgl,jgt,mp,np,w)
+c
+c     Generate interpolation from np GLL points to mp GL points
+c
+c        jgl  = interpolation matrix, mapping from velocity nodes to pressure
+c        jgt  = transpose of interpolation matrix
+c        w    = work array of size (np+mp)
+c
+c        np   = number of points on GLL grid
+c        mp   = number of points on GL  grid
+c
+c
+      real jgl(mp,np),jgt(np*mp),w(1)
+c
+      iz = 1
+      id = iz + np
+c
+      call zwgll (w(iz),jgt,np)
+      ! PickQuad
+C       call zwgll (w(id),jgt,mp)
+      call zwgl (w(id),jgt,mp)
+c
+      n  = np-1
+      do i=1,mp
+         call fd_weights_full(w(id+i-1),w(iz),n,0,jgt)
+         do j=1,np
+            jgl(i,j) = jgt(j)                  !  Interpolation matrix
+         enddo
+      enddo
+c
+      call transpose(jgt,np,jgl,mp)
+c
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine my_set_dealias_rx
+C
+C     Eulerian scheme, add convection term to forcing function
+C     at current time step.
+C
+      include 'SIZE'
+      include 'INPUT'
+      include 'GEOM'
+      include 'TSTEP' ! for istep
+
+      common /mydealias1/ myzd(lxd),mywd(lxd)
+      integer e
+      real myzd, mywd
+
+      integer myilstep
+      save    myilstep
+      data    myilstep /-1/
+
+      if (.not.ifgeom.and.myilstep.gt.1) return  ! already computed
+      if (ifgeom.and.myilstep.eq.istep)  return  ! already computed
+      myilstep = istep
+
+      nxyz1 = lx1*ly1*lz1
+      nxyzd = lxd*lyd*lzd
+
+      ! PickQuad
+C       call zwgll (myzd,mywd,lxd)  ! zwgl -- NOT zwgll!
+      call zwgl (myzd,mywd,lxd)  ! zwgl -- NOT zwgll!
+
+      if (if3d) then
+c
+         do e=1,nelv
+
+c           Interpolate z+ and z- into fine mesh, translate to r-s-t coords
+
+            call my_intp_rstd(rx(1,1,e),rxm1(1,1,1,e),lx1,lxd,if3d,0) ! 0 --> fwd
+            call my_intp_rstd(rx(1,2,e),rym1(1,1,1,e),lx1,lxd,if3d,0) ! 0 --> fwd
+            call my_intp_rstd(rx(1,3,e),rzm1(1,1,1,e),lx1,lxd,if3d,0) ! 0 --> fwd
+            call my_intp_rstd(rx(1,4,e),sxm1(1,1,1,e),lx1,lxd,if3d,0) ! 0 --> fwd
+            call my_intp_rstd(rx(1,5,e),sym1(1,1,1,e),lx1,lxd,if3d,0) ! 0 --> fwd
+            call my_intp_rstd(rx(1,6,e),szm1(1,1,1,e),lx1,lxd,if3d,0) ! 0 --> fwd
+            call my_intp_rstd(rx(1,7,e),txm1(1,1,1,e),lx1,lxd,if3d,0) ! 0 --> fwd
+            call my_intp_rstd(rx(1,8,e),tym1(1,1,1,e),lx1,lxd,if3d,0) ! 0 --> fwd
+            call my_intp_rstd(rx(1,9,e),tzm1(1,1,1,e),lx1,lxd,if3d,0) ! 0 --> fwd
+
+            l = 0
+            do k=1,lzd
+            do j=1,lyd
+            do i=1,lxd
+               l = l+1
+               w = mywd(i)*mywd(j)*mywd(k)
+               do ii=1,9
+                  rx(l,ii,e) = w*rx(l,ii,e)
+               enddo
+            enddo
+            enddo
+            enddo
+         enddo
+
+      else ! 2D
+c
+         do e=1,nelv
+
+c           Interpolate z+ and z- into fine mesh, translate to r-s-t coords
+
+            call my_intp_rstd(rx(1,1,e),rxm1(1,1,1,e),lx1,lxd,if3d,0) ! 0 --> fwd
+            call my_intp_rstd(rx(1,2,e),rym1(1,1,1,e),lx1,lxd,if3d,0) ! 0 --> fwd
+            call my_intp_rstd(rx(1,3,e),sxm1(1,1,1,e),lx1,lxd,if3d,0) ! 0 --> fwd
+            call my_intp_rstd(rx(1,4,e),sym1(1,1,1,e),lx1,lxd,if3d,0) ! 0 --> fwd
+
+            l = 0
+            do j=1,lyd
+            do i=1,lxd
+               l = l+1
+               w = mywd(i)*mywd(j)
+               do ii=1,4
+                  rx(l,ii,e) = w*rx(l,ii,e)
+               enddo
+            enddo
+            enddo
+         enddo
+
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine srb_intp_rstd(ju,u,mx,md,if3d,idir) ! GLL->GL interpolation
+
+c     GLL interpolation from mx to md.
+
+c     If idir ^= 0, then apply transpose operator  (md to mx)
+
+      include 'SIZE'
+
+      real    ju(1),u(1)
+      logical if3d
+
+      parameter (ldg=lxd**3,lwkd=4*lxd*lxd)
+      common /mydgrad/ myd(ldg),mydt(ldg),mydg(ldg),mydgt(ldg)
+     $             , myjgl(ldg),myjgt(ldg), mywkd(lwkd)
+      real myjgl,myjgt
+
+      parameter (ld=2*lxd)
+      common /ctmp0/ w(ld**(ldim-1),2)
+
+      call lim_chk(md,ld,'md   ','ld   ','grad_rstd ')
+      call lim_chk(mx,ld,'mx   ','ld   ','grad_rstd ')
+
+      ldw = 2*(ld**(ldim-1))
+
+      call my_get_int_ptr (i,mx,md)
+c
+      if (ldim .eq. 3) then
+         if (idir.eq.0) then
+           call specmpn(ju,md,u,mx,myjgl(i),myjgt(i),if3d,w,ldw)
+         else
+           call specmpn(ju,mx,u,md,myjgt(i),myjgl(i),if3d,w,ldw)
+         endif
+      else if (ldim .eq. 2) then
+          if (idir.eq.0) then
+            call mxm(myjgl(i),md,u,mx,ju,1)  
+          else
+            call mxm(myjgt(i),mx,u,md,ju,1)
+          endif
+      end if
+c
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine projenrich ()
+      ! Removes enrichment components from polynomial solution
+      include 'SIZE'
+      include 'SOLN'
+
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+
+      NTOT1=lx1*ly1*lz1*NELV
+
+      do i = 1,NTOT1
+        vx(i,1,1,1) = vx(i,1,1,1) - psix(i,1,1,1)
+        vy(i,1,1,1) = vy(i,1,1,1) - psiy(i,1,1,1)
+        vz(i,1,1,1) = vz(i,1,1,1) - psiz(i,1,1,1)
+      enddo
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      subroutine unprojenrich ()
+      ! Adds enrichment components to the polynomial solution
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+
+      NTOT1=lx1*ly1*lz1*NELV
+
+      do i = 1,NTOT1
+        vx(i,1,1,1) = vx(i,1,1,1) + psix(i,1,1,1)
+        vy(i,1,1,1) = vy(i,1,1,1) + psiy(i,1,1,1)
+        vz(i,1,1,1) = vz(i,1,1,1) + psiz(i,1,1,1)
+      enddo
+
+      return
+      end
+
+
 c-----------------------------------------------------------------------
       subroutine srbprint (u)
       ! Print the solution 
@@ -37,24 +500,290 @@ c-----------------------------------------------------------------------
 
       return
       end
+
+c-----------------------------------------------------------------------
+      subroutine srbprint_d (u)
+      ! Print overintegrated solution
+      include 'SIZE'
+      include 'TOTAL'
+
+      real u(lxd, lyd, lzd, nelv)
+
+      do iel = 1, nelv
+        do ix = 1,lxd
+          do iy = 1,lyd
+            do iz = 1,lzd
+                  print *, iel, ix, iy, iz, u(ix,iy,iz,iel)
+            enddo
+          enddo
+        enddo
+      enddo
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      subroutine srbprint_face (u)
+      ! Print overintegrated solution
+      include 'SIZE'
+      include 'TOTAL'
+
+      real u(lxd, lzd, nelv)
+
+      do iel = 1, nelv
+        do ix = 1,lxd
+            do iz = 1,lzd
+                  print *, iel, ix, iz, u(ix,iz,iel)
+            enddo
+        enddo
+      enddo
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      subroutine srbprint_diff (u,v)
+      ! Print the solution 
+      include 'SIZE'
+      include 'TOTAL'
+
+      real u(lx1, ly1, lz1, nelv), v(lx1,ly1,lz1,nelv)
+
+      do iel = 1, nelv
+        do ix = 1,lx1
+          do iy = 1,ly1
+            do iz = 1,lz1
+             print *, iel, ix, iy, iz, u(ix,iy,iz,iel), v(ix,iy,iz,iel),
+     $         u(ix,iy,iz,iel)-v(ix,iy,iz,iel)
+            enddo
+          enddo
+        enddo
+      enddo
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      subroutine oprzero_d (a,b,c)
+      ! Zero overintegraded vectors
+      include 'SIZE'
+      integer i
+      REAL A(1),B(1),C(1)
+      NTOT1=lxd*lyd*lzd*NELV
+      do i = 1, NTOT1
+        A(i) = 0
+        B(i) = 0
+      enddo
+      IF(ldim.EQ.3) CALL RZERO(C,NTOT1)
+      return
+      END
+
+c-----------------------------------------------------------------------
+      subroutine userhack (ix,iy,iz,ieg)
+      ! Access to the RHS hacks for continuity enforcement
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e
+
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+
+      e = gllel(ieg)
+
+      rhsx = wrhsx(ix,iy,iz,e) 
+      rhsy = wrhsy(ix,iy,iz,e)
+      rhsz = wrhsz(ix,iy,iz,e)
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      subroutine userfint (ix,iy,iz,ieg)
+      ! Access to the pre-integrated quantities
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e
+
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+
+      e = gllel(ieg)
+
+      ffintx = wintx(ix,iy,iz,e) 
+      ffinty = winty(ix,iy,iz,e)
+      ffintz = wintz(ix,iy,iz,e)
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      subroutine userfint2 (ix,iy,iz,ieg)
+      ! Access to the pre-integrated quantities
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e
+
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+
+      e = gllel(ieg)
+
+      ffintx2 = wintx2(ix,iy,iz,e) 
+      ffinty2 = winty2(ix,iy,iz,e)
+      ffintz2 = wintz2(ix,iy,iz,e)
+
+      return
+      end      
+
+C-----------------------------------------------------------------------
+c
+c     user subroutines required by nek5000
+c
+c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine uservp (ix,iy,iz,ieg)
       include 'SIZE'
-      include 'NEKUSE'          ! UDIFF, UTRANS
+      include 'TOTAL'
+      include 'NEKUSE'
 
-      UDIFF =0.
-      UTRANS=0.
+      integer e
+
+      utrans = 1.
+      udiff  = param(2)
+
+      if (ifield .eq. 2) then
+         e = gllel(ieg)
+         udiff = param(8)
+      endif
 
       return
       end
 c-----------------------------------------------------------------------
       subroutine userf  (ix,iy,iz,ieg)
+      ! Access to the forcing functions
       include 'SIZE'
-      include 'NEKUSE'          ! FF[XYZ]
+      include 'TOTAL'
+      include 'NEKUSE'
 
-      FFX = 0.0
-      FFY = 0.0
-      FFZ = 0.0
+c     Effective enrichment source terms for momentum equation
+      real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
+     $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
+     $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
+     $     psix_rhs, psiy_rhs, psiz_rhs
+      common /enrich/ wsx(lx1,ly1,lz1,lelv)
+     $               ,wsy(lx1,ly1,lz1,lelv)
+     $               ,wsz(lx1,ly1,lz1,lelv)
+     $               ,vx_(lx1,ly1,lz1,lelv)
+     $               ,term3x(lx1,ly1,lz1,lelv)
+     $               ,convx(lx1,ly1,lz1,lelv)
+     $               ,wintx(lx1,ly1,lz1,lelv)
+     $               ,winty(lx1,ly1,lz1,lelv)
+     $               ,wintz(lx1,ly1,lz1,lelv)
+     $               ,wintx2(lx1,ly1,lz1,lelv)
+     $               ,winty2(lx1,ly1,lz1,lelv)
+     $               ,wintz2(lx1,ly1,lz1,lelv)
+     $               ,wrhsx(lx1,ly1,lz1,lelv)
+     $               ,wrhsy(lx1,ly1,lz1,lelv)
+     $               ,wrhsz(lx1,ly1,lz1,lelv)
+     $               ,psix(lx1,ly1,lz1,lelv)
+     $               ,psiy(lx1,ly1,lz1,lelv)
+     $               ,psiz(lx1,ly1,lz1,lelv)
+     $               ,M_psi_x(lx1,ly1,lz1,lelv)
+     $               ,M_psi_y(lx1,ly1,lz1,lelv)
+     $               ,M_psi_z(lx1,ly1,lz1,lelv)
+     $               ,psix_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiy_rhs(lx1,ly1,lz1,lelv)
+     $               ,psiz_rhs(lx1,ly1,lz1,lelv)
+
+      e = gllel(ieg)
+
+      ffx = wsx(ix,iy,iz,e) 
+      ffy = wsy(ix,iy,iz,e)
+      ffz = wsz(ix,iy,iz,e)
 
       return
       end
@@ -64,6 +793,228 @@ c-----------------------------------------------------------------------
       include 'NEKUSE'          ! QVOL
 
       QVOL   = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      real function lotw (yw,utau,nu)
+      ! Evaluate law of the wall
+      implicit none
+      real x, y, z, utau, nu ! Wall distance
+      integer flag
+      real Re_tau, ypb, yw, yp
+      real kap, beta, F, dF, hF, psi
+      integer iter
+      
+      ypb = 11.062299784340414
+      yp = yw*utau/nu
+
+      ! Piecewise law of the wall
+C       if (yp .gt. ypb) then
+C          lotw = utau*(1.0/0.41*log(yp)+5.2)
+C       elseif (yp .le. ypb) then
+C          lotw = utau*yp
+C       endif
+
+      ! Reichardt law of the wall
+      lotw = utau*((1./0.41)*log(1.+0.41*yp)+7.8*
+     $      (1.-exp(-yp/(11.))-yp/(11.)*exp(-yp/(3.)))) ! Reichardt
+
+      ! Spalding law of the wall
+C       kap = 0.41
+C       beta = 5.17
+C       if (yp < 11.0) then
+C             psi = yp*kap
+C       else
+C             psi = log(yp)+kap*beta
+C       endif
+C       F = -yp + psi/kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+C      $      -psi*psi*psi/6. -psi*psi*psi*psi/24.)
+
+C       iter = 0
+C       do while ((abs(F) .gt. 1.0e-13) .and. (iter .lt. 100))
+C       F = -yp + psi/kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+C      $      -psi*psi*psi/6. -psi*psi*psi*psi/24.)
+C       dF = 1./kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+C      $       -psi*psi*psi/6.)
+C       hF = -F/dF
+
+C       psi = psi - F/dF
+C       iter = iter + 1
+C       end do
+
+C       if (iter .eq. 10) then
+C             print *, "lotw not converged", yw, yp, psi, F
+C       endif
+
+C       lotw = psi/kap*utau
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      real function dlotwdy (yw,utau,nu)
+      ! Evaluate gradient of of law of the wall
+      implicit none
+      real x, y, z, utau, nu 
+      integer flag
+      real Re_tau, ypb, yw, yp
+      integer sign
+      real kap, beta, F, dF, hF, psi
+      integer iter
+
+      ypb = 11.062299784340414
+      Re_tau = utau/nu
+      yp = yw*utau/nu
+
+      ! Piecewise law of the wall
+C       if (yp .gt. ypb) then
+C         dlotwdy = Re_tau*utau*(1.0/(0.41*yp))
+C       elseif (yp .le. ypb) then
+C         dlotwdy = Re_tau*utau
+C       endif
+
+      ! Reichardt law of the wall
+      dlotwdy = Re_tau*utau*(1./(1.+0.41*yp)+7.8*
+     $      (1./11.*exp(-yp/(11.))+(yp-3.)/(33.)*exp(-yp/(3.)))) ! Reichardt
+
+      ! Spalding law of the wall
+C       kap = 0.41
+C       beta = 5.17
+C       if (yp < 11.0) then
+C             psi = yp*kap
+C       else
+C             psi = log(yp)+kap*beta
+C       endif
+C       F = -yp + psi/kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+C      $      -psi*psi*psi/6. -psi*psi*psi*psi/24.)
+C       dF = 1./kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+C      $       -psi*psi*psi/6.)
+
+C       iter = 0
+C       do while ((abs(F) .gt. 1.0e-13) .and. (iter .lt. 100))
+C       F = -yp + psi/kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+C      $      -psi*psi*psi/6. -psi*psi*psi*psi/24.)
+C       dF = 1./kap + exp(-kap*beta)*(exp(psi) -1. -psi -psi*psi/2.
+C      $       -psi*psi*psi/6.)
+C       hF = -F/dF
+
+C       psi = psi - F/dF
+C       iter = iter + 1
+C       end do
+
+C       dlotwdy = 1./dF/kap*utau*Re_tau
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      real function calc_psi  (x,y,z,flag,utau,nu)
+      ! Evaluate enrichment function
+      implicit none
+      real x, y, z, utau, nu ! Wall distance
+      integer flag
+      real Re_tau, ypb, yw
+      real lotw
+      
+      Re_tau = utau/nu
+
+      ! SRB3D
+
+      ! Distance from wall
+      if (flag .gt. 0) then
+        yw = (1-y)
+      elseif (flag .lt. 0) then
+        yw = (1+y) 
+      endif
+C       print *, "calc psi ", y, yw
+
+      ! Enrichment value
+      calc_psi = lotw(yw,utau,nu)
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      real function calc_gpsix_y  (x,y,z,flag,utau,nu)
+      ! Evaluate enrichment gradient
+      implicit none
+      real x, y, z, utau, nu 
+      integer flag
+      real Re_tau, ypb, yw
+      integer sign
+      real dlotwdy
+
+      ypb = 11.062299784340414
+      Re_tau = utau/nu
+
+      ! SRB3D
+
+      ! Distance from wall
+      if (flag .gt. 0) then
+        yw = (1-y)
+        sign = -1
+      elseif (flag .lt. 0) then
+        yw = (1+y)
+        sign = 1
+      endif
+
+      ! Enrichment gradient
+      calc_gpsix_y = sign*dlotwdy(yw,utau,nu)
+
+      return
+      end
+
+c-----------------------------------------------------------------------
+      real function calc_psi2  (x,y,z,xwall,ywall,zwall,flag,utau,nu)
+      ! Evaluate enrichment function
+      implicit none
+      real x, y, z, utau, nu ! Wall distance
+      real xwall, ywall, zwall
+      integer flag
+      real Re_tau, ypb, yw
+      real lotw
+      
+      Re_tau = utau/nu
+
+      ! Distance from wall
+      yw = sqrt((x-xwall)**2+(y-ywall)**2+(z-zwall)**2)
+
+      ! Enrichment value
+      calc_psi2 = lotw(yw,utau,nu)
+
+      return
+      end      
+
+
+c-----------------------------------------------------------------------
+      real function calc_gpsix_y2 (x,y,z,xwall,ywall,zwall,flag,utau,nu)
+      ! Evaluate enrichment gradient
+      implicit none
+      real x, y, z, utau, nu 
+      real xwall, ywall, zwall
+      integer flag
+      real Re_tau, ypb, yw
+      integer sign
+      real dlotwdy
+
+      ypb = 11.062299784340414
+      Re_tau = utau/nu
+
+      ! Not fully general
+
+      ! Distance from wall
+      if (y .lt. yw) then
+        sign = -1
+      elseif (y .ge. yw) then
+        sign = 1
+      endif
+
+      ! Distance from wall
+      yw = sqrt((x-xwall)**2+(y-ywall)**2+(z-zwall)**2)
+
+      ! Enrichment gradient
+      calc_gpsix_y2 = sign*dlotwdy(yw,utau,nu)
 
       return
       end
