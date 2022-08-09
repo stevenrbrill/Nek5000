@@ -1637,13 +1637,21 @@ C                     do iy = 1,ly1
                     ! Get wall distance and y index
                     if (flag(iel) .eq. 1) then
                       iy = 1
-                      yp = 1-ym1(ix,iy,iz,iel)
+C                       yp = 1-ym1(ix,iy,iz,iel)
+                      yp = sqrt(
+     $                 (xm1(ix,ly1,iz,iel)-xm1(ix,1,iz,iel))**2                 
+     $                 +(ym1(ix,ly1,iz,iel)-ym1(ix,1,iz,iel))**2
+     $                 +(zm1(ix,ly1,iz,iel)-zm1(ix,1,iz,iel))**2)
                       iy_ut = ly1 ! matching point is slightly different
                       iy_match = 1
                       iy_ut_match = ly1
                     else
                       iy = ly1
-                      yp = 1+ym1(ix,iy,iz,iel)
+C                       yp = 1+ym1(ix,iy,iz,iel)
+                      yp = sqrt(
+     $                 (xm1(ix,ly1,iz,iel)-xm1(ix,1,iz,iel))**2                 
+     $                 +(ym1(ix,ly1,iz,iel)-ym1(ix,1,iz,iel))**2
+     $                 +(zm1(ix,ly1,iz,iel)-zm1(ix,1,iz,iel))**2)
                       iy_ut = 1
                       iy_match = ly1
                       iy_ut_match = 1
