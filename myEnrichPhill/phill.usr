@@ -3085,13 +3085,18 @@ c     get objects surface area
       srbdtime = time - srbtimel
       srbatime = srbatime + srbdtime
 
+      if (srbatime.ne.0. .and. srbdtime.ne.0.) then
+        srbbeta      = srbdtime / srbatime
+        srbalpha     = 1. - srbbeta
+        call avg1(srbavg(1,1),vx   ,srbalpha,srbbeta,n,'uavg',ifverbose)
+        call avg1(srbavg(1,2),vy   ,srbalpha,srbbeta,n,'vavg',ifverbose)
+        call avg1(srbavg(1,3),vz   ,srbalpha,srbbeta,n,'wavg',ifverbose)
+      endif
+
       ! averaging over time
       if (atime.ne.0. .and. dtime.ne.0.) then
         beta      = dtime / atime
         alpha     = 1. - beta
-
-        srbbeta      = srbdtime / srbatime
-        srbalpha     = 1. - srbbeta
 
         call unprojenrich
         ifverbose = .false.
@@ -3114,13 +3119,6 @@ c     get objects surface area
         call avg1(ravg(1,18),uti ,alpha,beta,n,'utia',ifverbose)
         call avg1(ravg(1,19),taunew ,alpha,beta,n,'taua',ifverbose)
         call avg1(ravg(1,20),pr   ,alpha,beta,n,'pr',ifverbose)
-
-
-        if (srbatime.ne.0. .and. srbdtime.ne.0.) then
-        call avg1(srbavg(1,1),vx   ,srbalpha,srbbeta,n,'uavg',ifverbose)
-        call avg1(srbavg(1,2),vy   ,srbalpha,srbbeta,n,'vavg',ifverbose)
-        call avg1(srbavg(1,3),vz   ,srbalpha,srbbeta,n,'wavg',ifverbose)
-        endif
 
         call torque_calc(1.0,x0,.false.,.false.) ! compute wall shear
         dragx_avg = alpha*dragx_avg + beta*dragx(0)
