@@ -923,9 +923,9 @@ c-----------------------------------------------------------------------
 
       ! Distance from wall
       if (flag .gt. 0) then
-        yw = (1-y)
+        yw = (y)
       elseif (flag .lt. 0) then
-        yw = (1+y) 
+        yw = (y) 
       endif
 C       print *, "calc psi ", y, yw
 
@@ -952,10 +952,12 @@ c-----------------------------------------------------------------------
 
       ! Distance from wall
       if (flag .gt. 0) then
-        yw = (1-y)
+C         yw = (1-y)
+        yw = y
         sign = -1
       elseif (flag .lt. 0) then
-        yw = (1+y)
+C         yw = (1+y)
+        yw = y
         sign = 1
       endif
 
@@ -1843,7 +1845,7 @@ C                       ! SRB3D
      $                 (xm1(ix,ly1,iz,iel)-xm1(ix,1,iz,iel))**2                 
      $                 +(ym1(ix,ly1,iz,iel)-ym1(ix,1,iz,iel))**2
      $                 +(zm1(ix,ly1,iz,iel)-zm1(ix,1,iz,iel))**2)
-                   myyd = ym1(ix,1,iz,iel)+(z_lxd(iy)+1.0)/2.0*line_dist
+                   myyd = (z_lxd(iy)+1.0)/2.0*line_dist
                    dnds = line_dist/2.0
 
                         psi_trans_t = calc_psi(
