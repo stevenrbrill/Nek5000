@@ -1305,7 +1305,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       real u_m, v_m, w_m
       real utt1,utt2,utgt,utgtx,utgty,utgtz,utgtmag
 
-      data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
+      data utau_ref/0.00/  !Assumed constant value of u_tau
       common /y_ends/ bot_y, top_y
       common /mydealias1/ myzd(lxd),mywd(lxd)
       real myzd, mywd
@@ -1469,13 +1469,13 @@ c     WALL ENRICHMENT...START
       
 c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
-      use_default = 1
+      use_default = 0
       use_overint = 1
       
-      start_en = 0.0
+      start_en = 50.0
 
       use_avg_int = 1
-      srb_avg_int = 1.0
+      srb_avg_int = 10.0
 
       if (countww .gt. 0) then
             use_weak_bc = 1
@@ -1505,7 +1505,7 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
                else
                  iy = 1
                endif
-               uti(ix,iy,iz,iel) = utau_ref ! Guess value for N-R solver
+               uti(ix,iy,iz,iel) = 0.03 !utau_ref ! Guess value for N-R solver
             enddo
           enddo
           endif
