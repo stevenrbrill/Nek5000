@@ -1386,6 +1386,8 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $     tzx1(lx1,ly1,lz1,lelv), tzy1(lx1,ly1,lz1,lelv),
      $     tzz1(lx1,ly1,lz1,lelv)
 
+      real vy_(lx1,ly1,lz1,lelv), vz_(lx1,ly1,lz1,lelv)
+
       real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
      $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
      $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
@@ -2871,7 +2873,10 @@ c     WALL ENRICHMENT...END
       if (istep.eq.0 .or. ifoutfld) then
          ! reconstruct velocity field
          call add3 (vx_,vx,psix,n) !calculate actual velocity
+         call add3 (vy_,vy,psiz,n) !calculate actual velocity
+         call add3 (vz_,vz,psiz,n) !calculate actual velocity
          call outpost(psix,psiy,psiz,vx_,t,'enr')
+         call outpost(vx_,vy_,vz_,pr,t,'com')
 C          call outpost(psix,gpsix_y,psiz,vx_,t,'enr')
 C          call outpost(tr1x1,tr1y1,tr1z1,vx_,t,'Tr1')
 C          call outpost(tr2x1,tr2y1,tr2z1,vx_,t,'Tr2')
