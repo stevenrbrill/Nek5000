@@ -1169,8 +1169,8 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       integer ib, ib2, iz_end, iy_match, iy_ut_match
       real srbtest, ut_param, tau_param
       real ut_avg_fit_bot, ut_avg_fit_top, u_match(2)
-      real psix_int(INTP_NMAX)
-      save psix_int
+      real psix_int(INTP_NMAX), psiy_int(INTP_NMAX), psiz_int(INTP_NMAX)
+      save psix_int, psiy_int, psiz_int
       real xint_match(2),yint_match(2),zint_match(2)
       save xint_match, yint_match, zint_match
       real    rwk2(2,ldim+1) ! r, s, t, dist2
@@ -2845,6 +2845,8 @@ c
             else
               psix_int(i) = 0
             endif
+            psiy_int(i) = 0 
+            psiz_int(i) = 0
           enddo
         endif
         iffpts = .true. ! dummy call to find points
@@ -2960,7 +2962,7 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
          enddo
 
          if (ldim .eq. 2) then
-            print *, "ENRICHMENT STATS INACCURATE. FIX"
+            print *, "ENRICHMENT STATS INACCURATE IN 2D. FIX"
          ! Correct stat 9
          ! psi = correct value in boundary, 0 off boundary
          ! u = correct value in boundary, same off boundary
@@ -3124,15 +3126,17 @@ C            enddo
          open(unit=81,file='comp_prof1.dat')
          write(81,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
      $     '%time = ', time, '%Re_tau = ', Re_tau, 
-     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%ut = ', u_tau, '%ut_param = ', ut_param, 
      $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
      $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
      $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
      $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
      $     '%tau_tot = ', tw_tot
-         write(81,'(A,A)') 
+         write(81,'(A,A,A,A)') 
      $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
-     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'    
+     $'   Psixmean  Psiymean  Psizmean  Upolymean    Vpolymean    ',
+     $'Wpolymean    Psix    Psiy    Psiz   u_tau   Ucomb    Vcomb    ',
+     $'Wcomb    '    
 
          do i = 1,nint
             yy = 1+yint(i)
@@ -3171,25 +3175,33 @@ C            enddo
      &           stat_y(26*nint+i),
      &           stat_y(27*nint+i)
 
-C             write(81,3) 
-C      &           yint1(i),
-C      &           stat_y1(0*nint+i),
-C      &           stat_y1(1*nint+i),
-C      &           stat_y1(2*nint+i),
-C      &           (stat_y1(3*nint+i)-(stat_y1(0*nint+i))**2),
-C      &           (stat_y1(4*nint+i)-(stat_y1(1*nint+i))**2),
-C      &           (stat_y1(5*nint+i)-(stat_y1(2*nint+i))**2),
-C      &           stat_y1(6*nint+i)-stat_y1(0*nint+i)*stat_y1(1*nint+i),
-C      &           0.5*((stat_y1(3*nint+i)-(stat_y1(0*nint+i))**2)+
-C      &           (stat_y1(4*nint+i)-(stat_y1(1*nint+i))**2)+
-C      &           (stat_y1(5*nint+i)-(stat_y1(2*nint+i))**2)),
-C      &           0.0, !stat_y(9*nint+i),
-C      &           0.0, !stat_y(10*nint+i),
-C      &           0.0, !psix_int(i),
-C      &           u_tau, !u_tau_out,
-C      &           stat_y1(0*nint+i) !stat_y(10*nint+i)+psix_int(i),
+            write(81,3) 
+     &           yy,
+     &           stat_y(0*nint+i),
+     &           stat_y(1*nint+i),
+     &           stat_y(2*nint+i),
+     &           (stat_y(3*nint+i)-(stat_y(0*nint+i))**2),
+     &           (stat_y(4*nint+i)-(stat_y(1*nint+i))**2),
+     &           (stat_y(5*nint+i)-(stat_y(2*nint+i))**2),
+     &           stat_y(6*nint+i)-stat_y(0*nint+i)*stat_y(1*nint+i),
+     &           0.5*((stat_y(3*nint+i)-(stat_y(0*nint+i))**2)+
+     &           (stat_y(4*nint+i)-(stat_y(1*nint+i))**2)+
+     &           (stat_y(5*nint+i)-(stat_y(2*nint+i))**2)),
+     &           stat_y(11*nint+i), 
+     &           stat_y(12*nint+i),
+     &           stat_y(13*nint+i), 
+     &           stat_y(14*nint+i), 
+     &           stat_y(15*nint+i),
+     &           stat_y(16*nint+i), 
+     &           psix_int(i),
+     &           psiy_int(i),
+     &           psiz_int(i), 
+     &           u_tau, !u_tau_out,
+     &           stat_y(14*nint+i)+psix_int(i),
+     &           stat_y(15*nint+i)+psiy_int(i),
+     &           stat_y(16*nint+i)+psiz_int(i)
 
-  3         format(1p15e17.9)
+  3         format(1p22e17.9)
          enddo
          close(56)
          close(57)
