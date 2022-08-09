@@ -1060,8 +1060,13 @@ c     object definition
       integer intp_h2_orig
       save intp_h2_orig
 
+
       integer nint, intp_h
       save    nint, intp_h
+      integer intp_h1, intp_h2, intp_h3, intp_h4, intp_h5, intp_h6,
+     $        intp_h7, intp_h8, intp_h9, intp_h10
+      save    intp_h1, intp_h2, intp_h3, intp_h4, intp_h5, intp_h6,
+     $        intp_h7, intp_h8, intp_h9, intp_h10 
 
       logical iffpts
       save iffpts
@@ -1123,7 +1128,7 @@ c     object definition
       real stat_y9(intp_nmax*nstat)
       real stat_y10(intp_nmax*nstat)
       save stat_y1, stat_y2, stat_y3, stat_y4, stat_y5, stat_y6, 
-     $     stay_y7, stat_y8, stat_y9, stat_y10 
+     $     stat_y7, stat_y8, stat_y9, stat_y10 
 
       real Betax, Betay
       real Lx, Ly, Lz, Wh, H    ! x dimension, y dimension, hill half width, hill height
@@ -3342,6 +3347,140 @@ C          endif
      $'   Psixmean  Psiymean  Psizmean  Upolymean    Vpolymean    ',
      $'Wpolymean    Psix    Psiy    Psiz   u_tau   Ucomb    Vcomb    ',
      $'Wcomb    '    
+        open(unit=82,file='comp_prof2.dat')
+         write(82,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(82,'(A,A,A,A)') 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psixmean  Psiymean  Psizmean  Upolymean    Vpolymean    ',
+     $'Wpolymean    Psix    Psiy    Psiz   u_tau   Ucomb    Vcomb    ',
+     $'Wcomb    '  
+
+         open(unit=83,file='comp_prof3.dat')
+         write(83,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(83,'(A,A,A,A)') 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psixmean  Psiymean  Psizmean  Upolymean    Vpolymean    ',
+     $'Wpolymean    Psix    Psiy    Psiz   u_tau   Ucomb    Vcomb    ',
+     $'Wcomb    '  
+
+         open(unit=84,file='comp_prof4.dat')
+         write(84,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(84,'(A,A,A,A)') 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psixmean  Psiymean  Psizmean  Upolymean    Vpolymean    ',
+     $'Wpolymean    Psix    Psiy    Psiz   u_tau   Ucomb    Vcomb    ',
+     $'Wcomb    '    
+
+         open(unit=85,file='comp_prof5.dat')
+         write(85,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(85,'(A,A,A,A)') 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psixmean  Psiymean  Psizmean  Upolymean    Vpolymean    ',
+     $'Wpolymean    Psix    Psiy    Psiz   u_tau   Ucomb    Vcomb    ',
+     $'Wcomb    '  
+
+         open(unit=86,file='comp_prof6.dat')
+         write(86,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(86,'(A,A,A,A)') 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psixmean  Psiymean  Psizmean  Upolymean    Vpolymean    ',
+     $'Wpolymean    Psix    Psiy    Psiz   u_tau   Ucomb    Vcomb    ',
+     $'Wcomb    '  
+
+         open(unit=87,file='comp_prof7.dat')
+         write(87,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(87,'(A,A,A,A)') 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psixmean  Psiymean  Psizmean  Upolymean    Vpolymean    ',
+     $'Wpolymean    Psix    Psiy    Psiz   u_tau   Ucomb    Vcomb    ',
+     $'Wcomb    '  
+
+         open(unit=88,file='comp_prof8.dat')
+         write(88,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(88,'(A,A,A,A)') 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psixmean  Psiymean  Psizmean  Upolymean    Vpolymean    ',
+     $'Wpolymean    Psix    Psiy    Psiz   u_tau   Ucomb    Vcomb    ',
+     $'Wcomb    '  
+
+         open(unit=89,file='comp_prof9.dat')
+         write(89,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(89,'(A,A,A,A)') 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psixmean  Psiymean  Psizmean  Upolymean    Vpolymean    ',
+     $'Wpolymean    Psix    Psiy    Psiz   u_tau   Ucomb    Vcomb    ',
+     $'Wcomb    '  
+
+         open(unit=90,file='comp_prof10.dat')
+         write(90,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
+     $     '%time = ', time, '%Re_tau = ', Re_tau, 
+     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
+     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
+     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
+     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
+     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
+     $     '%tau_tot = ', tw_tot
+         write(90,'(A,A,A,A)') 
+     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
+     $'   Psixmean  Psiymean  Psizmean  Upolymean    Vpolymean    ',
+     $'Wpolymean    Psix    Psiy    Psiz   u_tau   Ucomb    Vcomb    ',
+     $'Wcomb    '   
 
          do i = 1,nint
             yy = 1+yint(i)
@@ -3382,29 +3521,263 @@ C          endif
 
             write(81,3) 
      &           yy,
-     &           stat_y(0*nint+i),
-     &           stat_y(1*nint+i),
-     &           stat_y(2*nint+i),
-     &           (stat_y(3*nint+i)-(stat_y(0*nint+i))**2),
-     &           (stat_y(4*nint+i)-(stat_y(1*nint+i))**2),
-     &           (stat_y(5*nint+i)-(stat_y(2*nint+i))**2),
-     &           stat_y(6*nint+i)-stat_y(0*nint+i)*stat_y(1*nint+i),
-     &           0.5*((stat_y(3*nint+i)-(stat_y(0*nint+i))**2)+
-     &           (stat_y(4*nint+i)-(stat_y(1*nint+i))**2)+
-     &           (stat_y(5*nint+i)-(stat_y(2*nint+i))**2)),
-     &           stat_y(11*nint+i), 
-     &           stat_y(12*nint+i),
-     &           stat_y(13*nint+i), 
-     &           stat_y(14*nint+i), 
-     &           stat_y(15*nint+i),
-     &           stat_y(16*nint+i), 
+     &           stat_y1(0*nint+i),
+     &           stat_y1(1*nint+i),
+     &           stat_y1(2*nint+i),
+     &           (stat_y1(3*nint+i)-(stat_y1(0*nint+i))**2),
+     &           (stat_y1(4*nint+i)-(stat_y1(1*nint+i))**2),
+     &           (stat_y1(5*nint+i)-(stat_y1(2*nint+i))**2),
+     &           stat_y1(6*nint+i)-stat_y1(0*nint+i)*stat_y1(1*nint+i),
+     &           0.5*((stat_y1(3*nint+i)-(stat_y1(0*nint+i))**2)+
+     &           (stat_y1(4*nint+i)-(stat_y1(1*nint+i))**2)+
+     &           (stat_y1(5*nint+i)-(stat_y1(2*nint+i))**2)),
+     &           stat_y1(11*nint+i), 
+     &           stat_y1(12*nint+i),
+     &           stat_y1(13*nint+i), 
+     &           stat_y1(14*nint+i), 
+     &           stat_y1(15*nint+i),
+     &           stat_y1(16*nint+i), 
      &           psix_int(i),
      &           psiy_int(i),
      &           psiz_int(i), 
      &           u_tau_out,
-     &           stat_y(14*nint+i)+psix_int(i),
-     &           stat_y(15*nint+i)+psiy_int(i),
-     &           stat_y(16*nint+i)+psiz_int(i)
+     &           stat_y1(14*nint+i)+psix_int(i),
+     &           stat_y1(15*nint+i)+psiy_int(i),
+     &           stat_y1(16*nint+i)+psiz_int(i)
+
+            write(82,3) 
+     &           yy,
+     &           stat_y2(0*nint+i),
+     &           stat_y2(1*nint+i),
+     &           stat_y2(2*nint+i),
+     &           (stat_y2(3*nint+i)-(stat_y2(0*nint+i))**2),
+     &           (stat_y2(4*nint+i)-(stat_y2(1*nint+i))**2),
+     &           (stat_y2(5*nint+i)-(stat_y2(2*nint+i))**2),
+     &           stat_y2(6*nint+i)-stat_y2(0*nint+i)*stat_y2(1*nint+i),
+     &           0.5*((stat_y2(3*nint+i)-(stat_y2(0*nint+i))**2)+
+     &           (stat_y2(4*nint+i)-(stat_y2(1*nint+i))**2)+
+     &           (stat_y2(5*nint+i)-(stat_y2(2*nint+i))**2)),
+     &           stat_y2(11*nint+i), 
+     &           stat_y2(12*nint+i),
+     &           stat_y2(13*nint+i), 
+     &           stat_y2(14*nint+i), 
+     &           stat_y2(15*nint+i),
+     &           stat_y2(16*nint+i), 
+     &           psix_int(i),
+     &           psiy_int(i),
+     &           psiz_int(i), 
+     &           u_tau_out,
+     &           stat_y2(14*nint+i)+psix_int(i),
+     &           stat_y2(15*nint+i)+psiy_int(i),
+     &           stat_y2(16*nint+i)+psiz_int(i)
+
+            write(83,3) 
+     &           yy,
+     &           stat_y3(0*nint+i),
+     &           stat_y3(1*nint+i),
+     &           stat_y3(2*nint+i),
+     &           (stat_y3(3*nint+i)-(stat_y3(0*nint+i))**2),
+     &           (stat_y3(4*nint+i)-(stat_y3(1*nint+i))**2),
+     &           (stat_y3(5*nint+i)-(stat_y3(2*nint+i))**2),
+     &           stat_y3(6*nint+i)-stat_y3(0*nint+i)*stat_y3(1*nint+i),
+     &           0.5*((stat_y3(3*nint+i)-(stat_y3(0*nint+i))**2)+
+     &           (stat_y3(4*nint+i)-(stat_y3(1*nint+i))**2)+
+     &           (stat_y3(5*nint+i)-(stat_y3(2*nint+i))**2)),
+     &           stat_y3(11*nint+i), 
+     &           stat_y3(12*nint+i),
+     &           stat_y3(13*nint+i), 
+     &           stat_y3(14*nint+i), 
+     &           stat_y3(15*nint+i),
+     &           stat_y3(16*nint+i), 
+     &           psix_int(i),
+     &           psiy_int(i),
+     &           psiz_int(i), 
+     &           u_tau_out,
+     &           stat_y3(14*nint+i)+psix_int(i),
+     &           stat_y3(15*nint+i)+psiy_int(i),
+     &           stat_y3(16*nint+i)+psiz_int(i)
+
+            write(84,3) 
+     &           yy,
+     &           stat_y4(0*nint+i),
+     &           stat_y4(1*nint+i),
+     &           stat_y4(2*nint+i),
+     &           (stat_y4(3*nint+i)-(stat_y4(0*nint+i))**2),
+     &           (stat_y4(4*nint+i)-(stat_y4(1*nint+i))**2),
+     &           (stat_y4(5*nint+i)-(stat_y4(2*nint+i))**2),
+     &           stat_y4(6*nint+i)-stat_y4(0*nint+i)*stat_y4(1*nint+i),
+     &           0.5*((stat_y4(3*nint+i)-(stat_y4(0*nint+i))**2)+
+     &           (stat_y4(4*nint+i)-(stat_y4(1*nint+i))**2)+
+     &           (stat_y4(5*nint+i)-(stat_y4(2*nint+i))**2)),
+     &           stat_y4(11*nint+i), 
+     &           stat_y4(12*nint+i),
+     &           stat_y4(13*nint+i), 
+     &           stat_y4(14*nint+i), 
+     &           stat_y4(15*nint+i),
+     &           stat_y4(16*nint+i), 
+     &           psix_int(i),
+     &           psiy_int(i),
+     &           psiz_int(i), 
+     &           u_tau_out,
+     &           stat_y4(14*nint+i)+psix_int(i),
+     &           stat_y4(15*nint+i)+psiy_int(i),
+     &           stat_y4(16*nint+i)+psiz_int(i)
+
+            write(85,3) 
+     &           yy,
+     &           stat_y5(0*nint+i),
+     &           stat_y5(1*nint+i),
+     &           stat_y5(2*nint+i),
+     &           (stat_y5(3*nint+i)-(stat_y5(0*nint+i))**2),
+     &           (stat_y5(4*nint+i)-(stat_y5(1*nint+i))**2),
+     &           (stat_y5(5*nint+i)-(stat_y5(2*nint+i))**2),
+     &           stat_y5(6*nint+i)-stat_y5(0*nint+i)*stat_y5(1*nint+i),
+     &           0.5*((stat_y5(3*nint+i)-(stat_y5(0*nint+i))**2)+
+     &           (stat_y5(4*nint+i)-(stat_y5(1*nint+i))**2)+
+     &           (stat_y5(5*nint+i)-(stat_y5(2*nint+i))**2)),
+     &           stat_y5(11*nint+i), 
+     &           stat_y5(12*nint+i),
+     &           stat_y5(13*nint+i), 
+     &           stat_y5(14*nint+i), 
+     &           stat_y5(15*nint+i),
+     &           stat_y5(16*nint+i), 
+     &           psix_int(i),
+     &           psiy_int(i),
+     &           psiz_int(i), 
+     &           u_tau_out,
+     &           stat_y5(14*nint+i)+psix_int(i),
+     &           stat_y5(15*nint+i)+psiy_int(i),
+     &           stat_y5(16*nint+i)+psiz_int(i)
+
+            write(86,3) 
+     &           yy,
+     &           stat_y6(0*nint+i),
+     &           stat_y6(1*nint+i),
+     &           stat_y6(2*nint+i),
+     &           (stat_y6(3*nint+i)-(stat_y6(0*nint+i))**2),
+     &           (stat_y6(4*nint+i)-(stat_y6(1*nint+i))**2),
+     &           (stat_y6(5*nint+i)-(stat_y6(2*nint+i))**2),
+     &           stat_y6(6*nint+i)-stat_y6(0*nint+i)*stat_y6(1*nint+i),
+     &           0.5*((stat_y6(3*nint+i)-(stat_y6(0*nint+i))**2)+
+     &           (stat_y6(4*nint+i)-(stat_y6(1*nint+i))**2)+
+     &           (stat_y6(5*nint+i)-(stat_y6(2*nint+i))**2)),
+     &           stat_y6(11*nint+i), 
+     &           stat_y6(12*nint+i),
+     &           stat_y6(13*nint+i), 
+     &           stat_y6(14*nint+i), 
+     &           stat_y6(15*nint+i),
+     &           stat_y6(16*nint+i), 
+     &           psix_int(i),
+     &           psiy_int(i),
+     &           psiz_int(i), 
+     &           u_tau_out,
+     &           stat_y6(14*nint+i)+psix_int(i),
+     &           stat_y6(15*nint+i)+psiy_int(i),
+     &           stat_y6(16*nint+i)+psiz_int(i)
+
+            write(87,3) 
+     &           yy,
+     &           stat_y7(0*nint+i),
+     &           stat_y7(1*nint+i),
+     &           stat_y7(2*nint+i),
+     &           (stat_y7(3*nint+i)-(stat_y7(0*nint+i))**2),
+     &           (stat_y7(4*nint+i)-(stat_y7(1*nint+i))**2),
+     &           (stat_y7(5*nint+i)-(stat_y7(2*nint+i))**2),
+     &           stat_y7(6*nint+i)-stat_y7(0*nint+i)*stat_y7(1*nint+i),
+     &           0.5*((stat_y7(3*nint+i)-(stat_y7(0*nint+i))**2)+
+     &           (stat_y7(4*nint+i)-(stat_y7(1*nint+i))**2)+
+     &           (stat_y7(5*nint+i)-(stat_y7(2*nint+i))**2)),
+     &           stat_y7(11*nint+i), 
+     &           stat_y7(12*nint+i),
+     &           stat_y7(13*nint+i), 
+     &           stat_y7(14*nint+i), 
+     &           stat_y7(15*nint+i),
+     &           stat_y7(16*nint+i), 
+     &           psix_int(i),
+     &           psiy_int(i),
+     &           psiz_int(i), 
+     &           u_tau_out,
+     &           stat_y7(14*nint+i)+psix_int(i),
+     &           stat_y7(15*nint+i)+psiy_int(i),
+     &           stat_y7(16*nint+i)+psiz_int(i)
+
+            write(88,3) 
+     &           yy,
+     &           stat_y8(0*nint+i),
+     &           stat_y8(1*nint+i),
+     &           stat_y8(2*nint+i),
+     &           (stat_y8(3*nint+i)-(stat_y8(0*nint+i))**2),
+     &           (stat_y8(4*nint+i)-(stat_y8(1*nint+i))**2),
+     &           (stat_y8(5*nint+i)-(stat_y8(2*nint+i))**2),
+     &           stat_y8(6*nint+i)-stat_y8(0*nint+i)*stat_y8(1*nint+i),
+     &           0.5*((stat_y8(3*nint+i)-(stat_y8(0*nint+i))**2)+
+     &           (stat_y8(4*nint+i)-(stat_y8(1*nint+i))**2)+
+     &           (stat_y8(5*nint+i)-(stat_y8(2*nint+i))**2)),
+     &           stat_y8(11*nint+i), 
+     &           stat_y8(12*nint+i),
+     &           stat_y8(13*nint+i), 
+     &           stat_y8(14*nint+i), 
+     &           stat_y8(15*nint+i),
+     &           stat_y8(16*nint+i), 
+     &           psix_int(i),
+     &           psiy_int(i),
+     &           psiz_int(i), 
+     &           u_tau_out,
+     &           stat_y8(14*nint+i)+psix_int(i),
+     &           stat_y8(15*nint+i)+psiy_int(i),
+     &           stat_y8(16*nint+i)+psiz_int(i)
+
+            write(89,3) 
+     &           yy,
+     &           stat_y9(0*nint+i),
+     &           stat_y9(1*nint+i),
+     &           stat_y9(2*nint+i),
+     &           (stat_y9(3*nint+i)-(stat_y9(0*nint+i))**2),
+     &           (stat_y9(4*nint+i)-(stat_y9(1*nint+i))**2),
+     &           (stat_y9(5*nint+i)-(stat_y9(2*nint+i))**2),
+     &           stat_y9(6*nint+i)-stat_y9(0*nint+i)*stat_y9(1*nint+i),
+     &           0.5*((stat_y9(3*nint+i)-(stat_y9(0*nint+i))**2)+
+     &           (stat_y9(4*nint+i)-(stat_y9(1*nint+i))**2)+
+     &           (stat_y9(5*nint+i)-(stat_y9(2*nint+i))**2)),
+     &           stat_y9(11*nint+i), 
+     &           stat_y9(12*nint+i),
+     &           stat_y9(13*nint+i), 
+     &           stat_y9(14*nint+i), 
+     &           stat_y9(15*nint+i),
+     &           stat_y9(16*nint+i), 
+     &           psix_int(i),
+     &           psiy_int(i),
+     &           psiz_int(i), 
+     &           u_tau_out,
+     &           stat_y9(14*nint+i)+psix_int(i),
+     &           stat_y9(15*nint+i)+psiy_int(i),
+     &           stat_y9(16*nint+i)+psiz_int(i)
+
+            write(90,3) 
+     &           yy,
+     &           stat_y10(0*nint+i),
+     &           stat_y10(1*nint+i),
+     &           stat_y10(2*nint+i),
+     &           (stat_y10(3*nint+i)-(stat_y10(0*nint+i))**2),
+     &           (stat_y10(4*nint+i)-(stat_y10(1*nint+i))**2),
+     &           (stat_y10(5*nint+i)-(stat_y10(2*nint+i))**2),
+     &         stat_y10(6*nint+i)-stat_y10(0*nint+i)*stat_y10(1*nint+i),
+     &           0.5*((stat_y10(3*nint+i)-(stat_y10(0*nint+i))**2)+
+     &           (stat_y10(4*nint+i)-(stat_y10(1*nint+i))**2)+
+     &           (stat_y10(5*nint+i)-(stat_y10(2*nint+i))**2)),
+     &           stat_y10(11*nint+i), 
+     &           stat_y10(12*nint+i),
+     &           stat_y10(13*nint+i), 
+     &           stat_y10(14*nint+i), 
+     &           stat_y10(15*nint+i),
+     &           stat_y10(16*nint+i), 
+     &           psix_int(i),
+     &           psiy_int(i),
+     &           psiz_int(i), 
+     &           u_tau_out,
+     &           stat_y10(14*nint+i)+psix_int(i),
+     &           stat_y10(15*nint+i)+psiy_int(i),
+     &           stat_y10(16*nint+i)+psiz_int(i)
 
   3         format(1p22e17.9)
          enddo
@@ -3412,6 +3785,15 @@ C          endif
          close(57)
          close(58)
          close(81)
+         close(82)
+         close(83)
+         close(84)
+         close(85)
+         close(86)
+         close(87)
+         close(88)
+         close(89)
+         close(90)
 
  998  endif
       
@@ -3901,732 +4283,6 @@ c-----------------------------------------------------------------------
 
       shift = xfac*yfac
 
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine statistics
-
-c
-c     What follows computes some statistics ...
-c
-      include 'SIZE'
-      include 'TOTAL'
-
-c     parameters for line definition
-      integer intp_nmax, nelx, nely, nelz
-      parameter (intp_nmax=INTP_NMAX, nelx=NUMBER_ELEMENTS_X,
-     $   nely=NUMBER_ELEMENTS_Y, nelz=NUMBER_ELEMENTS_Z)
-      real xcint, zcint, ylen, betam
-      parameter (xcint=4.0, zcint=MYZCINT, ylen=3.035, betam=2.4)
-      real xcint1, xcint2, xcint3, xcint4, xcint5, xcint6, xcint7,
-     $     xcint8, xcint9, xcint10
-      parameter (xcint1=0.05,xcint2=0.5,xcint3=1.,xcint4=2.,xcint5=3.)
-      parameter (xcint6=4.,xcint7=5.,xcint8=6.,xcint9=7.,xcint10=8.)
-
-c     statistics start time and output frequency
-      real tstatstar, tstatfreq
-
-c     object definition
-      real a_tmp(maxobj), wa(maxobj), A_w
-      save A_w
-
-      real x0(3)
-      data x0 /0.0, 0.0, 0.0/ 
-      save x0
-
-      integer icalld
-      save    icalld
-      data    icalld /0/
-
-      real atime,timel
-      save atime,timel
-
-      integer ntdump
-      save    ntdump
-      
-      real    rwk(intp_nmax,ldim+1) ! r, s, t, dist2
-      integer iwk(intp_nmax,3)      ! code, proc, el 
-      save    rwk, iwk
-
-      integer nint, intp_h
-      save    nint, intp_h
-      integer intp_h1, intp_h2, intp_h3, intp_h4, intp_h5, intp_h6,
-     $        intp_h7, intp_h8, intp_h9, intp_h10
-      save    intp_h1, intp_h2, intp_h3, intp_h4, intp_h5, intp_h6,
-     $        intp_h7, intp_h8, intp_h9, intp_h10 
-
-      logical iffpts
-      save iffpts
-
-      real xint(intp_nmax),yint(intp_nmax),zint(intp_nmax)
-      save xint, yint, zint
-      save igs_z
-
-
-      real    rwk1(intp_nmax,ldim+1), rwk2(intp_nmax,ldim+1),
-     $        rwk3(intp_nmax,ldim+1), rwk4(intp_nmax,ldim+1),
-     $        rwk5(intp_nmax,ldim+1), rwk6(intp_nmax,ldim+1),
-     $        rwk7(intp_nmax,ldim+1), rwk8(intp_nmax,ldim+1),
-     $        rwk9(intp_nmax,ldim+1), rwk10(intp_nmax,ldim+1)
-      integer iwk1(intp_nmax,3), iwk2(intp_nmax,3), iwk3(intp_nmax,3),
-     $        iwk4(intp_nmax,3), iwk5(intp_nmax,3), iwk6(intp_nmax,3),
-     $        iwk7(intp_nmax,3), iwk8(intp_nmax,3), iwk9(intp_nmax,3),
-     $        iwk10(intp_nmax,3)
-      save    rwk1, iwk1, rwk2, iwk2, rwk3, iwk3, rwk4, iwk4,
-     $        rwk5, iwk5, rwk6, iwk6, rwk7, iwk7, rwk8, iwk8,
-     $        rwk9, iwk9, rwk10, iwk10 
-
-      real xint1(intp_nmax),xint2(intp_nmax),xint3(intp_nmax),
-     $     xint4(intp_nmax),xint5(intp_nmax),xint6(intp_nmax),
-     $     xint7(intp_nmax),xint8(intp_nmax),xint9(intp_nmax),
-     $     xint10(intp_nmax) 
-      save xint1, xint2, xint3, xint4, xint5, xint6, xint7, xint8, 
-     $     xint9, xint10
-
-      real ycint1, ycint2, ycint3, ycint4, ycint5, ycint6, ycint7,
-     $     ycint8, ycint9, ycint10
-      real yint1(intp_nmax),yint2(intp_nmax),yint3(intp_nmax),
-     $     yint4(intp_nmax),yint5(intp_nmax),yint6(intp_nmax),
-     $     yint7(intp_nmax),yint8(intp_nmax),yint9(intp_nmax),
-     $     yint10(intp_nmax) 
-      save yint1, yint2, yint3, yint4, yint5, yint6, yint7, yint8, 
-     $     yint9, yint10
-
-      real  zint1(intp_nmax),zint2(intp_nmax),zint3(intp_nmax),
-     $     zint4(intp_nmax),zint5(intp_nmax),zint6(intp_nmax),
-     $     zint7(intp_nmax),zint8(intp_nmax),zint9(intp_nmax),
-     $     zint10(intp_nmax) 
-      save zint1, zint2, zint3, zint4, zint5, zint6, zint7, zint8, 
-     $     zint9, zint10
-
-      parameter(nstat=8)
-      real ravg(lx1*ly1*lz1*lelt,nstat)
-      real stat(lx1*ly1*lz1*lelt,nstat)
-      real stat_y(intp_nmax*nstat)
-      save ravg, stat, stat_y
-
-      real stat_y1(intp_nmax*nstat)
-      real stat_y2(intp_nmax*nstat)
-      real stat_y3(intp_nmax*nstat)
-      real stat_y4(intp_nmax*nstat)
-      real stat_y5(intp_nmax*nstat)
-      real stat_y6(intp_nmax*nstat)
-      real stat_y7(intp_nmax*nstat)
-      real stat_y8(intp_nmax*nstat)
-      real stat_y9(intp_nmax*nstat)
-      real stat_y10(intp_nmax*nstat)
-      save stat_y1, stat_y2, stat_y3, stat_y4, stat_y5, stat_y6, 
-     $     stay_y7, stat_y8, stat_y9, stat_y10 
-
-      real Betax, Betay
-      real Lx, Ly, Lz, Wh, H    ! x dimension, y dimension, hill half width, hill height
-      common /hill_param/ Lx, Ly, Lz, Wh, H, Betax ,Betay
-      real hill_height
-
-      save dragx_avg
-
-      logical ifverbose
-      common /gaaa/    wo1(lx1,ly1,lz1,lelv)
-     &              ,  wo2(lx1,ly1,lz1,lelv)
-     &              ,  wo3(lx1,ly1,lz1,lelv)
-
-      real tmn, tmx
-
-      integer bIDs(1)
-      save iobj_wall
-
-      common /mycf/ cf(lx1,lelt),cf_top(lx1,lelt),
-     $              cp(lx1,lelt),cp_top(lx1,lelt),xf(lx1,lelt)
-
-      tstatstar = uparam(1)
-      tstatfreq = uparam(2)
-      
-      if (time.lt.tstatstar) return
-
-      n     = nx1*ny1*nz1*nelv
-
-      if(icalld.eq.0) then
-        if(nid.eq.0) write(6,*) 'Start collecting statistics ...'
-
-        call interp_setup(intp_h,0.0,0,nelv)
-        call interp_setup(intp_h1,0.0,0,nelv)
-        call interp_setup(intp_h2,0.0,0,nelv)
-        call interp_setup(intp_h3,0.0,0,nelv)
-        call interp_setup(intp_h4,0.0,0,nelv)
-        call interp_setup(intp_h5,0.0,0,nelv)
-        call interp_setup(intp_h6,0.0,0,nelv)
-        call interp_setup(intp_h7,0.0,0,nelv)
-        call interp_setup(intp_h8,0.0,0,nelv)
-        call interp_setup(intp_h9,0.0,0,nelv)
-        call interp_setup(intp_h10,0.0,0,nelv)
-
-        nint = 0
-        if (nid.eq.0) then
-          nint = intp_nmax
-          call cfill(xint,xcint,size(xint))
-          call cfill(xint1,xcint1,size(xint1))
-          call cfill(xint2,xcint2,size(xint2))
-          call cfill(xint3,xcint3,size(xint3))
-          call cfill(xint4,xcint4,size(xint4))
-          call cfill(xint5,xcint5,size(xint5))
-          call cfill(xint6,xcint6,size(xint6))
-          call cfill(xint7,xcint7,size(xint7))
-          call cfill(xint8,xcint8,size(xint8))
-          call cfill(xint9,xcint9,size(xint9))
-          call cfill(xint10,xcint10,size(xint10))
-
-          ycint1 = hill_height(xcint1,Lx,Wh,H)
-          ycint2 = hill_height(xcint2,Lx,Wh,H)
-          ycint3 = hill_height(xcint3,Lx,Wh,H)
-          ycint4 = hill_height(xcint4,Lx,Wh,H)
-          ycint5 = hill_height(xcint5,Lx,Wh,H)
-          ycint6 = hill_height(xcint6,Lx,Wh,H)
-          ycint7 = hill_height(xcint7,Lx,Wh,H)
-          ycint8 = hill_height(xcint8,Lx,Wh,H)
-          ycint9 = hill_height(xcint9,Lx,Wh,H)
-          ycint10 = hill_height(xcint10,Lx,Wh,H)
-          do i = 1,intp_nmax 
-             yi = (i-1.)/(intp_nmax-1)
-             yint(i) = ylen*0.5*(tanh(betam*(2*yi-1.0))/
-     $                 tanh(betam)+1.0)
-             yint1(i) = (ylen-ycint1)*0.5*(tanh(betam*(2*yi-1.0))/
-     $                 tanh(betam)+1.0)+ycint1
-             yint2(i) = (ylen-ycint2)*0.5*(tanh(betam*(2*yi-1.0))/
-     $                 tanh(betam)+1.0)+ycint2
-             yint3(i) = (ylen-ycint3)*0.5*(tanh(betam*(2*yi-1.0))/
-     $                 tanh(betam)+1.0)+ycint3
-             yint4(i) = (ylen-ycint4)*0.5*(tanh(betam*(2*yi-1.0))/
-     $                 tanh(betam)+1.0)+ycint4
-             yint5(i) = (ylen-ycint5)*0.5*(tanh(betam*(2*yi-1.0))/
-     $                 tanh(betam)+1.0)+ycint5
-             yint6(i) = (ylen-ycint6)*0.5*(tanh(betam*(2*yi-1.0))/
-     $                 tanh(betam)+1.0)+ycint6
-             yint7(i) = (ylen-ycint7)*0.5*(tanh(betam*(2*yi-1.0))/
-     $                 tanh(betam)+1.0)+ycint7
-             yint8(i) = (ylen-ycint8)*0.5*(tanh(betam*(2*yi-1.0))/
-     $                 tanh(betam)+1.0)+ycint8
-             yint9(i) = (ylen-ycint9)*0.5*(tanh(betam*(2*yi-1.0))/
-     $                 tanh(betam)+1.0)+ycint9
-             yint10(i) = (ylen-ycint10)*0.5*(tanh(betam*(2*yi-1.0))/
-     $                 tanh(betam)+1.0)+ycint10
-          enddo
-          yint(1) = yint(1) + 1e-3
-          yint1(1) = yint1(1) + 1e-3
-          yint2(1) = yint2(1) + 1e-3
-          yint3(1) = yint3(1) + 1e-3
-          yint4(1) = yint4(1) + 1e-3
-          yint5(1) = yint5(1) + 1e-3
-          yint6(1) = yint6(1) + 1e-3
-          yint7(1) = yint7(1) + 1e-3
-          yint8(1) = yint8(1) + 1e-3
-          yint9(1) = yint9(1) + 1e-3
-          yint10(1) = yint10(1) + 1e-3
-
-          call cfill(zint,zcint,size(zint))
-          call cfill(zint1,zcint,size(zint1))
-          call cfill(zint2,zcint,size(zint2))
-          call cfill(zint3,zcint,size(zint3))
-          call cfill(zint4,zcint,size(zint4))
-          call cfill(zint5,zcint,size(zint5))
-          call cfill(zint6,zcint,size(zint6))
-          call cfill(zint7,zcint,size(zint7))
-          call cfill(zint8,zcint,size(zint8))
-          call cfill(zint9,zcint,size(zint9))
-          call cfill(zint10,zcint,size(zint10))
-        endif
-        iffpts = .true. ! dummy call to find points
-        call interp_nfld(stat_y,ravg,1,xint,yint,zint,nint,
-     $                   iwk,rwk,intp_nmax,iffpts,intp_h)
-        call interp_nfld(stat_y1,ravg,1,xint1,yint1,zint1,nint,
-     $                   iwk1,rwk1,intp_nmax,iffpts,intp_h1)
-        call interp_nfld(stat_y2,ravg,1,xint2,yint2,zint2,nint,
-     $                   iwk2,rwk2,intp_nmax,iffpts,intp_h2)
-        call interp_nfld(stat_y3,ravg,1,xint3,yint3,zint3,nint,
-     $                   iwk3,rwk3,intp_nmax,iffpts,intp_h3)
-        call interp_nfld(stat_y4,ravg,1,xint4,yint4,zint4,nint,
-     $                   iwk4,rwk4,intp_nmax,iffpts,intp_h4)
-        call interp_nfld(stat_y5,ravg,1,xint5,yint5,zint5,nint,
-     $                   iwk5,rwk5,intp_nmax,iffpts,intp_h5)
-        call interp_nfld(stat_y6,ravg,1,xint6,yint6,zint6,nint,
-     $                   iwk6,rwk6,intp_nmax,iffpts,intp_h6)
-        call interp_nfld(stat_y7,ravg,1,xint7,yint7,zint7,nint,
-     $                   iwk7,rwk7,intp_nmax,iffpts,intp_h7)
-        call interp_nfld(stat_y8,ravg,1,xint8,yint8,zint8,nint,
-     $                   iwk8,rwk8,intp_nmax,iffpts,intp_h8)
-        call interp_nfld(stat_y9,ravg,1,xint9,yint9,zint9,nint,
-     $                   iwk9,rwk9,intp_nmax,iffpts,intp_h9)
-        call interp_nfld(stat_y10,ravg,1,xint10,yint10,zint10,nint,
-     $                   iwk10,rwk10,intp_nmax,iffpts,intp_h10)
-        iffpts = .false.
-        call gtpp_gs_setup(igs_z,nelx*nely,1   ,nelz,3) ! z-avg
-
-        call rzero(ravg,size(ravg))
-        dragx_avg = 0
-        atime     = 0
-        timel     = time
-        ntdump    = int(time/tstatfreq)
-
-c     get objects surface area     
-        nn = nx1*nz1
-        do iobj = 1,nobj
-           a_tmp(iobj)= 0.0
-           do imem = 1, nmember(iobj)
-              ieg   = object(iobj,imem,1)
-              ifc   = object(iobj,imem,2)
-              if (gllnid(ieg).eq.nid) then ! this processor has a contribution
-                 iel = gllel(ieg)
-                 a_tmp(iobj)=a_tmp(iobj)+vlsum(area(1,1,ifc,iel),nn)
-              endif
-           enddo
-        enddo
-        call gop(a_tmp, wa, '+  ', maxobj)
-        A_w = 0.0
-        do iobj = 1,nobj
-           A_w = A_w + a_tmp(iobj)
-        enddo
-
-        icalld = 1
-      endif
-
-      dtime = time - timel
-      atime = atime + dtime
-
-      ! averaging over time
-      if (atime.ne.0. .and. dtime.ne.0.) then
-        beta      = dtime / atime
-        alpha     = 1. - beta
-
-        ifverbose = .false.
-        call avg1(ravg(1,1),vx   ,alpha,beta,n,'uavg',ifverbose)
-        call avg1(ravg(1,2),vy   ,alpha,beta,n,'vavg',ifverbose)
-        call avg1(ravg(1,3),vz   ,alpha,beta,n,'wavg',ifverbose)
-        call avg2(ravg(1,4),vx   ,alpha,beta,n,'urms',ifverbose)
-        call avg2(ravg(1,5),vy   ,alpha,beta,n,'vrms',ifverbose)
-        call avg2(ravg(1,6),vz   ,alpha,beta,n,'wrms',ifverbose)
-        call avg3(ravg(1,7),vx,vy,alpha,beta,n,'uvmm',ifverbose)
-        call avg1(ravg(1,8),pr   ,alpha,beta,n,'pr',ifverbose)
-
-        call torque_calc(1.0,x0,.false.,.false.) ! compute wall shear
-        dragx_avg = alpha*dragx_avg + beta*dragx(0) ! drag from all objects
-      endif
-
-      timel = time
-
-      ! write statistics to file
-      if(istep.gt.0 .and. time.gt.(ntdump+1)*tstatfreq) then
-         ! averaging over statistical homogeneous directions (z)
-         do i = 1,nstat
-            call planar_avg(stat(1,i),ravg(1,i),igs_z)
-         enddo
-
-         ! extract data along wall normal direction (1D profile)
-         call interp_nfld(stat_y,stat,nstat,xint,yint,zint,nint,
-     $                    iwk,rwk,intp_nmax,iffpts,intp_h)
-         call interp_nfld(stat_y1,stat,nstat,xint1,yint1,zint1,nint,
-     $                    iwk1,rwk1,intp_nmax,iffpts,intp_h1)
-         call interp_nfld(stat_y2,stat,nstat,xint2,yint2,zint2,nint,
-     $                    iwk2,rwk2,intp_nmax,iffpts,intp_h2)
-         call interp_nfld(stat_y3,stat,nstat,xint3,yint3,zint3,nint,
-     $                    iwk3,rwk3,intp_nmax,iffpts,intp_h3)
-         call interp_nfld(stat_y4,stat,nstat,xint4,yint4,zint4,nint,
-     $                    iwk4,rwk4,intp_nmax,iffpts,intp_h4)
-         call interp_nfld(stat_y5,stat,nstat,xint5,yint5,zint5,nint,
-     $                    iwk5,rwk5,intp_nmax,iffpts,intp_h5)
-         call interp_nfld(stat_y6,stat,nstat,xint6,yint6,zint6,nint,
-     $                    iwk6,rwk6,intp_nmax,iffpts,intp_h6)
-         call interp_nfld(stat_y7,stat,nstat,xint7,yint7,zint7,nint,
-     $                    iwk7,rwk7,intp_nmax,iffpts,intp_h7)
-         call interp_nfld(stat_y8,stat,nstat,xint8,yint8,zint8,nint,
-     $                    iwk8,rwk8,intp_nmax,iffpts,intp_h8)
-         call interp_nfld(stat_y9,stat,nstat,xint9,yint9,zint9,nint,
-     $                    iwk9,rwk9,intp_nmax,iffpts,intp_h9)
-         call interp_nfld(stat_y10,stat,nstat,xint10,yint10,zint10,nint,
-     $                    iwk10,rwk10,intp_nmax,iffpts,intp_h10)
-
-         ntdump = ntdump + 1
-
-         call shear_stress(cf,cf_top,cp,cp_top,xf,
-     $       ravg(1,1),ravg(1,2),ravg(1,3),ravg(1,8))
-         if (nid.ne.0) goto 998 
-
-         open(unit=55,file='wall_vals.dat')
-         npts = lx1*nelx
-         write(55,*) " % time   x   cf   cf_top  cp   cp_top"
-         write(55,2) (time,xf(k,1),cf(k,1),cf_top(k,1),
-     $       cp(k,1),cp_top(k,1),k=1,npts)
-   2     format(1p6e14.5)
-         close(55)
-
-         rho    = param(1)
-         dnu    = param(2)
-         tw     = dragx_avg / A_w
-         u_tau  = sqrt(tw / rho)
-         ! SRB - Local u_taus?????
-         Re_tau = u_tau / dnu
-
-         write(6,*) 'Dumping statistics ...', Re_tau
- 
-         open(unit=56,file='vel_fluc_prof.dat')
-         write(56,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
-     $     '%time = ', time, '%Re_tau = ', Re_tau, 
-     $     '%ut = ', u_tau, '%ut_param = ', 0.0
-         write(56,'(A)') 
-     $    '%  y    y+    uu    vv    ww    uv    u_tau   '
-
-         open(unit=57,file='mean_prof.dat')
-         write(57,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
-     $     '%time = ', time, '%Re_tau = ', Re_tau, 
-     $     '%ut = ', u_tau, '%ut_param = ', ut_param, 
-     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
-     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
-     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
-     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
-     $     '%tau_tot = ', tw_tot
-         write(57,'(A)') 
-     $'%  y    y+    Umean    Psimean  Upolymean    Psi   u_tau   Ucomb'
-
-
-         open(unit=81,file='comp_prof1.dat')
-         write(81,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
-     $     '%time = ', time, '%Re_tau = ', Re_tau, 
-     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
-     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
-     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
-     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
-     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
-     $     '%tau_tot = ', tw_tot
-         write(81,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
-     $'   Psimean  Upolymean    Psi   u_tau   Ucomb' 
-         open(unit=82,file='comp_prof2.dat')
-         write(82,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
-     $     '%time = ', time, '%Re_tau = ', Re_tau, 
-     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
-     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
-     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
-     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
-     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
-     $     '%tau_tot = ', tw_tot
-         write(82,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    ',
-     $'Psimean  Upolymean    Psi   u_tau   Ucomb' 
-
-         open(unit=83,file='comp_prof3.dat')
-         write(83,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
-     $     '%time = ', time, '%Re_tau = ', Re_tau, 
-     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
-     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
-     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
-     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
-     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
-     $     '%tau_tot = ', tw_tot
-         write(83,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
-     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'  
-
-         open(unit=84,file='comp_prof4.dat')
-         write(84,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
-     $     '%time = ', time, '%Re_tau = ', Re_tau, 
-     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
-     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
-     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
-     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
-     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
-     $     '%tau_tot = ', tw_tot
-         write(84,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
-     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'  
-
-         open(unit=85,file='comp_prof5.dat')
-         write(85,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
-     $     '%time = ', time, '%Re_tau = ', Re_tau, 
-     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
-     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
-     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
-     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
-     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
-     $     '%tau_tot = ', tw_tot
-         write(85,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
-     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'  
-
-         open(unit=86,file='comp_prof6.dat')
-         write(86,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
-     $     '%time = ', time, '%Re_tau = ', Re_tau, 
-     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
-     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
-     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
-     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
-     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
-     $     '%tau_tot = ', tw_tot
-         write(86,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
-     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'  
-
-         open(unit=87,file='comp_prof7.dat')
-         write(87,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
-     $     '%time = ', time, '%Re_tau = ', Re_tau, 
-     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
-     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
-     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
-     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
-     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
-     $     '%tau_tot = ', tw_tot
-         write(87,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
-     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'  
-
-         open(unit=88,file='comp_prof8.dat')
-         write(88,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
-     $     '%time = ', time, '%Re_tau = ', Re_tau, 
-     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
-     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
-     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
-     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
-     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
-     $     '%tau_tot = ', tw_tot
-         write(88,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
-     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'  
-
-         open(unit=89,file='comp_prof9.dat')
-         write(89,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
-     $     '%time = ', time, '%Re_tau = ', Re_tau, 
-     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
-     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
-     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
-     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
-     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
-     $     '%tau_tot = ', tw_tot
-         write(89,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
-     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'  
-
-         open(unit=90,file='comp_prof10.dat')
-         write(90,'(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)(A,1pe14.7)') 
-     $     '%time = ', time, '%Re_tau = ', Re_tau, 
-     $     '%ut = ', u_tau, '%ut_param = ', 0.0,
-     $     '%u_tau_poly = ', u_tau_poly, '%u_tau_tot = ', u_tau_tot,
-     $     '%ut_avg_fit_top  = ', ut_avg_fit_top,  
-     $     '%ut_avg_fit_bot  = ', ut_avg_fit_bot,
-     $     '%tau_poly = ', tw_poly, '%tau_en = ', tau_param, 
-     $     '%tau_tot = ', tw_tot
-         write(90,'(A,A)') 
-     $'%  y    Umean    Vmean    Wmean    uu    vv    ww    uv    TKE',
-     $'   Psimean  Upolymean    Psi   u_tau   Ucomb'  
-
-         do i = 1,nint
-            yy = yint(i)
-            write(56,3) 
-     &           yy,
-     &           yy*Re_tau,
-     &           (stat_y(1*nint+i)-(stat_y(0*nint+i))**2),
-     &           stat_y(2*nint+i),
-     &           stat_y(3*nint+i),
-     &           stat_y(4*nint+i),
-     &           u_tau
-
-            write(57,3) 
-     &           yy,
-     &           yy*Re_tau, 
-     &           stat_y(0*nint+i),
-     &           stat_y(5*nint+i),
-     &           0.0, !stat_y(9*nint+i),
-     &           0.0, !stat_y(10*nint+i),
-     &           0.0, !psix_int(i),
-     &           u_tau, !u_tau_out,
-     &           stat_y(0*nint+i) !stat_y(10*nint+i)+psix_int(i)
-
-            write(81,3) 
-     &           yint1(i),
-     &           stat_y1(0*nint+i),
-     &           stat_y1(1*nint+i),
-     &           stat_y1(2*nint+i),
-     &           (stat_y1(3*nint+i)-(stat_y1(0*nint+i))**2),
-     &           (stat_y1(4*nint+i)-(stat_y1(1*nint+i))**2),
-     &           (stat_y1(5*nint+i)-(stat_y1(2*nint+i))**2),
-     &           stat_y1(6*nint+i)-stat_y1(0*nint+i)*stat_y1(1*nint+i),
-     &           0.5*((stat_y1(3*nint+i)-(stat_y1(0*nint+i))**2)+
-     &           (stat_y1(4*nint+i)-(stat_y1(1*nint+i))**2)+
-     &           (stat_y1(5*nint+i)-(stat_y1(2*nint+i))**2)),
-     &           0.0, !stat_y(9*nint+i),
-     &           0.0, !stat_y(10*nint+i),
-     &           0.0, !psix_int(i),
-     &           u_tau, !u_tau_out,
-     &           stat_y1(0*nint+i) !stat_y(10*nint+i)+psix_int(i),
-
-            write(82,3) 
-     &           yint2(i),
-     &           stat_y2(0*nint+i),
-     &           stat_y2(1*nint+i),
-     &           stat_y2(2*nint+i),
-     &           (stat_y2(3*nint+i)-(stat_y2(0*nint+i))**2),
-     &           (stat_y2(4*nint+i)-(stat_y2(1*nint+i))**2),
-     &           (stat_y2(5*nint+i)-(stat_y2(2*nint+i))**2),
-     &           stat_y2(6*nint+i)-stat_y2(0*nint+i)*stat_y2(1*nint+i),
-     &           0.5*((stat_y2(3*nint+i)-(stat_y2(0*nint+i))**2)+
-     &           (stat_y2(4*nint+i)-(stat_y2(1*nint+i))**2)+
-     &           (stat_y2(5*nint+i)-(stat_y2(2*nint+i))**2)),
-     &           0.0, !stat_y(9*nint+i),
-     &           0.0, !stat_y(10*nint+i),
-     &           0.0, !psix_int(i),
-     &           u_tau, !u_tau_out,
-     &           stat_y2(0*nint+i) !stat_y(10*nint+i)+psix_int(i),
-            write(83,3) 
-     &           yint3(i),
-     &           stat_y3(0*nint+i),
-     &           stat_y3(1*nint+i),
-     &           stat_y3(2*nint+i),
-     &           (stat_y3(3*nint+i)-(stat_y3(0*nint+i))**2),
-     &           (stat_y3(4*nint+i)-(stat_y3(1*nint+i))**2),
-     &           (stat_y3(5*nint+i)-(stat_y3(2*nint+i))**2),
-     &           stat_y3(6*nint+i)-stat_y3(0*nint+i)*stat_y3(1*nint+i),
-     &           0.5*((stat_y3(3*nint+i)-(stat_y3(0*nint+i))**2)+
-     &           (stat_y3(4*nint+i)-(stat_y3(1*nint+i))**2)+
-     &           (stat_y3(5*nint+i)-(stat_y3(2*nint+i))**2)),
-     &           0.0, !stat_y(9*nint+i),
-     &           0.0, !stat_y(10*nint+i),
-     &           0.0, !psix_int(i),
-     &           u_tau, !u_tau_out,
-     &           stat_y3(0*nint+i) !stat_y(10*nint+i)+psix_int(i),
-            write(84,3) 
-     &           yint4(i),
-     &           stat_y4(0*nint+i),
-     &           stat_y4(1*nint+i),
-     &           stat_y4(2*nint+i),
-     &           (stat_y4(3*nint+i)-(stat_y4(0*nint+i))**2),
-     &           (stat_y4(4*nint+i)-(stat_y4(1*nint+i))**2),
-     &           (stat_y4(5*nint+i)-(stat_y4(2*nint+i))**2),
-     &           stat_y4(6*nint+i)-stat_y4(0*nint+i)*stat_y4(1*nint+i),
-     &           0.5*((stat_y4(3*nint+i)-(stat_y4(0*nint+i))**2)+
-     &           (stat_y4(4*nint+i)-(stat_y4(1*nint+i))**2)+
-     &           (stat_y4(5*nint+i)-(stat_y4(2*nint+i))**2)),
-     &           0.0, !stat_y(9*nint+i),
-     &           0.0, !stat_y(10*nint+i),
-     &           0.0, !psix_int(i),
-     &           u_tau, !u_tau_out,
-     &           stat_y4(0*nint+i) !stat_y(10*nint+i)+psix_int(i),
-            write(85,3) 
-     &           yint5(i),
-     &           stat_y5(0*nint+i),
-     &           stat_y5(1*nint+i),
-     &           stat_y5(2*nint+i),
-     &           (stat_y5(3*nint+i)-(stat_y5(0*nint+i))**2),
-     &           (stat_y5(4*nint+i)-(stat_y5(1*nint+i))**2),
-     &           (stat_y5(5*nint+i)-(stat_y5(2*nint+i))**2),
-     &           stat_y5(6*nint+i)-stat_y5(0*nint+i)*stat_y5(1*nint+i),
-     &           0.5*((stat_y5(3*nint+i)-(stat_y5(0*nint+i))**2)+
-     &           (stat_y5(4*nint+i)-(stat_y5(1*nint+i))**2)+
-     &           (stat_y5(5*nint+i)-(stat_y5(2*nint+i))**2)),
-     &           0.0, !stat_y(9*nint+i),
-     &           0.0, !stat_y(10*nint+i),
-     &           0.0, !psix_int(i),
-     &           u_tau, !u_tau_out,
-     &           stat_y5(0*nint+i) !stat_y(10*nint+i)+psix_int(i),
-            write(86,3) 
-     &           yint6(i),
-     &           stat_y6(0*nint+i),
-     &           stat_y6(1*nint+i),
-     &           stat_y6(2*nint+i),
-     &           (stat_y6(3*nint+i)-(stat_y6(0*nint+i))**2),
-     &           (stat_y6(4*nint+i)-(stat_y6(1*nint+i))**2),
-     &           (stat_y6(5*nint+i)-(stat_y6(2*nint+i))**2),
-     &           stat_y6(6*nint+i)-stat_y6(0*nint+i)*stat_y6(1*nint+i),
-     &           0.5*((stat_y6(3*nint+i)-(stat_y6(0*nint+i))**2)+
-     &           (stat_y6(4*nint+i)-(stat_y6(1*nint+i))**2)+
-     &           (stat_y6(5*nint+i)-(stat_y6(2*nint+i))**2)),
-     &           0.0, !stat_y(9*nint+i),
-     &           0.0, !stat_y(10*nint+i),
-     &           0.0, !psix_int(i),
-     &           u_tau, !u_tau_out,
-     &           stat_y6(0*nint+i) !stat_y(10*nint+i)+psix_int(i),
-            write(87,3) 
-     &           yint7(i),
-     &           stat_y7(0*nint+i),
-     &           stat_y7(1*nint+i),
-     &           stat_y7(2*nint+i),
-     &           (stat_y7(3*nint+i)-(stat_y7(0*nint+i))**2),
-     &           (stat_y7(4*nint+i)-(stat_y7(1*nint+i))**2),
-     &           (stat_y7(5*nint+i)-(stat_y7(2*nint+i))**2),
-     &           stat_y7(6*nint+i)-stat_y7(0*nint+i)*stat_y7(1*nint+i),
-     &           0.5*((stat_y7(3*nint+i)-(stat_y7(0*nint+i))**2)+
-     &           (stat_y7(4*nint+i)-(stat_y7(1*nint+i))**2)+
-     &           (stat_y7(5*nint+i)-(stat_y7(2*nint+i))**2)),
-     &           0.0, !stat_y(9*nint+i),
-     &           0.0, !stat_y(10*nint+i),
-     &           0.0, !psix_int(i),
-     &           u_tau, !u_tau_out,
-     &           stat_y7(0*nint+i) !stat_y(10*nint+i)+psix_int(i),
-            write(88,3) 
-     &           yint8(i),
-     &           stat_y8(0*nint+i),
-     &           stat_y8(1*nint+i),
-     &           stat_y8(2*nint+i),
-     &           (stat_y8(3*nint+i)-(stat_y8(0*nint+i))**2),
-     &           (stat_y8(4*nint+i)-(stat_y8(1*nint+i))**2),
-     &           (stat_y8(5*nint+i)-(stat_y8(2*nint+i))**2),
-     &           stat_y8(6*nint+i)-stat_y8(0*nint+i)*stat_y8(1*nint+i),
-     &           0.5*((stat_y8(3*nint+i)-(stat_y8(0*nint+i))**2)+
-     &           (stat_y8(4*nint+i)-(stat_y8(1*nint+i))**2)+
-     &           (stat_y8(5*nint+i)-(stat_y8(2*nint+i))**2)),
-     &           0.0, !stat_y(9*nint+i),
-     &           0.0, !stat_y(10*nint+i),
-     &           0.0, !psix_int(i),
-     &           u_tau, !u_tau_out,
-     &           stat_y8(0*nint+i) !stat_y(10*nint+i)+psix_int(i),
-            write(89,3) 
-     &           yint9(i),
-     &           stat_y9(0*nint+i),
-     &           stat_y9(1*nint+i),
-     &           stat_y9(2*nint+i),
-     &           (stat_y9(3*nint+i)-(stat_y9(0*nint+i))**2),
-     &           (stat_y9(4*nint+i)-(stat_y9(1*nint+i))**2),
-     &           (stat_y9(5*nint+i)-(stat_y9(2*nint+i))**2),
-     &           stat_y9(6*nint+i)-stat_y9(0*nint+i)*stat_y9(1*nint+i),
-     &           0.5*((stat_y9(3*nint+i)-(stat_y9(0*nint+i))**2)+
-     &           (stat_y9(4*nint+i)-(stat_y9(1*nint+i))**2)+
-     &           (stat_y9(5*nint+i)-(stat_y9(2*nint+i))**2)),
-     &           0.0, !stat_y(9*nint+i),
-     &           0.0, !stat_y(10*nint+i),
-     &           0.0, !psix_int(i),
-     &           u_tau, !u_tau_out,
-     &           stat_y9(0*nint+i) !stat_y(10*nint+i)+psix_int(i),
-            write(90,3) 
-     &           yint10(i),
-     &           stat_y10(0*nint+i),
-     &           stat_y10(1*nint+i),
-     &           stat_y10(2*nint+i),
-     &           (stat_y10(3*nint+i)-(stat_y10(0*nint+i))**2),
-     &           (stat_y10(4*nint+i)-(stat_y10(1*nint+i))**2),
-     &           (stat_y10(5*nint+i)-(stat_y10(2*nint+i))**2),
-     &         stat_y10(6*nint+i)-stat_y10(0*nint+i)*stat_y10(1*nint+i),
-     &           0.5*((stat_y10(3*nint+i)-(stat_y10(0*nint+i))**2)+
-     &           (stat_y10(4*nint+i)-(stat_y10(1*nint+i))**2)+
-     &           (stat_y10(5*nint+i)-(stat_y10(2*nint+i))**2)),
-     &           0.0, !stat_y(9*nint+i),
-     &           0.0, !stat_y(10*nint+i),
-     &           0.0, !psix_int(i),
-     &           u_tau, !u_tau_out,
-     &           stat_y10(0*nint+i) !stat_y(10*nint+i)+psix_int(i),
-
-
-  3         format(1p15e17.9)
-         enddo
-         close(56)
-         close(57)
-         close(81)
-         close(82)
-         close(83)
-         close(84)
-         close(85)
-         close(86)
-         close(87)
-         close(88)
-         close(89)
-         close(90)
-
- 998  endif      
-      
       return
       end
 
