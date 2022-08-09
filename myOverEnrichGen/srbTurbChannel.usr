@@ -1299,6 +1299,12 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $               ,tr4y1(lx1,ly1,lz1,lelv)
      $               ,tr4z1(lx1,ly1,lz1,lelv)
 
+      real txx1(lx1,ly1,lz1,lelv), txy1(lx1,ly1,lz1,lelv),
+     $     txz1(lx1,ly1,lz1,lelv), tyx1(lx1,ly1,lz1,lelv),
+     $     tyy1(lx1,ly1,lz1,lelv), tyz1(lx1,ly1,lz1,lelv),
+     $     tzx1(lx1,ly1,lz1,lelv), tzy1(lx1,ly1,lz1,lelv),
+     $     tzz1(lx1,ly1,lz1,lelv)
+
       real wsx, wsy, wsz, vx_, term3x, convx, wintx, winty, wintz
      $     wintx2, winty2, wintz2, wrhsx, wrhsy, wrshz, 
      $     psix, psiy, psiz, M_psi_x, M_psi_y, M_psi_z,
@@ -1342,7 +1348,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
      $     gpsiy_y_t2(lxd,lzd,lyd,lelv), gpsiy_z_t2(lxd,lzd,lyd,lelv), 
      $     gpsiz_x_t2(lxd,lzd,lyd,lelv), gpsiz_y_t2(lxd,lzd,lyd,lelv),
      $     gpsiz_z_t2(lxd,lzd,lyd,lelv) 
-      real z_lxd(lxd), w_lxd(lxd), line_dist, myyd
+      real z_lxd(lxd), w_lxd(lxd), line_dist, myyd, dnds
      
 C       save psix, psiy, psiz
 c---------------------------------------------------------------
@@ -1712,26 +1718,32 @@ C                     do iy = 1,ly1
      $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
      $                   ut_param,param(2))
 
+                      line_dist = sqrt(
+     $                  (xm1(ix,ly1,iz,iel)-xm1(ix,1,iz,iel))**2                 
+     $                 +(ym1(ix,ly1,iz,iel)-ym1(ix,1,iz,iel))**2
+     $                 +(zm1(ix,ly1,iz,iel)-zm1(ix,1,iz,iel))**2)
+                      dnds = line_dist/2.0
+
                       gpsix_x1(ix,iy,iz,iel) = gpsidn_norm
-     $                        *unw(1,ix,iz,iel)*utan_x(ix,iy_ut,iz,iel)
+     $                  *utan_x(ix,iy_ut,iz,iel)*dnds*sxm1(ix,iy,iz,iel)
                       gpsix_y1(ix,iy,iz,iel) = gpsidn_norm
-     $                        *unw(2,ix,iz,iel)*utan_x(ix,iy_ut,iz,iel)
+     $                  *utan_x(ix,iy_ut,iz,iel)*dnds*sym1(ix,iy,iz,iel)
                       gpsix_z1(ix,iy,iz,iel) = gpsidn_norm
-     $                        *unw(3,ix,iz,iel)*utan_x(ix,iy_ut,iz,iel)
+     $                  *utan_x(ix,iy_ut,iz,iel)*dnds*szm1(ix,iy,iz,iel)
 
                       gpsiy_x1(ix,iy,iz,iel) = gpsidn_norm
-     $                        *unw(1,ix,iz,iel)*utan_y(ix,iy_ut,iz,iel)
+     $                  *utan_y(ix,iy_ut,iz,iel)*dnds*sxm1(ix,iy,iz,iel)
                       gpsiy_y1(ix,iy,iz,iel) = gpsidn_norm
-     $                        *unw(2,ix,iz,iel)*utan_y(ix,iy_ut,iz,iel)
+     $                  *utan_y(ix,iy_ut,iz,iel)*dnds*sym1(ix,iy,iz,iel)
                       gpsiy_z1(ix,iy,iz,iel) = gpsidn_norm
-     $                        *unw(3,ix,iz,iel)*utan_y(ix,iy_ut,iz,iel)
+     $                  *utan_y(ix,iy_ut,iz,iel)*dnds*szm1(ix,iy,iz,iel)
 
                       gpsiz_x1(ix,iy,iz,iel) = gpsidn_norm
-     $                        *unw(1,ix,iz,iel)*utan_z(ix,iy_ut,iz,iel)
+     $                  *utan_z(ix,iy_ut,iz,iel)*dnds*sxm1(ix,iy,iz,iel)
                       gpsiz_y1(ix,iy,iz,iel) = gpsidn_norm
-     $                        *unw(2,ix,iz,iel)*utan_z(ix,iy_ut,iz,iel)
+     $                  *utan_z(ix,iy_ut,iz,iel)*dnds*sym1(ix,iy,iz,iel)
                       gpsiz_z1(ix,iy,iz,iel) = gpsidn_norm
-     $                        *unw(3,ix,iz,iel)*utan_z(ix,iy_ut,iz,iel)
+     $                  *utan_z(ix,iy_ut,iz,iel)*dnds*szm1(ix,iy,iz,iel)
 
                     enddo
                   enddo
@@ -1751,16 +1763,8 @@ C                       ! SRB3D
      $                 (xm1(ix,ly1,iz,iel)-xm1(ix,1,iz,iel))**2                 
      $                 +(ym1(ix,ly1,iz,iel)-ym1(ix,1,iz,iel))**2
      $                 +(zm1(ix,ly1,iz,iel)-zm1(ix,1,iz,iel))**2)
-                      myyd = ym1(ix,1,iz,iel)+(z_lxd(iy)+1.0)/2.0*line_dist
-                      psi_trans(ix,iz,iy,iel) = calc_psi(
-     $                    xm1(ix,1,iz,iel),myyd,
-     $                    zm1(ix,1,iz,iel),flag(iel),
-     $                    ut_param,param(2))
-
-                      gpsi_trans(ix,iz,iy,iel) = calc_gpsix_y(
-     $                    xm1(ix,iy,iz,iel),
-     $                   ymd(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
-     $                   ut_param,param(2))
+                   myyd = ym1(ix,1,iz,iel)+(z_lxd(iy)+1.0)/2.0*line_dist
+                   dnds = line_dist/2.0
 
                         psi_trans_t = calc_psi(
      $                    xm1(ix,1,iz,iel),myyd,
@@ -1775,50 +1779,44 @@ C                       ! SRB3D
      $                       *utan_z(ix,iy_ut,iz,iel)
 
                       gpsidn_norm_t = 
-     $                   calc_gpsix_y(xm1(ix,iy,iz,iel),
-     $                   ymd(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
+     $                   calc_gpsix_y(xm1(ix,1,iz,iel),
+     $                   myyd,zm1(ix,1,iz,iel),flag(iel),
      $                   ut_param,param(2))
 
-                   gpsix_x_t(ix,iy,iz,iel) = gpsidn_norm_t
+                   gpsix_x_t(ix,iz,iy,iel) = gpsidn_norm_t
      $                        *utan_x(ix,iy_ut,iz,iel)
-     $                        /symd(ix,iy,iz,iel)*sxmd(ix,iy,iz,iel)
-
-                   gpsix_y_t(ix,iy,iz,iel) = gpsidn_norm_t
+     $                        *dnds*sxmd(ix,iy,iz,iel)
+                   gpsix_y_t(ix,iz,iy,iel) = gpsidn_norm_t
      $                        *utan_x(ix,iy_ut,iz,iel)
-     $                        /symd(ix,iy,iz,iel)*symd(ix,iy,iz,iel)
-                   gpsix_z_t(ix,iy,iz,iel) = gpsidn_norm_t
+     $                        *dnds*symd(ix,iy,iz,iel)
+                   gpsix_z_t(ix,iz,iy,iel) = gpsidn_norm_t
      $                        *utan_x(ix,iy_ut,iz,iel)
-     $                        /symd(ix,iy,iz,iel)*szmd(ix,iy,iz,iel)
+     $                        *dnds*szmd(ix,iy,iz,iel)
 
-                   gpsiy_x_t(ix,iy,iz,iel) = gpsidn_norm_t
+                   gpsiy_x_t(ix,iz,iy,iel) = gpsidn_norm_t
      $                        *utan_y(ix,iy_ut,iz,iel)
-     $                        /symd(ix,iy,iz,iel)*sxmd(ix,iy,iz,iel)
-                   gpsiy_y_t(ix,iy,iz,iel) = gpsidn_norm_t
+     $                        *dnds*sxmd(ix,iy,iz,iel)
+                   gpsiy_y_t(ix,iz,iy,iel) = gpsidn_norm_t
      $                        *utan_y(ix,iy_ut,iz,iel)
-     $                        /symd(ix,iy,iz,iel)*symd(ix,iy,iz,iel)
-                   gpsiy_z_t(ix,iy,iz,iel) = gpsidn_norm_t
+     $                        *dnds*symd(ix,iy,iz,iel)
+                   gpsiy_z_t(ix,iz,iy,iel) = gpsidn_norm_t
      $                        *utan_y(ix,iy_ut,iz,iel)
-     $                        /symd(ix,iy,iz,iel)*szmd(ix,iy,iz,iel)
+     $                        *dnds*szmd(ix,iy,iz,iel)
 
-                   gpsiz_x_t(ix,iy,iz,iel) = gpsidn_norm_t
+                   gpsiz_x_t(ix,iz,iy,iel) = gpsidn_norm_t
      $                        *utan_z(ix,iy_ut,iz,iel)
-     $                        /symd(ix,iy,iz,iel)*sxmd(ix,iy,iz,iel)
-                   gpsiz_y_t(ix,iy,iz,iel) = gpsidn_norm_t
+     $                        *dnds*sxmd(ix,iy,iz,iel)
+                   gpsiz_y_t(ix,iz,iy,iel) = gpsidn_norm_t
      $                        *utan_z(ix,iy_ut,iz,iel)
-     $                        /symd(ix,iy,iz,iel)*symd(ix,iy,iz,iel)
-                   gpsiz_z_t(ix,iy,iz,iel) = gpsidn_norm_t
+     $                        *dnds*symd(ix,iy,iz,iel)
+                   gpsiz_z_t(ix,iz,iy,iel) = gpsidn_norm_t
      $                        *utan_z(ix,iy_ut,iz,iel)
-     $                        /symd(ix,iy,iz,iel)*szmd(ix,iy,iz,iel)
+     $                        *dnds*szmd(ix,iy,iz,iel)
 
                     enddo
                   enddo
                   ! interpolate psi at overintegration points in y to
                   ! the overintegration points in x and z
-                  call srb_intp_rstd(psi_trans2(1,1,iy,iel),
-     $              psi_trans(1,1,iy,iel),lx1,lxd,0,0)
-                  call srb_intp_rstd(gpsi_trans2(1,1,iy,iel),
-     $              gpsi_trans(1,1,iy,iel),lx1,lxd,0,0)
-
                   call srb_intp_rstd(psix_trans2(1,1,iy,iel),
      $              psix_trans(1,1,iy,iel),lx1,lxd,0,0)
                   call srb_intp_rstd(psiy_trans2(1,1,iy,iel),
@@ -1851,11 +1849,6 @@ C                       ! SRB3D
                 do iz = 1,lzd
                   do iy = 1,lyd
                     do ix = 1,lxd
-                      ! SRB3D
-                      psix_d(ix,iy,iz,iel) = psi_trans2(ix,iz,iy,iel)
-                      gpsix_y(ix,iy,iz,iel) = 
-     $                   gpsi_trans2(ix,iz,iy,iel)
-
                       psix_d(ix,iy,iz,iel) = psix_trans2(ix,iz,iy,iel)
                       psiy_d(ix,iy,iz,iel) = psiy_trans2(ix,iz,iy,iel)  
                       psiz_d(ix,iy,iz,iel) = psiz_trans2(ix,iz,iy,iel)
@@ -1876,9 +1869,91 @@ C                       ! SRB3D
 
           ! Assume SEM basis in X and Z. Use analytical grad in y
           !SRB3D
-          call gradm1(gpsix_x1,phi_temp1,gpsix_z1,psix)
-          call gradm1(gpsiy_x1,phi_temp1,gpsiy_z1,psiy)
-          call gradm1(gpsiz_x1,phi_temp1,gpsiz_z1,psiz)
+          do iel = 1, nelv
+            if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
+            call local_grad3(txx1,txy1,txz1,psix,lx1-1,iel,dxm1,dxtm1)
+            call local_grad3(tyx1,tyy1,tyz1,psiy,lx1-1,iel,dxm1,dxtm1)
+            call local_grad3(tzx1,tzy1,tzz1,psiz,lx1-1,iel,dxm1,dxtm1)
+            do iz = 1,lz1
+              do iy = 1,ly1
+                do ix = 1,lx1
+                  ind = (iz-1)*ly1*lx1 + (iy-1)*lx1 + ix
+                  if (if3d) then
+                    gpsix_x1(ix,iy,iz,iel) = 1./jacm1(ix,iy,iz,iel)* 
+     $                       (rxm1(ix,iy,iz,iel)*txx1(ix,iy,iz,iel)
+C      $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +txm1(ix,iy,iz,iel)*txz1(ix,iy,iz,iel)
+     $                       +gpsix_x1(ix,iy,iz,iel))
+                    gpsix_y1(ix,iy,iz,iel) = 1./jacm1(ix,iy,iz,iel)* 
+     $                       (rym1(ix,iy,iz,iel)*txx1(ix,iy,iz,iel)
+C      $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tym1(ix,iy,iz,iel)*txz1(ix,iy,iz,iel)
+     $                       +gpsix_y1(ix,iy,iz,iel))
+                    gpsix_z1(ix,iy,iz,iel) = 1./jacm1(ix,iy,iz,iel)*
+     $                       (rzm1(ix,iy,iz,iel)*txx1(ix,iy,iz,iel)
+C      $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
+     $                       +tzm1(ix,iy,iz,iel)*txz1(ix,iy,iz,iel)
+     $                       +gpsix_z1(ix,iy,iz,iel))
+
+                    gpsiy_x1(ix,iy,iz,iel) = 1./jacm1(ix,iy,iz,iel)* 
+     $                       (rxm1(ix,iy,iz,iel)*tyx1(ix,iy,iz,iel)
+C      $                       +sxmd(ix,iy,iz,iel)*tyy(ix,iy,iz,iel)
+     $                       +txm1(ix,iy,iz,iel)*tyz1(ix,iy,iz,iel)
+     $                       +gpsiy_x1(ix,iy,iz,iel))
+                    gpsiy_y1(ix,iy,iz,iel) = 1./jacm1(ix,iy,iz,iel)* 
+     $                       (rym1(ix,iy,iz,iel)*tyx1(ix,iy,iz,iel)
+C      $                       +symd(ix,iy,iz,iel)*tyy(ix,iy,iz,iel)
+     $                       +tym1(ix,iy,iz,iel)*tyz1(ix,iy,iz,iel)
+     $                       +gpsiy_y1(ix,iy,iz,iel))
+                    gpsiy_z1(ix,iy,iz,iel) = 1./jacm1(ix,iy,iz,iel)*
+     $                       (rzm1(ix,iy,iz,iel)*tyx1(ix,iy,iz,iel)
+C      $                       +szmd(ix,iy,iz,iel)*tyy(ix,iy,iz,iel)
+     $                       +tzm1(ix,iy,iz,iel)*tyz1(ix,iy,iz,iel)
+     $                       +gpsiy_z1(ix,iy,iz,iel))   
+
+                    gpsiz_x1(ix,iy,iz,iel) = 1./jacm1(ix,iy,iz,iel)* 
+     $                       (rxm1(ix,iy,iz,iel)*tzx1(ix,iy,iz,iel)
+C      $                       +sxmd(ix,iy,iz,iel)*tzy(ix,iy,iz,iel)
+     $                       +txm1(ix,iy,iz,iel)*tzz1(ix,iy,iz,iel)
+     $                       +gpsiz_x1(ix,iy,iz,iel))
+                    gpsiz_y1(ix,iy,iz,iel) = 1./jacm1(ix,iy,iz,iel)* 
+     $                       (rym1(ix,iy,iz,iel)*tzx1(ix,iy,iz,iel)
+C      $                       +symd(ix,iy,iz,iel)*tzy(ix,iy,iz,iel)
+     $                       +tym1(ix,iy,iz,iel)*tzz1(ix,iy,iz,iel)
+     $                       +gpsiz_y1(ix,iy,iz,iel))
+                    gpsiz_z1(ix,iy,iz,iel) = 1./jacm1(ix,iy,iz,iel)*
+     $                       (rzm1(ix,iy,iz,iel)*tzx1(ix,iy,iz,iel)
+C      $                       +szmd(ix,iy,iz,iel)*tzy(ix,iy,iz,iel)
+     $                       +tzm1(ix,iy,iz,iel)*tzz1(ix,iy,iz,iel)
+     $                       +gpsiz_z1(ix,iy,iz,iel))   
+
+                  else
+                    gpsix_x1(ix,iy,iz,iel) = 1./jacm1(ix,iy,iz,iel)* 
+     $                       (rxm1(ix,iy,iz,iel)*txx1(ix,iy,iz,iel)
+C      $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
+     $                       +gpsix_x1(ix,iy,iz,iel))
+                    gpsix_y1(ix,iy,iz,iel) = 1./jacm1(ix,iy,iz,iel)* 
+     $                       (rym1(ix,iy,iz,iel)*txx1(ix,iy,iz,iel)
+C      $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
+     $                       +gpsix_y1(ix,iy,iz,iel))  
+                    gpsix_z1(ix,iy,iz,iel) = 0.0
+
+                    gpsiy_x1(ix,iy,iz,iel) = 1./jacm1(ix,iy,iz,iel)* 
+     $                       (rxm1(ix,iy,iz,iel)*tyx1(ix,iy,iz,iel)
+C      $                       +sxmd(ix,iy,iz,iel)*tyy(ix,iy,iz,iel))
+     $                       +gpsiy_x1(ix,iy,iz,iel))  
+                    gpsiy_y1(ix,iy,iz,iel) = 1./jacm1(ix,iy,iz,iel)* 
+     $                       (rym1(ix,iy,iz,iel)*tyx1(ix,iy,iz,iel)
+C      $                       +symd(ix,iy,iz,iel)*tyy(ix,iy,iz,iel))
+     $                       +gpsiy_y1(ix,iy,iz,iel))  
+                    gpsiy_z1(ix,iy,iz,iel) = 0.0
+                  endif
+                enddo
+              enddo
+            enddo
+            endif
+          enddo
+
           do iel = 1, nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
             call my_grad_rst(txx(1,1,1,iel),txy(1,1,1,iel),
@@ -1895,70 +1970,70 @@ C                       ! SRB3D
                     gpsix_x(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
      $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
 C      $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
-     $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
-     $                       +gpsix_x(ix,iy,iz,iel)
+     $                       +txmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel)
+     $                       +gpsix_x(ix,iy,iz,iel))
                     gpsix_y(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
      $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
 C      $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
-     $                       +tymd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
-     $                       +gpsix_y(ix,iy,iz,iel)
+     $                       +tymd(ix,iy,iz,iel)*txz(ix,iy,iz,iel)
+     $                       +gpsix_y(ix,iy,iz,iel))
                     gpsix_z(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
      $                       (rzmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
 C      $                       +szmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel)
-     $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel))
-     $                       +gpsix_z(ix,iy,iz,iel)   
+     $                       +tzmd(ix,iy,iz,iel)*txz(ix,iy,iz,iel)
+     $                       +gpsix_z(ix,iy,iz,iel))
 
                     gpsiy_x(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
      $                       (rxmd(ix,iy,iz,iel)*tyx(ix,iy,iz,iel)
 C      $                       +sxmd(ix,iy,iz,iel)*tyy(ix,iy,iz,iel)
-     $                       +txmd(ix,iy,iz,iel)*tyz(ix,iy,iz,iel))
-     $                       +gpsiy_x(ix,iy,iz,iel)
+     $                       +txmd(ix,iy,iz,iel)*tyz(ix,iy,iz,iel)
+     $                       +gpsiy_x(ix,iy,iz,iel))
                     gpsiy_y(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
      $                       (rymd(ix,iy,iz,iel)*tyx(ix,iy,iz,iel)
 C      $                       +symd(ix,iy,iz,iel)*tyy(ix,iy,iz,iel)
-     $                       +tymd(ix,iy,iz,iel)*tyz(ix,iy,iz,iel))
-     $                       +gpsiy_y(ix,iy,iz,iel)
+     $                       +tymd(ix,iy,iz,iel)*tyz(ix,iy,iz,iel)
+     $                       +gpsiy_y(ix,iy,iz,iel))
                     gpsiy_z(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
      $                       (rzmd(ix,iy,iz,iel)*tyx(ix,iy,iz,iel)
 C      $                       +szmd(ix,iy,iz,iel)*tyy(ix,iy,iz,iel)
-     $                       +tzmd(ix,iy,iz,iel)*tyz(ix,iy,iz,iel))
-     $                       +gpsiy_z(ix,iy,iz,iel)   
+     $                       +tzmd(ix,iy,iz,iel)*tyz(ix,iy,iz,iel)
+     $                       +gpsiy_z(ix,iy,iz,iel))   
 
                     gpsiz_x(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
      $                       (rxmd(ix,iy,iz,iel)*tzx(ix,iy,iz,iel)
 C      $                       +sxmd(ix,iy,iz,iel)*tzy(ix,iy,iz,iel)
-     $                       +txmd(ix,iy,iz,iel)*tzz(ix,iy,iz,iel))
-     $                       +gpsiz_x(ix,iy,iz,iel)
+     $                       +txmd(ix,iy,iz,iel)*tzz(ix,iy,iz,iel)
+     $                       +gpsiz_x(ix,iy,iz,iel))
                     gpsiz_y(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
      $                       (rymd(ix,iy,iz,iel)*tzx(ix,iy,iz,iel)
 C      $                       +symd(ix,iy,iz,iel)*tzy(ix,iy,iz,iel)
-     $                       +tymd(ix,iy,iz,iel)*tzz(ix,iy,iz,iel))
-     $                       +gpsiz_y(ix,iy,iz,iel)
+     $                       +tymd(ix,iy,iz,iel)*tzz(ix,iy,iz,iel)
+     $                       +gpsiz_y(ix,iy,iz,iel))
                     gpsiz_z(ix,iy,iz,iel) = 1./jacmd(ind,iel)*
      $                       (rzmd(ix,iy,iz,iel)*tzx(ix,iy,iz,iel)
 C      $                       +szmd(ix,iy,iz,iel)*tzy(ix,iy,iz,iel)
-     $                       +tzmd(ix,iy,iz,iel)*tzz(ix,iy,iz,iel))
-     $                       +gpsiz_z(ix,iy,iz,iel)   
+     $                       +tzmd(ix,iy,iz,iel)*tzz(ix,iy,iz,iel)
+     $                       +gpsiz_z(ix,iy,iz,iel))   
 
                   else
                     gpsix_x(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
-     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel))
+     $                       (rxmd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
 C      $                       +sxmd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
-     $                       +gpsix_x(ix,iy,iz,iel)  
+     $                       +gpsix_x(ix,iy,iz,iel))
                     gpsix_y(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
-     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel))
+     $                       (rymd(ix,iy,iz,iel)*txx(ix,iy,iz,iel)
 C      $                       +symd(ix,iy,iz,iel)*txy(ix,iy,iz,iel))
-     $                       +gpsix_y(ix,iy,iz,iel)  
+     $                       +gpsix_y(ix,iy,iz,iel))  
                     gpsix_z(ix,iy,iz,iel) = 0.0
 
                     gpsiy_x(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
-     $                       (rxmd(ix,iy,iz,iel)*tyx(ix,iy,iz,iel))
+     $                       (rxmd(ix,iy,iz,iel)*tyx(ix,iy,iz,iel)
 C      $                       +sxmd(ix,iy,iz,iel)*tyy(ix,iy,iz,iel))
-     $                       +gpsiy_x(ix,iy,iz,iel)  
+     $                       +gpsiy_x(ix,iy,iz,iel))  
                     gpsiy_y(ix,iy,iz,iel) = 1./jacmd(ind,iel)* 
-     $                       (rymd(ix,iy,iz,iel)*tyx(ix,iy,iz,iel))
+     $                       (rymd(ix,iy,iz,iel)*tyx(ix,iy,iz,iel)
 C      $                       +symd(ix,iy,iz,iel)*tyy(ix,iy,iz,iel))
-     $                       +gpsiy_y(ix,iy,iz,iel)  
+     $                       +gpsiy_y(ix,iy,iz,iel))  
                     gpsiy_z(ix,iy,iz,iel) = 0.0
                   endif
                 enddo
