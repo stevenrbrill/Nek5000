@@ -1165,6 +1165,9 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save comp_norms
       real u_m, v_m, w_m
       real utt1,utt2,utgt,utgtx,utgty,utgtz,utgtmag
+      real start_en_stats
+      integer first_en_stat 
+      save first_en_stat
 
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /y_ends/ bot_y, top_y
@@ -1303,13 +1306,14 @@ c     WALL ENRICHMENT...START
       
 c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
-      use_default = 1
+      use_default = 0
       use_overint = 1
       
       start_en = 50.0
 
       use_avg_int = 1
       srb_avg_int = 50.0
+      start_en_stats = 50.0
 
       if (countww .gt. 0) then
             use_weak_bc = 1
@@ -2487,6 +2491,27 @@ C          call outpost(wsx,wsy,wsz,term3x,convx,'src')
 C          ifto = .false.
       endif
 
+      if (time.gt.start_en_stats) then
+         if (first_en_stat .ne.1) then   
+            call rzero(srbavg,size(srbavg))
+            first_en_stat = 1
+         endif
+
+         srbdtime = time - srbtimel
+         srbatime = srbatime + srbdtime
+
+         if (srbatime.ne.0. .and. srbdtime.ne.0.) then
+           ifverbose = .false.
+           srbbeta      = srbdtime / srbatime
+           srbalpha     = 1. - srbbeta
+           call unprojenrich
+           call avg1(srbavg(1,1),vx,srbalpha,srbbeta,n,'uavg',ifverbose)
+           call avg1(srbavg(1,2),vy,srbalpha,srbbeta,n,'vavg',ifverbose)
+           call avg1(srbavg(1,3),vz,srbalpha,srbbeta,n,'wavg',ifverbose)
+           call projenrich
+         endif
+      endif
+
 
       if (time.lt.tSTATSTART) return
 
@@ -2546,7 +2571,6 @@ c
         endif
 
         call rzero(ravg,size(ravg))
-        call rzero(srbavg,size(srbavg))
         dragx_avg = 0
         dragx_avg_poly = 0
         atime     = 0
@@ -2560,16 +2584,11 @@ c
       dtime = time - timel
       atime = atime + dtime
 
-      srbdtime = time - srbtimel
-      srbatime = srbatime + srbdtime
-
       ! averaging over time
       if (atime.ne.0. .and. dtime.ne.0.) then
         beta      = dtime / atime
         alpha     = 1. - beta
 
-        srbbeta      = srbdtime / srbatime
-        srbalpha     = 1. - srbbeta
 
         call unprojenrich
         ifverbose = .false.
@@ -2579,30 +2598,24 @@ c
         call avg2(ravg(1,4),vz   ,alpha,beta,n,'wrms',ifverbose)
         call avg3(ravg(1,5),vx,vy,alpha,beta,n,'uvmm',ifverbose)
 
-        call avg1(ravg(1,6),t    ,alpha,beta,n,'tavg',ifverbose)
-        call avg2(ravg(1,7),t    ,alpha,beta,n,'trms',ifverbose)
-        call avg3(ravg(1,8),vx,t ,alpha,beta,n,'utmm',ifverbose)
-        call avg3(ravg(1,9),vy,t ,alpha,beta,n,'vtmm',ifverbose)
+C         call avg1(ravg(1,6),t    ,alpha,beta,n,'tavg',ifverbose)
+C         call avg2(ravg(1,7),t    ,alpha,beta,n,'trms',ifverbose)
+C         call avg3(ravg(1,8),vx,t ,alpha,beta,n,'utmm',ifverbose)
+C         call avg3(ravg(1,9),vy,t ,alpha,beta,n,'vtmm',ifverbose)
 
         call avg1(ravg(1,10),psix ,alpha,beta,n,'psix',ifverbose)
         call avg1(ravg(1,12),uti ,alpha,beta,n,'utia',ifverbose)
         call avg1(ravg(1,13),taunew ,alpha,beta,n,'taua',ifverbose)
 
-        call avg1(ravg(1,14),tr2x1,alpha,beta,n,'t2x1',ifverbose)
-        call avg1(ravg(1,15),tr2y1,alpha,beta,n,'t2y1',ifverbose)
-        call avg1(ravg(1,16),tr2z1,alpha,beta,n,'t2z1',ifverbose)
-        call avg1(ravg(1,17),tr3x1,alpha,beta,n,'t3x1',ifverbose)
-        call avg1(ravg(1,18),tr3y1,alpha,beta,n,'t3y1',ifverbose)
-        call avg1(ravg(1,19),tr3z1,alpha,beta,n,'t3z1',ifverbose)
-        call avg1(ravg(1,20),tr1x1,alpha,beta,n,'t1x1',ifverbose)
-        call avg1(ravg(1,21),tr1y1,alpha,beta,n,'t1y1',ifverbose)
-        call avg1(ravg(1,22),tr1z1,alpha,beta,n,'t1z1',ifverbose)
-
-        if (srbatime.ne.0. .and. srbdtime.ne.0.) then
-        call avg1(srbavg(1,1),vx   ,srbalpha,srbbeta,n,'uavg',ifverbose)
-        call avg1(srbavg(1,2),vy   ,srbalpha,srbbeta,n,'vavg',ifverbose)
-        call avg1(srbavg(1,3),vz   ,srbalpha,srbbeta,n,'wavg',ifverbose)
-        endif
+C         call avg1(ravg(1,14),tr2x1,alpha,beta,n,'t2x1',ifverbose)
+C         call avg1(ravg(1,15),tr2y1,alpha,beta,n,'t2y1',ifverbose)
+C         call avg1(ravg(1,16),tr2z1,alpha,beta,n,'t2z1',ifverbose)
+C         call avg1(ravg(1,17),tr3x1,alpha,beta,n,'t3x1',ifverbose)
+C         call avg1(ravg(1,18),tr3y1,alpha,beta,n,'t3y1',ifverbose)
+C         call avg1(ravg(1,19),tr3z1,alpha,beta,n,'t3z1',ifverbose)
+C         call avg1(ravg(1,20),tr1x1,alpha,beta,n,'t1x1',ifverbose)
+C         call avg1(ravg(1,21),tr1y1,alpha,beta,n,'t1y1',ifverbose)
+C         call avg1(ravg(1,22),tr1z1,alpha,beta,n,'t1z1',ifverbose)
 
         call torque_calc(1.0,x0,.false.,.false.) ! compute wall shear
         dragx_avg = alpha*dragx_avg + beta*dragx(iobj_wall)
