@@ -1165,9 +1165,9 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save comp_norms
       real u_m, v_m, w_m
       real utt1,utt2,utgt,utgtx,utgty,utgtz,utgtmag
-      real start_en_stats
-      integer first_en_stat 
-      save first_en_stat
+      real start_en_stats, rmsfreq
+      integer first_en_stat, ntrmsdump 
+      save first_en_stat, ntrmsdump
 
       data utau_ref/5.43496e-02/  !Assumed constant value of u_tau
       common /y_ends/ bot_y, top_y
@@ -1314,6 +1314,8 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
       use_avg_int = 1
       srb_avg_int = 50.0
       start_en_stats = 50.0
+
+      rmsfreq = tSTATFREQ
 
       if (countww .gt. 0) then
             use_weak_bc = 1
@@ -2577,6 +2579,7 @@ c
         timel     = time
         srbtimel   = time
         ntdump    = int(time/tSTATFREQ)
+        ntrmsdump    = int(time/rmsfreq)
 
         icalld = 1
       endif
@@ -2645,8 +2648,14 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
 
       timel = time
 
+      if(istep.gt.0 .and. time.gt.(ntrmsdump+1)*rmsfreq) then
+        call outpost(ravg(1,2),ravg(1,3),ravg(1,4),ravg(1,5),t,'rms')
+        ntrmsdump = ntrmsdump + 1
+      endif
+
       ! write statistics to file
       if(istep.gt.0 .and. time.gt.(ntdump+1)*tSTATFREQ) then
+   
          ! averaging over statistical homogeneous directions (x-z)
          do i = 1,nstat
             call planar_avg(wo1      ,ravg(1,i),igs_x)
