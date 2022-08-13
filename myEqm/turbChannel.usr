@@ -339,6 +339,8 @@ c       enddo
 c      enddo
 
 c     EQUILIBRIUM WALL STRESS MODEL...END
+    
+      if (istep.eq.0) call outpost(vx,vy,vz,pr,t,'   ')  
 
 
       if (time.lt.tSTATSTART) return
