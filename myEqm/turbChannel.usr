@@ -89,6 +89,10 @@ c-----------------------------------------------------------------------
       logical iffpts
       save iffpts
 
+      real rmsfreq
+      integer ntrmsdump 
+      save ntrmsdump
+
       real xint(INTP_NMAX),yint(INTP_NMAX),zint(INTP_NMAX)
       save xint, yint, zint
       save igs_x, igs_z
@@ -178,6 +182,8 @@ c     EQUILIBRIUM WALL STRESS MODEL...START
 c     Currently all the lines for the non-iterative method are commented
 c     For iterative method: up,yp = velocity,location of matching point
 c     For non-iterative method: up,yp = uplus,yplus of matching point
+
+      rmsfreq = tSTATFREQ  
 
       if (istep.eq.0) then
          do iel = 1, nelv
@@ -374,6 +380,7 @@ c
         atime     = 0
         timel     = time
         ntdump    = int(time/tSTATFREQ)
+        ntrmsdump    = int(time/rmsfreq)
 
         icalld = 1
       endif
@@ -408,6 +415,12 @@ c
 c      write(6,*) 'dragx_avg = ', dragx_avg
 
       timel = time
+
+      if(istep.gt.0 .and. time.gt.(ntrmsdump+1)*rmsfreq) then
+        call outpost(ravg(1,2),ravg(1,3),ravg(1,4),ravg(1,5),t,'rms')
+        call outpost(ravg(1,1),ravg(1,6),ravg(1,7),ravg(1,8),t,'men')
+        ntrmsdump = ntrmsdump + 1
+      endif
 
       ! write statistics to file
       if(istep.gt.0 .and. time.gt.(ntdump+1)*tSTATFREQ) then
