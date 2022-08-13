@@ -2650,6 +2650,7 @@ c      write(6,*) 'dragx_avg = ', dragx_avg
 
       if(istep.gt.0 .and. time.gt.(ntrmsdump+1)*rmsfreq) then
         call outpost(ravg(1,2),ravg(1,3),ravg(1,4),ravg(1,5),t,'rms')
+        call outpost(ravg(1,1),ravg(1,10),ravg(1,11),ravg(1,12),t,'men')
         ntrmsdump = ntrmsdump + 1
       endif
 
