@@ -484,6 +484,7 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save    rwk2, iwk2
       integer intp_h2
       save intp_h2
+      integer recomp_en
       integer comp_phi_grad
       save comp_phi_grad
       integer nb
@@ -636,6 +637,26 @@ C           if (use_default .eq. 1) then
 C             comp_psi = 1 ! comment for adaptation
 C           endif
 
+      ! compute enrichment function psi
+          if (secondcall .eq. 1) then
+            call unprojenrich
+
+            if (use_default .eq. 1) then
+              recomp_en = 0
+            elseif (use_avg_int .eq. 1) then
+              ! if we are at the averaging interval, restart the average    
+              if (srbdtime .gt. srb_avg_int) then
+                recomp_en = 1
+              else 
+                recomp_en = 0
+              endif
+            else !every time
+              recomp_en = 1
+            endif
+          else 
+            recomp_en = 1
+          endif  
+
           ! compute enrichment function psi
           if (secondcall .eq. 1) then
             call unprojenrich
@@ -643,6 +664,7 @@ C           endif
 
           do iel = 1, nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
+                if (recomp_en .eq. 1) then
                 do ix = 1,lx1
                   do iz = 1,lz1
 C                     do iy = 1,ly1
@@ -662,6 +684,14 @@ C                     do iy = 1,ly1
                     ! Use average value for matching point
                     if (use_default .eq. 1) then
                         utau = utau_ref
+                    elseif (use_avg_int .eq. 1) then
+                        if (secondcall .ne. 1) then
+                              utau = utau_ref
+                        else
+                        utau = newton(flg,srbavg(avg_ind,1),yp,param(1),
+     $                        param(2),uti(ix,iy_ut,iz,iel),rtol,
+     $                        maxiter)
+                        endif
                     else
                         utau = newton(flg,ravg(avg_ind,1),yp,param(1),
      $                        param(2),uti(ix,iy_ut,iz,iel),rtol,
@@ -677,14 +707,19 @@ C                     do iy = 1,ly1
                     endif
                   enddo
                 enddo
+                endif
              endif
           enddo
 
           count = iglsum(count,1)
 
-          if(nid.eq.0) then
-            write(6,*) 'Solutions not converged: ', count
+          if (recomp_en .eq. 1) then
+            if(nid.eq.0) then
+              write(6,*) 'Recomputing Enrichment'
+              write(6,*) 'Solutions not converged: ', count
+            endif
           endif
+
 
           ! if we are at the averaging interval, restart the average
           if (srbdtime .gt. srb_avg_int) then
@@ -697,6 +732,7 @@ C                     do iy = 1,ly1
 
 
           ! Compute psix and grad_psi at nodes
+          if (recomp_en .eq. 1) then
           do iel = 1, nelv
             if ((flag(iel) .eq. 1) .or. (flag(iel) .eq. -1)) then  ! boundary element is above y=0
               if (flag(iel) .eq. 1) then
@@ -726,78 +762,7 @@ C                     do iy = 1,ly1
 
           ! Assume SEM basis in X and Z. Use analytical grad in y
           call gradm1(gpsix_x,phi_temp,gpsix_z,psix)
-
-          ! Get enrichment values on boundary of enriched region
-          ! Not currently used
-          call oprzero(psix_rhs,psiy_rhs,psiz_rhs)
-          do iel = 1, nelv
-            if (flag(iel) .eq. 2) then  ! boundary element is above y=0
-                do ix = 1,lx1
-                  do iz = 1,lz1
-C                     do iy = 1,ly1
-                      iy = ly1
-                      ut_param = uti(ix,iy,iz,iel)
-                      if (use_default .eq. 1) then
-                        ut_param = utau_ref
-                      endif
-                      psix_rhs(ix,iy,iz,iel) = 
-     $                   calc_psi(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
-     $                   ut_param,param(2))
-C                     enddo
-                  enddo
-                enddo
-
-             else if (flag(iel) .eq. -2) then ! boundary element below y=0
-                 do ix = 1,lx1
-                  do iz = 1,lz1
-C                     do iy = 1,ly1
-                      iy = 1
-                      ut_param = uti(ix,iy,iz,iel)
-                      if (use_default .eq. 1) then
-                        ut_param = utau_ref
-                      endif
-                      psix_rhs(ix,iy,iz,iel) = 
-     $                   calc_psi(xm1(ix,iy,iz,iel),
-     $                   ym1(ix,iy,iz,iel),zm1(ix,iy,iz,iel),flag(iel),
-     $                   ut_param,param(2))
-C                     enddo
-                  enddo
-                 enddo
-             endif
-          enddo
-
-C           call rzero  (tau_w,n)
-C           do iel = 1, nelv
-C             if (flag(iel) .eq. 1) then  ! boundary element is above y=0
-C                 do ix = 1,lx1
-C                   do iz = 1,lz1
-C C                     do iy = 1,ly1
-C                       iy = ly1
-C                       ut_param = uti(ix,iy_ut,iz,iel)
-C                       if (use_default .eq. 1) then
-C                         ut_param = utau_ref
-C                       endif
-C                       tau_w(ix,iy,iz,iel) = -param(1)*ut_param*ut_param
-C C                     enddo
-C                   enddo
-C                 enddo
-
-C              else if (flag(iel) .eq. -1) then ! boundary element below y=0
-C                  do ix = 1,lx1
-C                   do iz = 1,lz1
-C C                     do iy = 1,ly1
-C                       iy = 1
-C                       ut_param = uti(ix,iy_ut,iz,iel)
-C                       if (use_default .eq. 1) then
-C                         ut_param = utau_ref
-C                       endif
-C                       tau_w(ix,iy,iz,iel) = -param(1)*ut_param*ut_param
-C C                     enddo
-C                   enddo
-C                  enddo
-C              endif
-C           enddo
+          endif
         endif
 
         call projenrich
