@@ -1113,7 +1113,7 @@ c     object definition
       save zint1, zint2, zint3, zint4, zint5, zint6, zint7, zint8, 
      $     zint9, zint10
 
-      parameter(nstat=20)
+      parameter(nstat=25)
       real ravg(lx1*ly1*lz1*lelt,nstat)
       real stat(lx1*ly1*lz1*lelt,nstat)
       real stat_y(INTP_NMAX*nstat)
@@ -1304,6 +1304,9 @@ C       real psiy(lx1,ly1,lz1,lelv), psiz(lx1,ly1,lz1,lelv)
       save comp_norms
       real u_m, v_m, w_m
       real utt1,utt2,utgt,utgtx,utgty,utgtz,utgtmag
+      real start_en_stats, rmsfreq
+      integer first_en_stat, ntrmsdump 
+      save first_en_stat, ntrmsdump
 
       data utau_ref/0.00/  !Assumed constant value of u_tau
       common /y_ends/ bot_y, top_y
@@ -1476,6 +1479,9 @@ c      call add3 (vx_,vx,psix,n) !calculate actual velocity
 
       use_avg_int = 1
       srb_avg_int = 10.0
+      start_en_stats = 10.0
+
+      rmsfreq = tSTATFREQ
 
       if (countww .gt. 0) then
             use_weak_bc = 1
@@ -1681,6 +1687,8 @@ C                       yp = 1+ym1(ix,iy,iz,iel)
                         u_m = srbavg(avg_ind,1)
                         v_m = srbavg(avg_ind,2)
                         w_m = srbavg(avg_ind,3)
+
+                     
               utt1=t1w(1,ix,iz,iel)*u_m+t1w(2,ix,iz,iel)*v_m+
      $             t1w(3,ix,iz,iel)*w_m
               utt2=t2w(1,ix,iz,iel)*u_m+t2w(2,ix,iz,iel)*v_m+
@@ -2895,6 +2903,27 @@ C          call outpost(wsx,wsy,wsz,term3x,convx,'src')
 C          ifto = .false.
       endif
 
+      if (time.gt.start_en_stats) then
+         if (first_en_stat .ne.1) then   
+            call rzero(srbavg,size(srbavg))
+            first_en_stat = 1
+         endif
+
+         srbdtime = time - srbtimel
+         srbatime = srbatime + srbdtime
+
+         if (srbatime.ne.0. .and. srbdtime.ne.0.) then
+           ifverbose = .false.
+           srbbeta      = srbdtime / srbatime
+           srbalpha     = 1. - srbbeta
+           call unprojenrich
+           call avg1(srbavg(1,1),vx,srbalpha,srbbeta,n,'uavg',ifverbose)
+           call avg1(srbavg(1,2),vy,srbalpha,srbbeta,n,'vavg',ifverbose)
+           call avg1(srbavg(1,3),vz,srbalpha,srbbeta,n,'wavg',ifverbose)
+           call projenrich
+         endif
+      endif
+
 
       if (time.lt.tSTATSTART) return
 
@@ -3146,6 +3175,12 @@ C          call outpost(tr4x1,tr4y1,tr4z1,vx_,t,'Tr4')
 c      write(6,*) 'dragx_avg = ', dragx_avg
 
       timel = time
+
+      if(istep.gt.0 .and. time.gt.(ntrmsdump+1)*rmsfreq) then
+        call outpost(ravg(1,2),ravg(1,3),ravg(1,4),ravg(1,5),t,'rms')
+        call outpost(ravg(1,1),ravg(1,10),ravg(1,11),ravg(1,12),t,'men')
+        ntrmsdump = ntrmsdump + 1
+      endif
 
       ! write statistics to file
       if(istep.gt.0 .and. time.gt.(ntdump+1)*tSTATFREQ) then
