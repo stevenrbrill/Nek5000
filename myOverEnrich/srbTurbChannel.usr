@@ -3031,6 +3031,32 @@ c-----------------------------------------------------------------------
 
 c      param(84) = 1e-6    ! setting initial time step
 
+C       n = nelv * 8 !2**ldim
+C       xmin = glmin(xc,n)
+C       xmax = glmax(xc,n)
+C       ymin = glmin(yc,n)
+C       ymax = glmax(yc,n)
+C       zmin = glmin(zc,n)
+C       zmax = glmax(zc,n)
+
+C       xscale = XLEN/(xmax-xmin)
+C       yscale = 1./(ymax-ymin)
+C       zscale = ZLEN/(zmax-zmin)
+
+C       do i=1,n
+C          xc(i,1) = xscale*xc(i,1)
+C          yc(i,1) = 2*yscale*yc(i,1)-1  ! No stretching 
+C          !yc(i,1) = tanh(BETAM*(2*yscale*yc(i,1)-1))/tanh(BETAM) ! Stretching
+C         if (ldim == 3) then
+C          zc(i,1) = zscale*zc(i,1)
+C         endif
+C       enddo
+
+
+      real wsize, spcing, despc, new_len
+
+c      param(84) = 1e-6    ! setting initial time step
+
       n = nelv * 8 !2**ldim
       xmin = glmin(xc,n)
       xmax = glmax(xc,n)
@@ -3043,14 +3069,33 @@ c      param(84) = 1e-6    ! setting initial time step
       yscale = 1./(ymax-ymin)
       zscale = ZLEN/(zmax-zmin)
 
+
+      wsize = 0.1
+      despc = 1./NUMBER_ELEMENTS_Y
+      yscale = 1./(1.-despc-despc)
+      new_len = (1.-wsize)-(-1+wsize)
+
+
       do i=1,n
          xc(i,1) = xscale*xc(i,1)
-         yc(i,1) = 2*yscale*yc(i,1)-1  ! No stretching 
+
+         if (yc(i,1) .lt. despc-0.0001) then
+           yc(i,1) = -1.
+         else if (yc(i,1) .gt. 1.-despc+0.0001) then
+           yc(i,1) = 1.
+         else
+           yc(i,1) = new_len*yscale*(yc(i,1)-despc)+(-1.+wsize)
+         endif
+
+         print *, i, yc(i,1)
+
+         !yc(i,1) = 2*yscale*yc(i,1)-1  ! No stretching
          !yc(i,1) = tanh(BETAM*(2*yscale*yc(i,1)-1))/tanh(BETAM) ! Stretching
         if (ldim == 3) then
          zc(i,1) = zscale*zc(i,1)
         endif
       enddo
+
  
       return
       end
