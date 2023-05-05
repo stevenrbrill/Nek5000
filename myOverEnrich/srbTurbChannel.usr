@@ -19,6 +19,8 @@ c mesh dimensions
 
 c-----------------------------------------------------------------------
       subroutine my_grad_rst(ur,us,ut,u,md,if3d) ! Gauss-->Gauss grad
+      ! For enrichment overintegration
+      ! Computed the gradients at overint Gauss points in the in r-s-t 
 
       include 'SIZE'
       include 'DXYZ'
@@ -43,6 +45,9 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine my_grad_rstd(ur,us,ut,u,mx,md,if3d,ju) ! GLL->GL grad
+      ! For enrichment overintegration
+      ! Interpolate to overintegration points and then compute gradients
+      ! Computed the gradients at overint Gauss points in the in r-s-t 
 
       include 'SIZE'
       include 'DXYZ'
@@ -69,7 +74,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine my_get_dgl_ptr (ip,mx,md)
-c
+c     For enrichment overintegration
 c     Get pointer to GL-GL interpolation dgl() for pair (mx,md)
 c
       include 'SIZE'
@@ -107,7 +112,7 @@ c
       end
 c-----------------------------------------------------------------------
       subroutine my_gen_dgl(dgl,dgt,mp,np,w)
-c
+c     For enrichment overintegration
 c     Generate derivative from np GL points onto mp GL points
 c
 c        dgl  = interpolation matrix, mapping from velocity nodes to pressure
@@ -223,7 +228,7 @@ c
       end
 c-----------------------------------------------------------------------
       subroutine my_gen_int(jgl,jgt,mp,np,w)
-c
+c     ! For enrichment overintegration
 c     Generate interpolation from np GLL points to mp GL points
 c
 c        jgl  = interpolation matrix, mapping from velocity nodes to pressure
@@ -258,10 +263,9 @@ c
       end
 c-----------------------------------------------------------------------
       subroutine my_set_dealias_rx
-C
-C     Eulerian scheme, add convection term to forcing function
-C     at current time step.
-C
+      ! For enrichment overintegration
+      ! Get quadrature weights and dr/dx, ...
+
       include 'SIZE'
       include 'INPUT'
       include 'GEOM'
@@ -345,7 +349,7 @@ c           Interpolate z+ and z- into fine mesh, translate to r-s-t coords
       end
 c-----------------------------------------------------------------------
       subroutine srb_intp_rstd(ju,u,mx,md,if3d,idir) ! GLL->GL interpolation
-
+      ! For enrichment overintegration
 c     GLL interpolation from mx to md.
 
 c     If idir ^= 0, then apply transpose operator  (md to mx)
@@ -389,6 +393,8 @@ c
 c-----------------------------------------------------------------------
       subroutine projenrich ()
       ! Removes enrichment components from polynomial solution
+      ! Computes u_p = u - psi
+      ! After calling, vx is u_p, not u
       include 'SIZE'
       include 'SOLN'
 
@@ -435,6 +441,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine unprojenrich ()
       ! Adds enrichment components to the polynomial solution
+      ! Computes u = u_p + psi
+      ! After calling, vx is u, not u_p
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
@@ -483,6 +491,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine srbprint (u)
       ! Print the solution 
+      ! Print element, node numbers, and u value for debugging
       include 'SIZE'
       include 'TOTAL'
 
@@ -504,6 +513,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine srbprint_d (u)
       ! Print overintegrated solution
+      ! Print element, node numbers, and u value for debugging
       include 'SIZE'
       include 'TOTAL'
 
@@ -524,7 +534,8 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine srbprint_face (u)
-      ! Print overintegrated solution
+      ! Print face solution
+      ! Print node numbers on face and u value for debugging
       include 'SIZE'
       include 'TOTAL'
 
@@ -543,7 +554,8 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine srbprint_diff (u,v)
-      ! Print the solution 
+      ! Print the difference between solutions 
+      ! Print element, node numbers, u, v, and u-v value for debugging
       include 'SIZE'
       include 'TOTAL'
 
@@ -580,7 +592,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine userhack (ix,iy,iz,ieg)
-      ! Access to the RHS hacks for continuity enforcement
+      ! Access to the RHS hacks for continuity enforcement (Not used)
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
@@ -627,7 +639,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine userfint (ix,iy,iz,ieg)
-      ! Access to the pre-integrated quantities
+      ! Access to the pre-integrated quantities in the forcing terms
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
@@ -674,7 +686,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine userfint2 (ix,iy,iz,ieg)
-      ! Access to the pre-integrated quantities
+      ! Access to the pre-integrated quantities in the forcing terms
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
@@ -721,6 +733,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine uservp (ix,iy,iz,ieg)
+      ! Access to variable properties
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
@@ -784,6 +797,7 @@ c     Effective enrichment source terms for momentum equation
       end
 c-----------------------------------------------------------------------
       subroutine userq  (ix,iy,iz,ieg)
+      ! Access to source terms
       include 'SIZE'
       include 'TOTAL'
       include 'NEKUSE'
@@ -796,6 +810,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       real function lotw (yw,utau,nu)
       ! Evaluate law of the wall
+      ! Contains Piecewise, Riechardt, and Spalding
       implicit none
       real x, y, z, utau, nu ! Wall distance
       integer flag
@@ -851,7 +866,8 @@ C       lotw = psi/kap*utau
 
 c-----------------------------------------------------------------------
       real function dlotwdy (yw,utau,nu)
-      ! Evaluate gradient of of law of the wall
+      ! Evaluate derivative of law of the wall in the wall-normal dir
+      ! Contains Piecewise, Riechardt, and Spalding
       implicit none
       real x, y, z, utau, nu 
       integer flag
@@ -908,6 +924,7 @@ C       dlotwdy = 1./dF/kap*utau*Re_tau
 c-----------------------------------------------------------------------
       real function calc_psi  (x,y,z,flag,utau,nu)
       ! Evaluate enrichment function
+      ! Computes distance from wall and passes to lotw
       implicit none
       real x, y, z, utau, nu ! Wall distance
       integer flag
@@ -918,9 +935,9 @@ c-----------------------------------------------------------------------
 
       ! Distance from wall
       if (flag .gt. 0) then
-        yw = (1-y)
+        yw = (1.-y)
       elseif (flag .lt. 0) then
-        yw = (1+y) 
+        yw = (1.+y) 
       endif
 
       ! Enrichment value
@@ -932,6 +949,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       real function calc_gpsix_y  (x,y,z,flag,utau,nu)
       ! Evaluate enrichment gradient
+      ! Computes distance from wall and sign based on channel
       implicit none
       real x, y, z, utau, nu 
       integer flag
@@ -944,10 +962,10 @@ c-----------------------------------------------------------------------
 
       ! Distance from wall
       if (flag .gt. 0) then
-        yw = (1-y)
+        yw = (1.-y)
         sign = -1
       elseif (flag .lt. 0) then
-        yw = (1+y)
+        yw = (1.+y)
         sign = 1
       endif
 
@@ -959,6 +977,7 @@ c-----------------------------------------------------------------------
 
 c-----------------------------------------------------------------------
       subroutine userchk ()
+      ! Compute enrichment terms and other functions of userchk
       include 'SIZE'
       include 'TOTAL'
 
