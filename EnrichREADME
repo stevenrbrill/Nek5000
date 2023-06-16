@@ -86,3 +86,9 @@ Summary of changes in Source Code:
 - plan4.f - Encorporate preintegrated terms and weak wall BCs into the RHS
 - subs1.f - Add in a bunch of functions for weak wall BC enforcement
 - subs2.f - Add a line to include weak wall
+
+
+Postprocessing:
+For plotting mean results, I have bunch of matlab scripts. What they do is:
+- Read in the mean and fluctuation data and normalize into plus units. 
+- I also have scripts that lead in the nodal data and can average it in the wall-parallel directions for comparison.
