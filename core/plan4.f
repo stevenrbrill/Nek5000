@@ -404,7 +404,6 @@ C     Compute the residual for the velocity
       CALL SETHLM  (H1,H2,INTYPE)
 
       CALL OPHX    (RESV1,RESV2,RESV3,VX,VY,VZ,H1,H2)
-C      CALL srb_ophx    (RESV1,RESV2,RESV3,VX,VY,VZ,H1,H2)
       call opadd2col(RESV1,RESV2,RESV3,M_psi_x,M_psi_y,M_psi_z,H2)
       CALL OPCHSGN (RESV1,RESV2,RESV3)
 

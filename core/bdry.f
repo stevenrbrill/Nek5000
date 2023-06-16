@@ -762,8 +762,6 @@ C
 C
 C     Velocity boundary conditions
 C
-c     write(6,*) 'BCDIRV: ifield',ifield
-      ! print *, "Print SRBBCDIRVC?"
          DO 2010 IE=1,NEL
          DO 2010 IFACE=1,NFACES
             IF (CBC(IFACE,IE,IFIELD).EQ.'sh ') THEN
@@ -801,10 +799,6 @@ C
       ELSE
          CALL RMASK (V1,V2,V3,NELV)
       ENDIF
-
-      ! print *, "Print Wall BC"
-      ! call srbprint(TMP1)
-      ! print *, "Print"
 
       CALL ADD2(V1,TMP1,NTOT)
       CALL ADD2(V2,TMP2,NTOT)
@@ -1556,9 +1550,6 @@ C
              IF (IFQINP(IFC,IEL)) CALL GLOBROT (TRX,TRY,TRZ,IEL,IFC)
              GOTO 120
          ENDIF          
-           ! print *, "Print SHEAR BC"
-           ! call srbprint(TRX)
-           ! print *, "Print"
 C 
   120      CALL ADD2 (BFX(1,1,1,IEL),TRX,NXYZ1)
          CALL ADD2 (BFY(1,1,1,IEL),TRY,NXYZ1)

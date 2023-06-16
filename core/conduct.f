@@ -129,8 +129,7 @@ c     mass matrix on the Gauss-Lobatto mesh.
 c-----------------------------------------------------------------------
       subroutine srb_makeuq
 
-c     Fill up user defined forcing function and collocate will the
-c     mass matrix on the Gauss-Lobatto mesh.
+c     Add preintegrated values to the forcing term
 
       include 'SIZE'
       include 'INPUT'
@@ -203,6 +202,7 @@ c-----------------------------------------------------------------------
       subroutine srb_setqvol(bql,bqintl,bqintl2)
 
 c     Set user specified volumetric forcing function (e.g. heat source).
+c     and account for preintegrated values
 
       include 'SIZE'
       include 'INPUT'
@@ -280,6 +280,7 @@ c
 C------------------------------------------------------------------
 C
 C     Generate user-specified volumetric source term (temp./p.s.)
+C     with preintegrated terms
 C
 C------------------------------------------------------------------
       include 'SIZE'

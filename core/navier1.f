@@ -1474,20 +1474,12 @@ C----------------------------------------------------------------------
       include 'TSTEP'
 C
       TIME = TIME-DT
-      ! Use Steven's version of hte function to get pre-integrated values
+      ! Use Steven's version of the function to get pre-integrated values
       CALL SRB_NEKUF   (BFX,BFY,BFZ,BFINTX2,BFINTY2,BFINTZ2,
      $  BRHSX,BRHSY,BRHSZ)
       CALL OPCOLV  (BFX,BFY,BFZ,BM1)
       ! Steven - Add preintegrated values into the forcing terms
       CALL OPADD2 (BFX,BFY,BFZ,BFINTX2,BFINTY2,BFINTZ2)
-      ! print *, "Print BFIntx"
-      ! call srbprint(BFINTX)
-      ! print *, "Print BFinty"
-      ! call srbprint(BFINTY)  
-      ! print *, "Print BFX Int"
-      ! call srbprint(BFX)
-      ! print *, "Print BFY Int"
-      ! call srbprint(BFY)  
       TIME = TIME+DT
 C
       return
@@ -1694,7 +1686,7 @@ C
 c-----------------------------------------------------------------------
       subroutine srb_makebdf
 C
-C     Add contributions to F from lagged BD terms.
+C     Add contributions to F from lagged BD terms and includes psi.
 C
       include 'SIZE'
       include 'SOLN'
@@ -5059,44 +5051,4 @@ c
 c
       return
       end
-c-----------------------------------------------------------------------
-      subroutine srb_ophx (out1,out2,out3,inp1,inp2,inp3,h1,h2)
-C----------------------------------------------------------------------
-C
-C     OUT = (H1*A+H2*B) * INP  
-C
-C----------------------------------------------------------------------
-      include 'SIZE'
-      include 'INPUT'
-      include 'SOLN'
-      REAL OUT1 (LX1,LY1,LZ1,1)
-      REAL OUT2 (LX1,LY1,LZ1,1)
-      REAL OUT3 (LX1,LY1,LZ1,1)
-      REAL INP1 (LX1,LY1,LZ1,1)
-      REAL INP2 (LX1,LY1,LZ1,1)
-      REAL INP3 (LX1,LY1,LZ1,1)
-      REAL H1   (LX1,LY1,LZ1,1)
-      REAL H2   (LX1,LY1,LZ1,1)
-      REAL tmp1 (LX1,LY1,LZ1,lelv)
-      REAL tmp2 (LX1,LY1,LZ1,lelv)
-      REAL tmp3 (LX1,LY1,LZ1,lelv)
-C
-      IMESH = 1
-C
-      IF (IFSTRS) THEN
-         MATMOD = 0
-         CALL AXHMSF (OUT1,OUT2,OUT3,INP1,INP2,INP3,H1,H2,MATMOD)
-         call srb_axhmsf  (tmp1,tmp2,tmp3,INP1,INP2,INP3,H1,H2,MATMOD)
-         call add2(OUT1,tmp1,LX1*LY1*LZ1*lelv)
-         call add2(OUT2,tmp2,LX1*LY1*LZ1*lelv)
-         call add2(OUT3,tmp3,LX1*LY1*LZ1*lelv)
-      ELSE
-            print *, "Call axhelm - srb_ophx - no BC"
-         CALL AXHELM (OUT1,INP1,H1,H2,IMESH,1)
-         CALL AXHELM (OUT2,INP2,H1,H2,IMESH,2)
-         IF (ldim.EQ.3)
-     $   CALL AXHELM (OUT3,INP3,H1,H2,IMESH,3)
-      ENDIF
-C
-      return
-      END
+      
