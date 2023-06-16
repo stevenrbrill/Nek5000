@@ -1,0 +1,88 @@
+This is a README for using Steven's Enrichment.
+
+
+How to Setup a Run:
+1) Set mesh size in the .box file and run genbox and genmap
+2) Setup the .par file
+  2a) Set polynomial order, end time, viscosity, and other usual variables
+  2b) Turn filtering off.
+  2c) Set userParam01  to be the time to start collecting statistics. Usually this corresponds with the time the enrichment starts.
+  2d) Set userParam02 to be the interval to write out the statistics
+3) Setup the .usr file
+  3a) Set the NUMBER_ELEMENTS_{XYZ} variables to match the box file
+  3b) Set utau_ref to the be initial value of utau. This is usually based on the expected Re
+  3c) Set use_default = 0 to use adaptive enrichment (usually leave this to 0)
+  3d) Set start_en to the time to turn on the enrichment. This time is when the flow has developed. 50.0 is a good default value. 
+  3e) Set use_avg_int=1 to use adaptive enrichment.
+  3f) Set srb_avg_int to the intervals to compute the new enrichment function over. (The solution is averaged over this time to adapt enrichment functions)
+  3g) Set start_en_stats to the time to start the statistics for averaging. Usually this is the same as userParam01
+  3h) Set rmsfreq - This is the frequency rms results are outputted
+  3i) Set Re_tau in useric to set the correct amount of flow to match the target Reynolds number
+4) Makenek the file
+5) Run with nekmpi
+6) Output files:
+  6a) filename0.f* outputs vx,vy,vz,pr
+  6b) enrfilename0.f* outputs psix, psiy, psiz, vx+psix
+  6c) rmsfilename0.f* outputs urms, vrms, wrms, uvrms
+  6d) menfilename0.f* outputs uavg, psiavg, upolyavg, utau
+  6e) mean_prof.dat - Mean data. Categories labeled
+  6f) en_terms.dat - Data on different enrichment terms
+  6g) vel_fluc.dat - Fluctation data
+  6h) my_test.dat - Additional test data
+7) For plotting boundary layer profiles, vx + psix should be used to avoid inaccuracies from interpolating the enrichment function
+
+
+
+Other notes about things in the code:
+
+1) In the head of of srbTurbChannel.usr, Update:
+	a) The NUMBER_ELEMENTS to match the mesh
+	b) XLEN and ZLEN to set the size of the channel
+	c) XCINT, ZCINT, and INTP_NMAX will determine the location and number of points used when computing the mean velocity profile
+
+2) Setting enrichment details at !Set Enrichment details
+	a) use_default = 0 will allow the enrichment functions to adapt to the flow. If it is 1, the value of utau_ref will be used for all enrichment functions.
+	b) use_overint = 1 uses overintegration for the enrichment terms. Should always be 1.
+	c) start_en is the time to start the enrichment at.
+	d) use_avg_int = 1 will use time averaged values at the matching point for the wall-model. use_avg_int = 0 uses instantaneous values, which is generally unstable.
+	e) srb_avg_int - Time interval to average over for matching values
+	f) start_en_stats - Time to start computing statistics at. Usually set to start_en so that statistics start after the flow is developed.
+	g) rmsfreq - Frequency to compute rms values
+
+3) The flag distinguishes if the enriched elements. flag=1 is the top wall and flag=-1 is the bottom wall
+
+4) wintx contains the advection enrichment terms. wintx2 contains the vicous enrichment term (T1) and the mass matrix term.
+
+
+
+
+Optional:
+1) lotw and dlotwdy have the Spalding law of the wall commented out. This can be uncommented to use it, although no significant advantages were seen from it.
+1) In srbTubChannel.usr you can search for !PickQuad. and switch the lines below to zwgll. This will use GLL points for overintegration instead of GL. There isn't a reason to do this, but the option is there.
+
+
+Folders:
+- myOverEnrich - Complete enrichment formulation that is cleaned up
+- myEnrich - Original enrichment formulation without overintegration
+- myEqm - A version of the equilibrium wall model with similar postprocessing and outputting to the enrichment
+- myOverEnrichGen - A more generalized enrichment formulation that was used for developing periodic hill.
+- myPhill - Pure SEM periodic hill 
+- eqmPhill - Periodic hill with equilibrium wall model
+- myEnrichPhill - Periodic hill with enrichment - still a work in progress.
+
+
+Summary of changes in Source Code:
+- NEKUSE - Add variables to pass into other functions
+- SOLN - Add variables to pass into other functions
+- bdry.f - Add functions for weak-wall BC
+- conduct.f - Add functions to include pre-integrated thermal forcing terms
+- drive1.f - Add in call to userchk2, which is only used in the RANS enrichment case
+- drive2.f - Add in calls to compute current flow accounting for the enrichment
+- rans_komg.f - Add call to enrichment RANS terms - Hasn't been updated or tested recently
+- fast3d.f - Fix a bug and add line for weak wall
+- makeq.f - Add preintegrated values
+- mkuserfile - Compile all of the enrichment functions in .usr
+- navier1.f - Add functions to get preintegrated terms and psi mass matrix terms
+- plan4.f - Encorporate preintegrated terms and weak wall BCs into the RHS
+- subs1.f - Add in a bunch of functions for weak wall BC enforcement
+- subs2.f - Add a line to include weak wall
