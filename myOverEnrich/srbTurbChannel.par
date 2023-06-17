@@ -2,7 +2,7 @@
 # nek parameter file
 #
 [GENERAL] 
-polynomialOrder = 4
+polynomialOrder = 7
 PnPnFormulation = yes
 #minNumProcesses = 4
 
