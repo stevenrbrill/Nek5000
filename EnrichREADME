@@ -3,6 +3,11 @@ This is a README for using Steven's Enrichment.
 
 How to Setup a Run:
 1) Set mesh size in the .box file and run genbox and genmap
+  1a) For enrichment make sure the top and bottom BCs are W
+2) Setup SIZE
+  2a) Set lx1 as P+1
+  2b) Set lxd as ceil(1.5(P+1))
+  2c) Set lelg as the total number of elements
 2) Setup the .par file
   2a) Set polynomial order, end time, viscosity, and other usual variables
   2b) Turn filtering off.
@@ -12,7 +17,7 @@ How to Setup a Run:
   3a) Set the NUMBER_ELEMENTS_{XYZ} variables to match the box file
   3b) Set utau_ref to the be initial value of utau. This is usually based on the expected Re
   3c) Set use_default = 0 to use adaptive enrichment (usually leave this to 0)
-  3d) Set start_en to the time to turn on the enrichment. This time is when the flow has developed. 50.0 is a good default value. 
+  3d) Set start_en to the time to turn on the enrichment. This time is when the flow has developed. 50.0 is a good default value. You can set this larger than the simulation time if you want a purely polynomial run.
   3e) Set use_avg_int=1 to use adaptive enrichment.
   3f) Set srb_avg_int to the intervals to compute the new enrichment function over. (The solution is averaged over this time to adapt enrichment functions)
   3g) Set start_en_stats to the time to start the statistics for averaging. Usually this is the same as userParam01
