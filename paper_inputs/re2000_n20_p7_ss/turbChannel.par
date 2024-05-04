@@ -36,5 +36,5 @@ residualProj = yes
 [VELOCITY]
 residualTol = 1e-6 
 density = 1
-viscosity = 2.5e-5
+viscosity = 2.3e-5
 
