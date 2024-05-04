@@ -1,0 +1,40 @@
+#
+# nek parameter file
+#
+[GENERAL] 
+polynomialOrder = 5
+PnPnFormulation = yes
+
+stopAt = endTime
+endTime = 2000
+
+dt = 0
+timeStepper = bdf2
+#extrapolation = OIFS
+variableDt = yes
+targetCFL = 1.0
+
+writeControl = runTime
+writeInterval = 200.0
+
+userParam01 = 50    # start time collecting statistics
+userParam02 = 50     # writeInterval 1D statistics 
+
+filtering = explicit
+filterWeight = 0.05
+filterCutoffRatio = 0.65 
+
+[PROBLEMTYPE]
+equation = incompNS
+stressFormulation = yes
+
+[PRESSURE]
+preconditioner = semg_xxt
+residualTol = 1e-4 
+residualProj = yes
+
+[VELOCITY]
+residualTol = 1e-6 
+density = 1
+viscosity = 2.5e-5
+
