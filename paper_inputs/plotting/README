@@ -1,0 +1,5 @@
+-To plot, update all of the directories and files for the data loading.
+-Then you can run the script and it should generate all of the plots.
+-You will only need to run the loading once and it will save all of the data in a file.
+-For any subsequent runs, the "return" and "load" lines can be uncommented it will load the saved data
+-run section should be used for the to generate a subset of the plots
